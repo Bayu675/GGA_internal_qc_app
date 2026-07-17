@@ -1,0 +1,33 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model ReturnItem {
+  id           String    @id @default(uuid())
+  soNumber     String
+  customerName String
+  itemCode     String
+  itemName     String
+  width        Float
+  height       Float
+  qtyOrder     Int
+  qcStatus     String    @default("PENDING") // PENDING, GOOD, BAD, PARTIAL_GOOD
+  createdAt    DateTime  @default(now())
+  
+  qcResult     QCResult?
+}
+
+model QCResult {
+  id              String     @id @default(uuid())
+  returnItemId    String     @unique
+  returnItem      ReturnItem @relation(fields: [returnItemId], references: [id])
+  finalStatus     String     // GOOD, BAD, PARTIAL_GOOD
+  generalPhotoUrl String
+  damagePhotoUrl  String?
+  damageNotes     String?
+  processedAt     DateTime   @default(now())
+}
