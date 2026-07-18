@@ -3,7 +3,8 @@
 import React from 'react';
 import { Button } from './Button';
 
-interface PrintLabelProps {
+// Struktur dasar satu item label
+interface LabelItem {
   customerName: string;
   soNumber: string;
   itemCode: string;
@@ -11,12 +12,23 @@ interface PrintLabelProps {
   height: number;
 }
 
+// Menyatukan tipe: Bisa menerima props satuan (seperti cara lama lo) ATAU props massal (pake array data)
+interface PrintLabelProps {
+  customerName?: string;
+  soNumber?: string;
+  itemCode?: string;
+  width?: number;
+  height?: number;
+  data?: LabelItem[]; // Untuk cetak massal jika diisi array
+}
+
 export const PrintLabelButton: React.FC<PrintLabelProps> = ({ 
   customerName, 
   soNumber, 
   itemCode, 
   width, 
-  height 
+  height,
+  data 
 }) => {
   
   const handlePrint = () => {
@@ -33,7 +45,33 @@ export const PrintLabelButton: React.FC<PrintLabelProps> = ({
     const iframeDoc = iframe.contentWindow?.document;
     if (!iframeDoc) return;
 
-    const formattedSO = `SO/${soNumber.split('/').slice(1).join('/')}`;
+    // Menentukan daftar item yang mau dicetak
+    let itemsToPrint: LabelItem[] = [];
+
+    if (data && Array.isArray(data)) {
+      // Jika dikirim data array (Massal)
+      itemsToPrint = data;
+    } else if (customerName && soNumber && itemCode && width !== undefined && height !== undefined) {
+      // Jika dikirim eceran/satuan via props individual (Cara lama lo)
+      itemsToPrint = [{ customerName, soNumber, itemCode, width, height }];
+    }
+
+    if (itemsToPrint.length === 0) return;
+
+    // Generate konten HTML untuk semua label yang masuk daftar cetak
+    const labelsHTML = itemsToPrint.map((item) => {
+      const formattedSO = `SO/${item.soNumber.split('/').slice(1).join('/')}`;
+      return `
+        <div class="print-page">
+          <div class="title">${item.customerName.toUpperCase()}</div>
+          <div class="so">${formattedSO}</div>
+          <div class="footer-row">
+            <div class="sku">${item.itemCode}</div>
+            <div class="dimension">${item.width}x${item.height}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
 
     iframeDoc.write(`
       <!DOCTYPE html>
@@ -47,28 +85,29 @@ export const PrintLabelButton: React.FC<PrintLabelProps> = ({
             html, body {
               margin: 0;
               padding: 0;
-              width: 80mm;
-              height: 50mm;
-              font-family: Arial, sans-serif;
               background-color: #ffffff;
               color: #000000;
-              box-sizing: border-box;
+              font-family: Arial, sans-serif;
             }
-            .label-box {
+            .print-page {
               width: 80mm;
               height: 50mm;
-              padding: 5mm 6mm 4mm 6mm; /* Jarak padding atas disesuaikan biar proporsional */
+              padding: 5mm 6mm 4mm 6mm;
               box-sizing: border-box;
               display: flex;
               flex-direction: column;
-              justify-content: flex-start; /* Mengubah posisi konten agar mulai dari atas kertas, bukan di tengah */
+              justify-content: flex-start;
+              page-break-after: always;
+              page-break-inside: avoid;
+            }
+            .print-page:last-child {
+              page-break-after: auto;
             }
             .title {
               font-size: 8pt;
               font-weight: bold;
               margin-bottom: 2px;
               line-height: 1.2;
-              text-transform: uppercase;
             }
             .so {
               font-size: 16pt;
@@ -98,14 +137,7 @@ export const PrintLabelButton: React.FC<PrintLabelProps> = ({
           </style>
         </head>
         <body>
-          <div class="label-box">
-            <div class="title">${customerName}</div>
-            <div class="so">${formattedSO}</div>
-            <div class="footer-row">
-              <div class="sku">${itemCode}</div>
-              <div class="dimension">${width}x${height}</div>
-            </div>
-          </div>
+          ${labelsHTML}
         </body>
       </html>
     `);
@@ -120,13 +152,16 @@ export const PrintLabelButton: React.FC<PrintLabelProps> = ({
     }, 1000);
   };
 
+  // Menentukan jumlah total item untuk label teks tombol
+  const totalItems = data ? data.length : 1;
+
   return (
     <Button 
       variant="secondary" 
       onClick={handlePrint}
       className="w-full text-sm py-1 md:py-2 border-gray-300 bg-white hover:bg-gray-50 flex items-center justify-center gap-2"
     >
-      🖨️ Cetak Label 80x50mm
+      🖨️ {data ? `Cetak Massal (${totalItems} Label)` : 'Cetak Label 80x50mm'}
     </Button>
   );
 };

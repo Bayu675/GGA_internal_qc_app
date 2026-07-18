@@ -17,6 +17,7 @@ model ReturnItem {
   qtyOrder     Int
   qcStatus     String    @default("PENDING") // PENDING, GOOD, BAD, PARTIAL_GOOD
   createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @default(now()) @updatedAt
   
   qcResult     QCResult?
 }

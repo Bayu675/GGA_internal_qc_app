@@ -16,6 +16,8 @@ export interface TableItem {
   height: number;
   qtyOrder: number;
   qcStatus: string;
+  createdAt: Date;
+  updatedAt: Date;
 }
 
 interface ReturnItemTableProps {
@@ -60,15 +62,28 @@ export const ReturnItemTable: React.FC<ReturnItemTableProps> = ({ items, tab }) 
     });
   };
 
+  const handleBulkPrint = () => {
+    if (selectedIds.length === 0) return;
+    window.print();
+  };
+
+  const selectedItemsData = items.filter(item => selectedIds.includes(item.id));
+
+
   return (
     <div className="flex flex-col gap-4">
       {/* Action Bar muncul cuma kalo ada yang di-select */}
       {selectedIds.length > 0 && (
         <div className="bg-red-50 border border-red-200 p-3 rounded-md flex justify-between items-center">
           <span className="font-bold text-red-800 text-sm">{selectedIds.length} Data Dipilih</span>
-          <Button variant="danger" onClick={handleBulkDelete} disabled={isPending}>
-            {isPending ? '...' : 'Hapus Massal'}
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="secondary" onClick={handleBulkPrint} className="bg-white hover:bg-gray-100 text-gray-800 text-xs py-1 px-3 border border-gray-300">
+              🖨️ Cetak Massal
+            </Button>
+            <Button variant="danger" onClick={handleBulkDelete} disabled={isPending} className="text-xs py-1 px-3">
+              {isPending ? '...' : 'Hapus Massal'}
+            </Button>
+          </div>
         </div>
       )}
 
@@ -77,12 +92,14 @@ export const ReturnItemTable: React.FC<ReturnItemTableProps> = ({ items, tab }) 
           <thead className="text-xs text-white uppercase bg-green-700">
             <tr>
               <th className="px-4 py-3 text-center w-10"><input type="checkbox" onChange={handleSelectAll} checked={selectedIds.length === items.length && items.length > 0} /></th>
+              <th className="px-4 py-3">Tgl Masuk</th>
               <th className="px-4 py-3">No. SO</th>
               <th className="px-4 py-3">Customer</th>
               <th className="px-4 py-3">Kode / Nama Barang</th>
               <th className="px-4 py-3 text-center">Ukuran (L x T)</th>
               <th className="px-4 py-3 text-center">Qty</th>
               <th className="px-4 py-3 text-center">Status</th>
+              <th className="px-4 py-3">Tgl Edit</th>
               <th className="px-4 py-3 text-center">Aksi</th>
             </tr>
           </thead>
@@ -104,6 +121,9 @@ export const ReturnItemTable: React.FC<ReturnItemTableProps> = ({ items, tab }) 
                       onChange={(e) => handleSelectItem(item.id, e.target.checked)}
                     />
                   </td>
+                  <td className="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">
+                    {new Date(item.createdAt).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}
+                  </td>
                   <td className="px-4 py-3 font-medium text-gray-900">{item.soNumber}</td>
                   <td className="px-4 py-3">{item.customerName}</td>
                   <td className="px-4 py-3">
@@ -114,6 +134,9 @@ export const ReturnItemTable: React.FC<ReturnItemTableProps> = ({ items, tab }) 
                   <td className="px-4 py-3 text-center font-bold">{item.qtyOrder}</td>
                   <td className="px-4 py-3 text-center">
                     <span className={`px-2 py-1 rounded-full text-xs font-bold ${item.qcStatus === 'PENDING' ? 'bg-gray-200' : item.qcStatus === 'GOOD' ? 'bg-green-100' : item.qcStatus === 'BAD' ? 'bg-red-100' : 'bg-orange-100'}`}>{item.qcStatus}</span>
+                  </td>
+                  <td className="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">
+                    {new Date(item.updatedAt).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}
                   </td>
                   <td className="px-4 py-3 text-center">
                     <div className="flex justify-center gap-2">
@@ -149,6 +172,10 @@ export const ReturnItemTable: React.FC<ReturnItemTableProps> = ({ items, tab }) 
             <div className="mt-3 text-xs text-gray-600 border-t pt-2 grid grid-cols-2 gap-2">
               <div><span className="font-bold">Barang:</span> {item.itemName}</div>
               <div><span className="font-bold">Qty:</span> {item.qtyOrder}</div>
+              <div className="col-span-2 mt-1 border-t border-dashed pt-1 flex justify-between text-[10px] text-gray-400">
+                <span>Masuk: {new Date(item.createdAt).toLocaleDateString('id-ID')}</span>
+                <span>Edit: {new Date(item.updatedAt).toLocaleDateString('id-ID')}</span>
+              </div>
             </div>
 
             <div className="mt-3 flex gap-2">
@@ -160,6 +187,29 @@ export const ReturnItemTable: React.FC<ReturnItemTableProps> = ({ items, tab }) 
               <Link href={`/edit/${item.id}`} className="flex-1">
                 <Button className="w-full py-1 text-xs bg-yellow-500 hover:bg-yellow-600 text-white">Edit</Button>
               </Link>
+            </div>
+          </div>
+        ))}
+      </div>
+      {/* --- HIDDEN CONTAINER FOR BULK PRINT --- */}
+      <div id="printable-label-container" className="hidden">
+        {selectedItemsData.map((item) => (
+          <div key={`print-${item.id}`} className="print-page">
+            <div style={{ fontFamily: 'sans-serif', color: '#000000', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+              <div style={{ fontSize: 'clamp(18px, 6vw, 30px)', fontWeight: '900', marginBottom: '4px', lineHeight: '1.1', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                {item.customerName}
+              </div>
+              <div style={{ fontSize: 'clamp(16px, 5vw, 26px)', fontWeight: '500', marginBottom: '8px' }}>
+                SO/{item.soNumber.split('/').slice(1).join('/')}
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '3px solid #000000', paddingTop: '6px' }}>
+                <span style={{ fontWeight: '700', fontSize: 'clamp(16px, 4.5vw, 24px)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '60%' }}>
+                  {item.itemCode}
+                </span>
+                <span style={{ fontWeight: '900', fontSize: 'clamp(18px, 6vw, 30px)' }}>
+                  {item.width}x{item.height}
+                </span>
+              </div>
             </div>
           </div>
         ))}

@@ -18,13 +18,23 @@ export default async function DashboardPage(props: PageProps) {
   const page = Number(searchParams?.page) || 1;
   const search = typeof searchParams?.search === 'string' ? searchParams.search : '';
   const tab = searchParams?.tab === 'completed' ? 'completed' : 'pending';
+  const dateQuery = typeof searchParams?.date === 'string' ? searchParams.date : '';
 
   const take = 10;
   const skip = (page - 1) * take;
+  // Setup filter tanggal masuk
+  let dateFilter = undefined;
+  if (dateQuery) {
+    const startDate = new Date(dateQuery);
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + 1);
+    dateFilter = { gte: startDate, lt: endDate };
+  }
 
   // Build Prisma where clause based on search and tab filters
   const whereCondition = {
     AND: [
+      ...(dateFilter ? [{ createdAt: dateFilter }] : []),
       {
         OR: [
           { soNumber: { contains: search } },
@@ -90,8 +100,9 @@ export default async function DashboardPage(props: PageProps) {
             </Link>
           </div>
 
-          <form className="flex w-full md:w-auto gap-2" action="/" method="GET">
+          <form className="flex w-full md:w-auto gap-2 flex-col sm:flex-row" action="/" method="GET">
             <input type="hidden" name="tab" value={tab} />
+            <Input type="date" name="date" defaultValue={dateQuery} className="w-full sm:w-auto" />
             <Input 
               name="search" 
               placeholder="Cari SO, Barang, Customer..." 
