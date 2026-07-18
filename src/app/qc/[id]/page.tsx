@@ -3,6 +3,7 @@ import { notFound } from "next/navigation";
 import { QCForm } from "@/components/QCForm";
 import Link from "next/link";
 import { Button } from "@/components/Button";
+import { PrintLabelButton } from "@/components/PrintLabelButton";
 
 // Next.js App Router dynamic route params interface
 interface QCPageProps {
@@ -80,7 +81,15 @@ export default async function QCDetailPage(props: QCPageProps) {
           <div className="bg-blue-50 border border-blue-200 p-3 rounded-md mt-4 text-sm text-gray-900">
             <p><strong>SO:</strong> {item.soNumber} | <strong>Cust:</strong> {item.customerName}</p>
             <p><strong>Barang:</strong> {item.itemCode} - {item.itemName}</p>
-            <p><strong>Qty/Ukuran:</strong> {item.qtyOrder} pcs | {item.width} x {item.height}</p>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-1 gap-3">
+              <p><strong>Qty/Ukuran:</strong> {item.qtyOrder} pcs | {item.width} x {item.height}</p>
+              <div className="w-full sm:w-auto">
+                <PrintLabelButton 
+                  customerName={item.customerName} soNumber={item.soNumber} 
+                  itemCode={item.itemCode} width={item.width} height={item.height} 
+                />
+              </div>
+            </div>
           </div>
         </div>
 
