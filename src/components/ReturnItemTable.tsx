@@ -62,12 +62,125 @@ export const ReturnItemTable: React.FC<ReturnItemTableProps> = ({ items, tab }) 
     });
   };
 
+  // --- LOGIC TERBARU FIX CETAK MASSAL MENGGUNAKAN IFRAME TERISOLASI ---
   const handleBulkPrint = () => {
-    if (selectedIds.length === 0) return;
-    window.print();
-  };
+    const selectedItemsData = items.filter(item => selectedIds.includes(item.id));
+    if (selectedItemsData.length === 0) return;
 
-  const selectedItemsData = items.filter(item => selectedIds.includes(item.id));
+    // 1. Buat iframe tersembunyi agar terisolasi dari UI dashboard utama
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = 'none';
+    
+    document.body.appendChild(iframe);
+    
+    const iframeDoc = iframe.contentWindow?.document;
+    if (!iframeDoc) return;
+
+    // 2. Generate HTML string per halaman label thermal (mendukung cetak massal multi-page)
+    const labelsHTML = selectedItemsData.map((item) => {
+      const formattedSO = `SO/${item.soNumber.split('/').slice(1).join('/')}`;
+      return `
+        <div class="print-page">
+          <div class="title">${item.customerName.toUpperCase()}</div>
+          <div class="so">${formattedSO}</div>
+          <div class="footer-row">
+            <div class="sku">${item.itemCode}</div>
+            <div class="dimension">${item.width}x${item.height}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // 3. Suntikkan dokumen HTML mini khusus ukuran thermal lengkap dengan logic page-break
+    iframeDoc.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <style>
+            @page {
+              size: 80mm 50mm;
+              margin: 0;
+            }
+            html, body {
+              margin: 0;
+              padding: 0;
+              background-color: #ffffff;
+              color: #000000;
+              font-family: Arial, sans-serif;
+            }
+            /* Kotak per label halaman thermal */
+            .print-page {
+              width: 80mm;
+              height: 50mm;
+              padding: 5mm 6mm 4mm 6mm;
+              box-sizing: border-box;
+              display: flex;
+              flex-direction: column;
+              justify-content: flex-start;
+              
+              /* Memaksa ganti kertas/halaman baru tiap ganti label */
+              page-break-after: always;
+              page-break-inside: avoid;
+            }
+            /* Hilangkan ganti halaman pada label yang paling akhir */
+            .print-page:last-child {
+              page-break-after: auto;
+            }
+            .title {
+              font-size: 8pt;
+              font-weight: bold;
+              margin-bottom: 2px;
+              line-height: 1.2;
+            }
+            .so {
+              font-size: 16pt;
+              font-weight: bold;
+              margin-bottom: 6px;
+              line-height: 1.1;
+            }
+            .footer-row {
+              border-top: 3px solid #000000;
+              padding-top: 5px;
+              display: flex;
+              justify-content: space-between;
+              align-items: flex-start;
+            }
+            .sku {
+              font-size: 11pt;
+              font-weight: bold;
+              line-height: 1.2;
+              word-break: break-all;
+              padding-right: 6px;
+            }
+            .dimension {
+              font-size: 11pt;
+              font-weight: bold;
+              white-space: nowrap;
+            }
+          </style>
+        </head>
+        <body>
+          ${labelsHTML}
+        </body>
+      </html>
+    `);
+    
+    iframeDoc.close();
+
+    // 4. Trigger print pada dokumen terisolasi di dalam iframe
+    iframe.contentWindow?.focus();
+    iframe.contentWindow?.print();
+
+    // 5. Hapus kembali iframe dari DOM setelah pop-up print terbuka
+    setTimeout(() => {
+      document.body.removeChild(iframe);
+    }, 1000);
+  };
 
 
   return (
@@ -106,7 +219,7 @@ export const ReturnItemTable: React.FC<ReturnItemTableProps> = ({ items, tab }) 
           <tbody>
             {items.length === 0 ? (
               <tr>
-                <td colSpan={8} className="px-4 py-8 text-center text-gray-500">
+                <td colSpan={10} className="px-4 py-8 text-center text-gray-500">
                   Tidak ada data barang ditemukan.
                 </td>
               </tr>
@@ -140,10 +253,8 @@ export const ReturnItemTable: React.FC<ReturnItemTableProps> = ({ items, tab }) 
                   </td>
                   <td className="px-4 py-3 text-center">
                     <div className="flex justify-center gap-2">
-                      <div className="flex justify-center gap-2">
                       <Link href={`/qc/${item.id}`}><Button variant={tab === 'pending' ? 'primary' : 'secondary'} className="text-xs py-1 px-2">{tab === 'pending' ? 'Cek' : 'Detail'}</Button></Link>
                       <Link href={`/edit/${item.id}`}><Button className="text-xs py-1 px-2 bg-yellow-500 hover:bg-yellow-600 text-white">Edit</Button></Link>
-                    </div>
                     </div>
                   </td>
                 </tr>
@@ -152,6 +263,7 @@ export const ReturnItemTable: React.FC<ReturnItemTableProps> = ({ items, tab }) 
           </tbody>
         </table>
       </div>
+
       {/* --- MOBILE CARD VIEW (Hidden on Desktop) --- */}
       <div className="md:hidden flex flex-col gap-3">
         {items.map((item) => (
@@ -187,29 +299,6 @@ export const ReturnItemTable: React.FC<ReturnItemTableProps> = ({ items, tab }) 
               <Link href={`/edit/${item.id}`} className="flex-1">
                 <Button className="w-full py-1 text-xs bg-yellow-500 hover:bg-yellow-600 text-white">Edit</Button>
               </Link>
-            </div>
-          </div>
-        ))}
-      </div>
-      {/* --- HIDDEN CONTAINER FOR BULK PRINT --- */}
-      <div id="printable-label-container" className="hidden">
-        {selectedItemsData.map((item) => (
-          <div key={`print-${item.id}`} className="print-page">
-            <div style={{ fontFamily: 'sans-serif', color: '#000000', width: '100%', height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
-              <div style={{ fontSize: 'clamp(18px, 6vw, 30px)', fontWeight: '900', marginBottom: '4px', lineHeight: '1.1', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                {item.customerName}
-              </div>
-              <div style={{ fontSize: 'clamp(16px, 5vw, 26px)', fontWeight: '500', marginBottom: '8px' }}>
-                SO/{item.soNumber.split('/').slice(1).join('/')}
-              </div>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderTop: '3px solid #000000', paddingTop: '6px' }}>
-                <span style={{ fontWeight: '700', fontSize: 'clamp(16px, 4.5vw, 24px)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: '60%' }}>
-                  {item.itemCode}
-                </span>
-                <span style={{ fontWeight: '900', fontSize: 'clamp(18px, 6vw, 30px)' }}>
-                  {item.width}x{item.height}
-                </span>
-              </div>
             </div>
           </div>
         ))}
