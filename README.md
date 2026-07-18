@@ -17,6 +17,7 @@ Sistem manajemen Quality Control (QC) barang return berbasis web yang dirancang 
 - Edit data master dan hasil QC
 - Auto cleanup file foto yang tidak digunakan
 - Export laporan hasil QC ke Excel
+- Print Thermal Label 80x50mm untuk Pendataan 
 
 ---
 
