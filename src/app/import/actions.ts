@@ -20,6 +20,8 @@ interface ImportActionResponse {
   success: boolean;
   count?: number;
   error?: string;
+  requireConfirmation?: boolean;
+  message?: string;
 }
 
 export async function importExcelAction(formData: FormData): Promise<ImportActionResponse> {
@@ -29,6 +31,8 @@ export async function importExcelAction(formData: FormData): Promise<ImportActio
     if (!file) {
       return { success: false, error: "No file uploaded" };
     }
+
+    const force = formData.get("force") === "true";
 
     // Convert File to Buffer for xlsx parser
     const arrayBuffer = await file.arrayBuffer();
@@ -70,6 +74,29 @@ export async function importExcelAction(formData: FormData): Promise<ImportActio
 
     if (sanitizedData.length === 0) {
       return { success: false, error: "No valid rows found to import" };
+    }
+
+    // --- BLOK VALIDASI DUPLIKAT ---
+    if (!force) {
+      const soNumbers = sanitizedData.map(d => d.soNumber);
+      const existingItems = await prisma.returnItem.findMany({
+        where: { soNumber: { in: soNumbers } },
+        select: { soNumber: true, itemCode: true }
+      });
+
+      if (existingItems.length > 0) {
+        const duplicates = sanitizedData.filter(d =>
+          existingItems.some(e => e.soNumber === d.soNumber && e.itemCode === d.itemCode)
+        );
+
+        if (duplicates.length > 0) {
+          return {
+            success: false,
+            requireConfirmation: true,
+            message: `⚠️ Peringatan: Ada ${duplicates.length} data yang sudah ada di sistem (Contoh: SO ${duplicates[0].soNumber} - ${duplicates[0].itemCode}).\n\nYakin ingin tetap memaksakan input data ini?`
+          };
+        }
+      }
     }
 
     // Batch insert into SQLite using Prisma

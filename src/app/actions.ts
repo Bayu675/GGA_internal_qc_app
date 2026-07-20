@@ -17,7 +17,30 @@ export async function bulkDeleteReturnItems(ids: string[]) {
       where: { returnItemId: { in: ids } },
     });
 
-    // Hapus data induk (ReturnItem)
+    // 1. Ambil data yang mau dihapus buat ngecek fotonya
+    const itemsToDelete = await prisma.returnItem.findMany({
+      where: { id: { in: ids } },
+      include: { qcResult: true }
+    });
+
+    // 2. Hapus semua foto fisik dari hardisk biar gak menuh-menuhin
+    for (const item of itemsToDelete) {
+      if (item.qcResult) {
+        if (item.qcResult.generalPhotoUrl) await deleteLocalFile(item.qcResult.generalPhotoUrl);
+        if (item.qcResult.damagePhotoUrl) {
+          let oldUrls: string[] = [];
+          try { oldUrls = JSON.parse(item.qcResult.damagePhotoUrl); } 
+          catch { oldUrls = [item.qcResult.damagePhotoUrl]; }
+          for (const u of oldUrls) await deleteLocalFile(u);
+        }
+      }
+    }
+
+    // 3. Hapus data QCResult dulu (mencegah error foreign key)
+    await prisma.qCResult.deleteMany({
+      where: { returnItemId: { in: ids } }
+    });
+
     const result = await prisma.returnItem.deleteMany({
       where: { id: { in: ids } },
     });

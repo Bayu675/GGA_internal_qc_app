@@ -21,6 +21,11 @@ export default function ImportPage() {
 
   const handleUpload = (e: React.FormEvent) => {
     e.preventDefault();
+
+    submitImport(false);
+  };
+
+  const submitImport = (force: boolean) => {
     
     if (!file) {
       setError("Pilih file Excel-nya dulu bro!");
@@ -31,9 +36,18 @@ export default function ImportPage() {
 
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("force", force ? "true" : "false");
 
         startTransition(async () => {
       const result = await importExcelAction(formData);
+
+            if (result.requireConfirmation) {
+        const ok = window.confirm(result.message);
+        if (ok) {
+          submitImport(true); // Panggil lagi tapi paksa masuk (force bypass)
+        }
+        return;
+      }
       
       if (!result.success) {
         setError(result.error || "Gagal upload file Excel");

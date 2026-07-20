@@ -66,7 +66,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ label, onCapture }
 
   const retakePhoto = () => {
     setPhotoPreview(null);
-    onCapture(""); // Clear parent state
+    // onCapture(""); <--- DIBUANG: Ini biang kerok yang masukin string kosong ke array parent
     startCamera();
   };
 
@@ -77,7 +77,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ label, onCapture }
       {hasPermissionError ? (
         <div className="p-4 bg-red-100 text-red-800 text-sm rounded-md text-center">
           Gagal akses kamera! Pastikan browser diizinkan atau pakai HTTPS/ngrok.
-          <Button variant="secondary" className="mt-2 w-full" onClick={startCamera}>Coba Lagi</Button>
+          <Button type="button" variant="secondary" className="mt-2 w-full" onClick={startCamera}>Coba Lagi</Button>
         </div>
       ) : (
         <div className="relative w-full aspect-[4/3] bg-black rounded-md overflow-hidden flex items-center justify-center">
@@ -93,7 +93,7 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ label, onCapture }
                 onLoadedMetadata={() => videoRef.current?.play()}
               />
               {!stream && (
-                <Button variant="primary" onClick={startCamera} className="absolute">
+                <Button type="button" variant="primary" onClick={startCamera} className="absolute">
                   Nyalakan Kamera
                 </Button>
               )}
@@ -108,14 +108,14 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ label, onCapture }
       )}
 
       {stream && !photoPreview && (
-        <Button variant="primary" onClick={capturePhoto} className="w-full mt-2">
+        <Button type="button" variant="primary" onClick={capturePhoto} className="w-full mt-2">
           📸 Jepret Foto
         </Button>
       )}
 
       {photoPreview && (
-        <Button variant="secondary" onClick={retakePhoto} className="w-full mt-2">
-          🔄 Foto Ulang
+        <Button type="button" variant="secondary" onClick={retakePhoto} className="w-full mt-2 border-dashed border-2 border-gray-400">
+          ➕ Lanjut Tambah Foto Lain / 🔄 Foto Ulang
         </Button>
       )}
     </div>
