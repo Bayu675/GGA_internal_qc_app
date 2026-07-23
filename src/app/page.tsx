@@ -1,28 +1,27 @@
+// src/app/page.tsx
 import { prisma } from "@/lib/prisma";
 import Link from "next/link";
-import { Input } from "@/components/Input";
 import { Button } from "@/components/Button";
 import { Pagination } from "@/components/Pagination";
 import { ReturnItemTable } from "@/components/ReturnItemTable";
+import { DashboardFilters } from "@/components/DashboardFilters";
 
-// Next.js App Router convention for Page props containing searchParams
 interface PageProps {
   searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }
 
 export default async function DashboardPage(props: PageProps) {
-  // Next.js 15 requires awaiting searchParams
   const searchParams = await props.searchParams;
 
-  // Parse URL search parameters
   const page = Number(searchParams?.page) || 1;
   const search = typeof searchParams?.search === 'string' ? searchParams.search : '';
   const tab = searchParams?.tab === 'completed' ? 'completed' : 'pending';
   const dateQuery = typeof searchParams?.date === 'string' ? searchParams.date : '';
+  const customerQuery = typeof searchParams?.customer === 'string' ? searchParams.customer : '';
 
   const take = 10;
   const skip = (page - 1) * take;
-  // Setup filter tanggal masuk
+  
   let dateFilter = undefined;
   if (dateQuery) {
     const startDate = new Date(dateQuery);
@@ -31,15 +30,16 @@ export default async function DashboardPage(props: PageProps) {
     dateFilter = { gte: startDate, lt: endDate };
   }
 
-  // Build Prisma where clause based on search and tab filters
+  // Build Prisma where clause
   const whereCondition = {
     AND: [
       ...(dateFilter ? [{ createdAt: dateFilter }] : []),
+      ...(customerQuery ? [{ customerName: customerQuery }] : []), // Filter Toko
       {
         OR: [
           { soNumber: { contains: search } },
           { itemName: { contains: search } },
-          { customerName: { contains: search } },
+          { itemCode: { contains: search } },
         ],
       },
       {
@@ -48,8 +48,8 @@ export default async function DashboardPage(props: PageProps) {
     ],
   };
 
-  // Fetch data and total count concurrently
-  const [items, totalItems] = await Promise.all([
+  // Fetch data (Tabel, Total Data, dan Daftar Unik Toko) secara paralel
+  const [items, totalItems, distinctCustomers] = await Promise.all([
     prisma.returnItem.findMany({
       where: whereCondition,
       take,
@@ -57,66 +57,65 @@ export default async function DashboardPage(props: PageProps) {
       orderBy: { createdAt: 'desc' },
     }),
     prisma.returnItem.count({ where: whereCondition }),
+    prisma.returnItem.findMany({
+      select: { customerName: true },
+      distinct: ['customerName'],
+      orderBy: { customerName: 'asc' }
+    })
   ]);
 
+  const customerList = distinctCustomers.map(c => c.customerName);
   const totalPages = Math.ceil(totalItems / take);
-  const baseUrl = `/?tab=${tab}${search ? `&search=${encodeURIComponent(search)}` : ''}`;
+  const baseUrl = `/?tab=${tab}${search ? `&search=${encodeURIComponent(search)}` : ''}${customerQuery ? `&customer=${encodeURIComponent(customerQuery)}` : ''}${dateQuery ? `&date=${dateQuery}` : ''}`;
 
   return (
-    <main className="min-h-screen bg-gray-50 p-8">
+    <main className="min-h-screen bg-gray-50 p-4 md:p-8">
       <div className="max-w-7xl mx-auto bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-          <h1 className="text-xl md:text-2xl font-bold text-gray-800">Dashboard QC Barang Return</h1>
+        
+        {/* Header App */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+          <div>
+            <h1 className="text-xl md:text-2xl font-bold text-gray-800">Dashboard QC Barang Return</h1>
+            <p className="text-sm text-gray-500">Kelola dan inspeksi barang return dari berbagai toko.</p>
+          </div>
           
           <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
-            {/* Direct link to API Route forces a file download */}
-            <a href="/api/export" target="_blank" rel="noreferrer" className="w-full sm:w-auto">
-              <Button variant="secondary" className="w-full">📥 Export Excel</Button>
-            </a>
-              <Link href="/import" className="w-full sm:w-auto">
-              <Button className="w-full">+ Import Excel</Button>
+            <Link href="/tarik-so" className="w-full sm:w-auto">
+              <Button variant="secondary" className="w-full bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 border-none">
+                🔍 Tarik Data SO
+              </Button>
+            </Link>
+            <Link href="/import" className="w-full sm:w-auto">
+              <Button className="w-full">+ Import Manual</Button>
             </Link>
           </div>
         </div>
 
-        {/* Tabs & Search */}
-        <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-          <div className="flex space-x-2 w-full md:w-auto">
-            <Link href="/?tab=pending" className="flex-1 md:flex-none">
-              <Button 
-                variant={tab === 'pending' ? 'primary' : 'secondary'} 
-                className="w-full"
-              >
-                Belum Dicek
-              </Button>
-            </Link>
-            <Link href="/?tab=completed" className="flex-1 md:flex-none">
-              <Button 
-                variant={tab === 'completed' ? 'primary' : 'secondary'}
-                className="w-full"
-              >
-                Sudah Dicek
-              </Button>
-            </Link>
-          </div>
-
-          <form className="flex w-full md:w-auto gap-2 flex-col sm:flex-row" action="/" method="GET">
-            <input type="hidden" name="tab" value={tab} />
-            <Input type="date" name="date" defaultValue={dateQuery} className="w-full sm:w-auto" />
-            <Input 
-              name="search" 
-              placeholder="Cari SO, Barang, Customer..." 
-              defaultValue={search}
-              className="w-full md:w-80"
-            />
-            <Button type="submit" variant="secondary">Cari</Button>
-          </form>
+        {/* TABS (Pending / Completed) */}
+        <div className="flex space-x-2 w-full md:w-auto mb-4 border-b border-gray-200 pb-4">
+          <Link href="/?tab=pending" className="flex-1 md:flex-none">
+            <Button variant={tab === 'pending' ? 'primary' : 'secondary'} className="w-full">
+              Belum Dicek
+            </Button>
+          </Link>
+          <Link href="/?tab=completed" className="flex-1 md:flex-none">
+            <Button variant={tab === 'completed' ? 'primary' : 'secondary'} className="w-full">
+              Sudah Dicek
+            </Button>
+          </Link>
         </div>
 
-        {/* Data Table */}
+        {/* Komponen Filter Keren Kita (Scanner, Dropdown, Search, Modal) */}
+        <DashboardFilters 
+          tab={tab}
+          initialSearch={search}
+          initialDate={dateQuery}
+          initialCustomer={customerQuery}
+          customerList={customerList}
+        />
+
+        {/* Tabel Data & Pagination */}
         <ReturnItemTable items={items} tab={tab} />
-
-        {/* Pagination */}
         <Pagination currentPage={page} totalPages={totalPages} baseUrl={baseUrl} />
 
       </div>

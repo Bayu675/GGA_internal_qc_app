@@ -3,7 +3,6 @@
 import React from 'react';
 import { Button } from './Button';
 
-// Struktur dasar satu item label
 interface LabelItem {
   customerName: string;
   soNumber: string;
@@ -12,23 +11,17 @@ interface LabelItem {
   height: number;
 }
 
-// Menyatukan tipe: Bisa menerima props satuan (seperti cara lama lo) ATAU props massal (pake array data)
 interface PrintLabelProps {
   customerName?: string;
   soNumber?: string;
   itemCode?: string;
   width?: number;
   height?: number;
-  data?: LabelItem[]; // Untuk cetak massal jika diisi array
+  data?: LabelItem[]; 
 }
 
 export const PrintLabelButton: React.FC<PrintLabelProps> = ({ 
-  customerName, 
-  soNumber, 
-  itemCode, 
-  width, 
-  height,
-  data 
+  customerName, soNumber, itemCode, width, height, data 
 }) => {
   
   const handlePrint = () => {
@@ -45,26 +38,40 @@ export const PrintLabelButton: React.FC<PrintLabelProps> = ({
     const iframeDoc = iframe.contentWindow?.document;
     if (!iframeDoc) return;
 
-    // Menentukan daftar item yang mau dicetak
     let itemsToPrint: LabelItem[] = [];
 
     if (data && Array.isArray(data)) {
-      // Jika dikirim data array (Massal)
       itemsToPrint = data;
     } else if (customerName && soNumber && itemCode && width !== undefined && height !== undefined) {
-      // Jika dikirim eceran/satuan via props individual (Cara lama lo)
       itemsToPrint = [{ customerName, soNumber, itemCode, width, height }];
     }
 
     if (itemsToPrint.length === 0) return;
 
-    // Generate konten HTML untuk semua label yang masuk daftar cetak
+    // Generate HTML dengan tag SVG khusus untuk Barcode
     const labelsHTML = itemsToPrint.map((item) => {
+      // Kita pakai SO Number sebagai value Barcode
+      // Hapus karakter slash (/) sementara untuk barcode jika perlu, atau biarkan. Code128 support karakter /
+      const cleanSO = item.soNumber; 
       const formattedSO = `SO/${item.soNumber.split('/').slice(1).join('/')}`;
+      
       return `
         <div class="print-page">
           <div class="title">${item.customerName.toUpperCase()}</div>
           <div class="so">${formattedSO}</div>
+          
+          <!-- INI AREA UNTUK GARIS BARCODE -->
+          <div class="barcode-container">
+             <svg class="barcode"
+                jsbarcode-value="${cleanSO}"
+                jsbarcode-format="CODE128"
+                jsbarcode-height="40"
+                jsbarcode-width="1.5"
+                jsbarcode-displayvalue="false"
+                jsbarcode-margin="0">
+             </svg>
+          </div>
+
           <div class="footer-row">
             <div class="sku">${item.itemCode}</div>
             <div class="dimension">${item.width}x${item.height}</div>
@@ -73,10 +80,12 @@ export const PrintLabelButton: React.FC<PrintLabelProps> = ({
       `;
     }).join('');
 
+    // Kita inject JsBarcode via CDN dan jalankan otomatis pas iframe diload
     iframeDoc.write(`
       <!DOCTYPE html>
       <html>
         <head>
+          <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
           <style>
             @page {
               size: 80mm 50mm;
@@ -92,7 +101,7 @@ export const PrintLabelButton: React.FC<PrintLabelProps> = ({
             .print-page {
               width: 80mm;
               height: 50mm;
-              padding: 5mm 6mm 4mm 6mm;
+              padding: 3mm 6mm 3mm 6mm;
               box-sizing: border-box;
               display: flex;
               flex-direction: column;
@@ -108,29 +117,45 @@ export const PrintLabelButton: React.FC<PrintLabelProps> = ({
               font-weight: bold;
               margin-bottom: 2px;
               line-height: 1.2;
+              white-space: nowrap;
+              overflow: hidden;
+              text-overflow: ellipsis;
             }
             .so {
-              font-size: 16pt;
+              font-size: 13pt;
               font-weight: bold;
-              margin-bottom: 6px;
+              margin-bottom: 2px;
               line-height: 1.1;
             }
+            .barcode-container {
+              flex-grow: 1;
+              display: flex;
+              align-items: center;
+              justify-content: center;
+              margin-bottom: 2px;
+              width: 100%;
+              overflow: hidden;
+            }
+            .barcode-container svg {
+              width: 100%;
+              max-height: 100%;
+            }
             .footer-row {
-              border-top: 3px solid #000000;
-              padding-top: 5px;
+              border-top: 2px solid #000000;
+              padding-top: 3px;
               display: flex;
               justify-content: space-between;
               align-items: flex-start;
             }
             .sku {
-              font-size: 11pt;
+              font-size: 10pt;
               font-weight: bold;
               line-height: 1.2;
               word-break: break-all;
               padding-right: 6px;
             }
             .dimension {
-              font-size: 11pt;
+              font-size: 10pt;
               font-weight: bold;
               white-space: nowrap;
             }
@@ -138,21 +163,31 @@ export const PrintLabelButton: React.FC<PrintLabelProps> = ({
         </head>
         <body>
           ${labelsHTML}
+          
+          <script>
+            // Begitu script JsBarcode selesai dimuat, kita init garisnya lalu otomatis print
+            window.onload = function() {
+              JsBarcode(".barcode").init();
+              
+              // Kasih jeda dikit biar render SVG nya sempurna sebelum dialog print kebuka
+              setTimeout(() => {
+                window.focus();
+                window.print();
+              }, 300);
+            }
+          </script>
         </body>
       </html>
     `);
     
     iframeDoc.close();
 
-    iframe.contentWindow?.focus();
-    iframe.contentWindow?.print();
-
+    // Hapus iframe setelah dialog print selesai (estimasi 2 detik)
     setTimeout(() => {
-      document.body.removeChild(iframe);
-    }, 1000);
+      try { document.body.removeChild(iframe); } catch(e){}
+    }, 2000);
   };
 
-  // Menentukan jumlah total item untuk label teks tombol
   const totalItems = data ? data.length : 1;
 
   return (

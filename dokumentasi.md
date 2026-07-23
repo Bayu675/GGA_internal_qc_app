@@ -2,93 +2,252 @@
 
 ## 📌 Deskripsi Singkat
 
-Aplikasi web internal (tools) untuk manajemen Quality Control (QC) barang return. Aplikasi ini mengubah proses manual (pengecekan barang, foto via WhatsApp, dan pencatatan keterangan) menjadi sistem digital terpusat.
+Aplikasi web internal (*Warehouse QC Tools*) untuk manajemen Quality Control (QC) barang return yang mengubah proses manual menjadi sistem digital terpusat.
 
-Data awal di-import dari file Excel, staf gudang melakukan pengecekan fisik menggunakan kamera HP langsung dari browser, dan hasil akhirnya dapat di-export kembali menjadi laporan Excel.
+Sistem kini tidak hanya menangani proses inspeksi barang, tetapi juga mengintegrasikan proses penarikan data Sales Order (SO), pencetakan Barcode Label, inspeksi QC, hingga pengambilan keputusan tindak lanjut barang menggunakan konsep **Closed-Loop Barcode Workflow**.
+
+Aplikasi beroperasi menggunakan arsitektur **Microservice** dan terintegrasi dengan **VFP ETL Service (Port 3001)** untuk sinkronisasi data master secara real-time.
 
 ---
 
 # 🛠 Tech Stack
 
-| Komponen | Teknologi |
-|-----------|-----------|
-| Framework | Next.js 15 (App Router) |
-| Language | Strict TypeScript |
-| Styling | Tailwind CSS (Responsive Desktop & Mobile) |
-| Database | SQLite (File-based) |
-| ORM | Prisma |
-| Excel Processor | SheetJS (`xlsx`) |
-| Process Manager | PM2 |
-| Tunneling | Ngrok |
+| Komponen          | Teknologi                          |
+| ----------------- | ---------------------------------- |
+| Framework         | Next.js 15 (App Router)            |
+| Language          | TypeScript (Strict Mode)           |
+| Styling           | Tailwind CSS                       |
+| Database          | SQLite                             |
+| ORM               | Prisma ORM                         |
+| Excel Processor   | SheetJS (`xlsx`)                   |
+| Barcode Generator | JsBarcode                          |
+| Barcode Scanner   | html5-qrcode                       |
+| Process Manager   | PM2                                |
+| HTTPS Tunnel      | Ngrok                              |
+| Backend ETL       | PostgreSQL ETL Service (Port 3001) |
 
 ### Catatan
 
-Ngrok digunakan untuk menyediakan koneksi HTTPS yang diwajibkan browser agar API kamera (`navigator.mediaDevices.getUserMedia`) dapat berjalan di perangkat mobile.
+Ngrok digunakan untuk menyediakan koneksi HTTPS yang diwajibkan browser agar fitur:
+
+* Kamera QC
+* Barcode Scanner
+* Upload Foto
+
+dapat berjalan dengan baik pada perangkat mobile.
+
+---
+
+# 🚀 Arsitektur Sistem (Microservice)
+
+Sistem menggunakan pendekatan Microservice untuk memisahkan aplikasi QC dengan layanan sinkronisasi data ERP/VFP.
+
+### Diagram Arsitektur
+
+```text
+                INTERNET
+                    │
+                    │
+               HTTPS (Ngrok)
+                    │
+                    ▼
+            [HP Staf Gudang]
+                    │
+                    ▼
+        [Next.js App - Port 3000]
+                    │
+                    │ Fetch API
+                    ▼
+       [VFP ETL Service - Port 3001]
+                    │
+                    ▼
+         [PostgreSQL VFP Database]
+```
+
+### Catatan Penting
+
+* Hanya Port `3000` yang di-expose ke internet melalui Ngrok.
+* Port `3001` hanya dapat diakses melalui `localhost`.
+* Database PostgreSQL tidak pernah diakses langsung oleh client.
+* Seluruh komunikasi database dilakukan melalui ETL Service.
+
+Hal ini membuat arsitektur lebih aman dan mudah dikembangkan di kemudian hari.
+
+---
+
+# 🔄 Closed-Loop Barcode Workflow
+
+Sistem menggunakan Barcode 1D (CODE128) sebagai identitas unik barang selama proses QC.
+
+### Alur Sistem
+
+```text
+Tarik Data SO
+       │
+       ▼
+Cetak Barcode Label
+       │
+       ▼
+Tempel Barcode di Barang
+       │
+       ▼
+QC Barang
+       │
+       ▼
+Simpan Hasil QC
+       │
+       ▼
+Scan Barcode
+       │
+       ▼
+Tentukan Resolution
+       │
+       ▼
+Export Report
+       │
+       ▼
+      Selesai
+```
+
+### Barcode Generator
+
+Menggunakan:
+
+```text
+JsBarcode
+```
+
+Barcode akan dibuat secara otomatis berdasarkan:
+
+```text
+Nomor Sales Order (SO)
+```
+
+### Barcode Scanner
+
+Menggunakan:
+
+```text
+html5-qrcode
+```
+
+dengan dukungan:
+
+* Hardware Acceleration
+* Native Barcode Detector API
+* Kamera HP Android
+* Kamera Laptop/Desktop
+
+### Auto Filtering
+
+Hasil Barcode Scan akan:
+
+```text
+Barcode Scan
+      ↓
+Nomor SO
+      ↓
+Debounced Search
+      ↓
+Dashboard Filter
+      ↓
+Menampilkan 1 Data Barang
+```
 
 ---
 
 # 🚀 Fitur Utama
 
-## 1. Import Data Master (Excel)
+## 1. Tarik Data Sales Order (API ETL)
 
 ### Tujuan
-Mengimpor daftar Sales Order (SO) barang return dari file Excel ke database.
+
+Mengambil data master barang return secara otomatis dari sistem ERP/VFP.
 
 ### Fitur
 
-- Upload file Excel (`.xlsx`)
-- Parsing dilakukan menggunakan **Server Actions Next.js**
-- Menghindari beban parsing di browser client
-- Menghindari konflik Webpack saat memproses file Excel
-- Data otomatis disimpan ke database
-- Status awal otomatis:
+* Input Nomor SO
+* Sinkronisasi data melalui API
+* Diagnostik koneksi API
+* Validasi endpoint ETL
+* Penarikan data secara real-time
+
+### Arsitektur
 
 ```text
-PENDING
+Next.js
+   ↓
+Fetch API
+   ↓
+ETL Service
+   ↓
+PostgreSQL
+   ↓
+ReturnItem
 ```
 
 ---
 
-## 2. Dashboard Interaktif (Responsive)
+## 2. Dashboard Interaktif
 
-### Desktop View
-
-Menggunakan tampilan tabel (table view) standar.
-
-### Mobile View
-
-Tabel otomatis berubah menjadi card view agar lebih nyaman digunakan pada layar HP dan menghindari horizontal scroll.
+Dashboard dirancang untuk mendukung penggunaan Desktop maupun Mobile.
 
 ### Fitur Dashboard
 
 #### Filter Status
 
-Memisahkan data berdasarkan:
+* PENDING
+* GOOD
+* BAD
+* PARTIAL_GOOD
 
-- PENDING (Belum Dicek)
-- GOOD
-- BAD
-- PARTIAL_GOOD
+#### Filter Resolution
+
+* DIJUAL_KEMBALI
+* SCRAP
 
 #### Search
 
-Pencarian real-time berdasarkan:
+Pencarian berdasarkan:
 
-- Nomor SO
-- Nama Barang
-- Nama Customer
+* Nomor SO
+* Nama Barang
+* Customer
+* Nama Toko
+
+#### Advanced Filtering
+
+Filter berdasarkan:
+
+* Toko
+* Status QC
+* Resolution
+* Rentang Tanggal
+
+#### Debounced Search
+
+Sistem menggunakan delay:
+
+```text
+500 ms
+```
+
+untuk:
+
+* Mengurangi over-fetching database.
+* Meningkatkan performa SQLite.
+* Memberikan pengalaman pencarian yang lebih responsif.
 
 #### Bulk Delete
 
-Fitur hapus massal menggunakan checkbox untuk membersihkan data yang salah import.
+Digunakan untuk:
+
+* Membersihkan data salah import.
+* Menghapus data secara massal.
 
 ---
 
-## 3. Form QC & Custom Web Camera
-
-### Tujuan
-
-Memungkinkan staf gudang melakukan pengecekan langsung dari browser tanpa perlu membuka aplikasi kamera bawaan perangkat.
+## 3. Form QC & Kamera Browser
 
 ### Teknologi
 
@@ -100,7 +259,10 @@ navigator.mediaDevices.getUserMedia()
 
 #### Foto Barang Utama
 
-Mengambil foto keseluruhan kondisi barang.
+Digunakan untuk:
+
+* Foto keseluruhan barang.
+* Dokumentasi kondisi fisik.
 
 #### Logika Kondisional
 
@@ -116,178 +278,254 @@ atau
 PARTIAL_GOOD
 ```
 
-maka sistem akan menampilkan field tambahan:
+maka sistem akan menampilkan:
 
-- Upload foto kerusakan/minus
-- Mendukung multi-photo
-- Input catatan/keterangan kerusakan
+* Upload foto kerusakan
+* Multi-photo support
+* Damage Notes
 
 ### Penyimpanan Foto
 
-Alur penyimpanan:
-
 ```text
 Camera
-↓
+   ↓
 Base64
-↓
+   ↓
 Convert JPG
-↓
+   ↓
 public/uploads/
 ```
 
-Foto disimpan sebagai file fisik `.jpg` pada server lokal.
+Seluruh foto akan disimpan sebagai file `.jpg` pada server lokal.
 
 ---
 
-## 4. Fitur Edit Terpusat
+## 4. Barcode Scanner
 
-### Tujuan
+Scanner dapat digunakan melalui:
 
-Mengubah data master dan hasil QC dalam satu form.
+* HP Android
+* Laptop
+* Desktop dengan Webcam
 
-### Data yang Dapat Diedit
+### Workflow
 
-#### Master Data
+```text
+Scan Barcode
+      ↓
+Nomor SO
+      ↓
+Dashboard Search
+      ↓
+Menampilkan Data Barang
+      ↓
+Input Resolution
+      ↓
+Simpan
+```
 
-- Nomor SO
-- Customer
-- Kode Barang
-- Nama Barang
-- Ukuran
-- Qty
+### Keuntungan
 
-#### Hasil QC
+* Mempercepat pencarian data.
+* Mengurangi human error.
+* Memudahkan operasional gudang.
 
-- Status
-- Foto Barang
-- Foto Kerusakan
-- Notes/Keterangan
+---
+
+## 5. Thermal Label Printing
+
+Ukuran label:
+
+```text
+80 x 50 mm
+```
+
+Informasi yang dicetak:
+
+* Nomor SO
+* Informasi Barang
+* Barcode CODE128
+
+### Workflow
+
+```text
+Generate Barcode
+       ↓
+Print Label
+       ↓
+Tempel pada Barang
+       ↓
+Digunakan untuk QC
+       ↓
+Digunakan untuk Resolution
+```
+
+---
+
+## 6. Resolution Management
+
+Fitur terbaru yang digunakan untuk menentukan keputusan akhir barang.
+
+### Resolution Status
+
+| Status         | Keterangan                     |
+| -------------- | ------------------------------ |
+| (Kosong)       | Menunggu keputusan             |
+| DIJUAL_KEMBALI | Barang kembali masuk stok jual |
+| SCRAP          | Barang dimusnahkan / dibuang   |
+
+### Workflow
+
+```text
+QC Selesai
+      ↓
+Scan Barcode
+      ↓
+Buka Detail Barang
+      ↓
+Pilih Resolution
+      ↓
+Simpan
+```
+
+---
+
+## 7. Export Report (Enterprise)
+
+Laporan Excel dapat dibuat secara spesifik berdasarkan:
+
+* Nama Toko
+* Rentang Tanggal
+* Status QC
+* Resolution
+
+### Workflow
+
+```text
+Filter Dashboard
+       ↓
+Generate Excel
+       ↓
+Server Action
+       ↓
+Translate Status
+       ↓
+Download Excel
+```
+
+### Terjemahan Status
+
+Status database:
+
+```text
+DIJUAL_KEMBALI
+```
+
+akan diterjemahkan menjadi:
+
+```text
+Dijual Kembali
+```
+
+agar lebih mudah dibaca oleh pihak Management.
+
+---
+
+# 🗄 Struktur Database
+
+Sistem menggunakan relasi:
+
+```text
+ReturnItem (1)
+        │
+        ▼
+   QCResult (1)
+```
+
+---
+
+## Model : ReturnItem
+
+Digunakan untuk menyimpan data master hasil sinkronisasi API ETL.
+
+### Fields
+
+| Field        | Keterangan     |
+| ------------ | -------------- |
+| id           | Primary Key    |
+| soNumber     | Nomor SO       |
+| customerName | Nama Customer  |
+| itemCode     | Kode Barang    |
+| itemName     | Nama Barang    |
+| width        | Lebar          |
+| height       | Tinggi         |
+| qtyOrder     | Quantity Order |
+| qcStatus     | Status QC      |
+
+---
+
+## Model : QCResult
+
+Digunakan untuk menyimpan hasil inspeksi QC dan keputusan akhir barang.
+
+| Field           | Tipe Data | Keterangan                |
+| --------------- | --------- | ------------------------- |
+| returnItemId    | String    | Foreign Key               |
+| finalStatus     | String    | GOOD / BAD / PARTIAL_GOOD |
+| generalPhotoUrl | String    | Foto Barang               |
+| damagePhotoUrl  | String?   | Foto Kerusakan            |
+| damageNotes     | String?   | Catatan Kerusakan         |
+| resolution      | String?   | DIJUAL_KEMBALI / SCRAP    |
+| processedAt     | DateTime  | Waktu QC Selesai          |
+
+---
+
+# 📷 Penyimpanan Foto
+
+Lokasi penyimpanan:
+
+```text
+public/uploads/
+```
 
 ### Smart Storage Cleanup
 
-Saat foto lama:
+Apabila foto:
 
-- Dihapus
-- Diganti
+* Diganti
+* Dihapus
 
-maka sistem otomatis menghapus file fisik lama dari server menggunakan:
+maka sistem akan otomatis menjalankan:
 
 ```javascript
 fs.unlink()
 ```
 
-### Manfaat
+untuk:
 
-- Menghemat storage
-- Mencegah file orphan/sampah menumpuk
-- Menjaga performa server
-
----
-
-## 5. Export Report (Excel)
-
-### Tujuan
-
-Menghasilkan laporan QC lengkap yang menggabungkan data master dan hasil inspeksi.
-
-### Output
-
-File Excel (`.xlsx`) yang berisi:
-
-- Data master barang
-- Status QC
-- Foto barang
-- Foto kerusakan
-- Notes/Keterangan minus
-
-### Proses
-
-```text
-Master Data
-+
-QC Result
-↓
-Generate Excel
-↓
-Download Otomatis
-```
+* Menghapus file lama.
+* Mencegah file orphan.
+* Menghemat storage server.
 
 ---
 
-# 🗄 Struktur Database (Prisma Schema)
-
-Sistem menggunakan relasi **1-to-1** antara data master hasil import dan data hasil QC.
-
----
-
-## Model: ReturnItem
-
-Menyimpan data master yang berasal dari file Excel.
-
-### Fields
-
-| Field | Keterangan |
-|---------|---------|
-| id | Primary Key |
-| soNumber | Nomor Sales Order |
-| customerName | Nama Customer |
-| itemCode | Kode Barang |
-| itemName | Nama Barang |
-| width | Lebar |
-| height | Tinggi |
-| qtyOrder | Quantity Order |
-| qcStatus | Status QC |
-
----
-
-## Model: QCResult
-
-Menyimpan hasil pemeriksaan QC.
-
-### Fields
-
-| Field | Keterangan |
-|---------|---------|
-| returnItemId | Foreign Key ke ReturnItem |
-| finalStatus | GOOD / BAD / PARTIAL_GOOD |
-| generalPhotoUrl | Path foto keseluruhan barang |
-| damagePhotoUrl | JSON Array path foto kerusakan |
-| damageNotes | Catatan kerusakan |
-
-### Relasi
-
-```text
-ReturnItem (1)
-      │
-      │
-      ▼
-QCResult (1)
-```
-
----
-
-# 💻 Panduan Deployment (Local Server)
-
-Aplikasi dijalankan pada laptop server lokal dan diakses melalui internet menggunakan Ngrok.
-
----
+# 💻 Panduan Deployment
 
 ## Instalasi Awal
 
-### 1. Update Source Code
+### Update Source Code
 
 ```bash
 git pull origin main
 ```
 
-### 2. Install Dependencies
+### Install Dependencies
 
 ```bash
 npm install
 ```
 
-### 3. Sinkronisasi Database
+### Sinkronisasi Database
 
 ```bash
 npx prisma db push
@@ -295,23 +533,21 @@ npx prisma db push
 
 ---
 
-## Build & Run (Production)
-
-Wajib dijalankan pada mode production untuk performa terbaik.
-
-### 1. Build Aplikasi
+## Build Production
 
 ```bash
 npm run build
 ```
 
-### 2. Jalankan dengan PM2
+---
+
+## Jalankan dengan PM2
 
 ```bash
 pm2 start npm --name "return-qc-app" -- start
 ```
 
-### 3. Simpan Konfigurasi PM2
+### Simpan Konfigurasi PM2
 
 ```bash
 pm2 save
@@ -320,53 +556,41 @@ pm2 startup
 
 ---
 
-# 🌐 Expose ke Internet (Akses Kamera HP)
+# 🔄 Update Schema Database
 
-Jalankan Ngrok:
+Apabila terdapat perubahan struktur database, wajib menjalankan:
+
+```bash
+git pull origin main
+npm install
+npx prisma db push
+npm run build
+pm2 restart return-qc-app
+```
+
+> **Catatan:** Penambahan field `resolution` pada model `QCResult` mewajibkan sinkronisasi schema menggunakan `npx prisma db push`.
+
+---
+
+# 🌐 Expose ke Internet
+
+Jalankan:
 
 ```bash
 ngrok http 3000
 ```
 
-### Catatan Penting
+Contoh:
 
-Bagikan URL HTTPS yang dihasilkan Ngrok kepada staf gudang.
-
-API kamera browser (WebRTC) mewajibkan koneksi HTTPS untuk dapat berjalan.
-
----
-
-# 🔄 Prosedur Update Kode (Git Workflow)
-
-## Tujuan
-
-Memastikan database lokal dan file foto tidak hilang saat deployment update.
-
-### Pastikan `.gitignore` Berisi
-
-```gitignore
-*.db
-public/uploads/
+```text
+https://abc123.ngrok-free.app
 ```
 
-### Workflow Development
+Browser mewajibkan HTTPS untuk menjalankan:
 
-#### Di Laptop Development
-
-```bash
-git add .
-git commit -m "update fitur"
-git push origin main
-```
-
-#### Di Laptop Server
-
-```bash
-git pull origin main
-npm install
-npm run build
-pm2 restart return-qc-app
-```
+* Kamera QC
+* Barcode Scanner
+* Upload Foto
 
 ---
 
@@ -380,19 +604,16 @@ project-root/
 │
 ├── public/
 │   └── uploads/
-│       ├── photo-1.jpg
-│       ├── photo-2.jpg
-│       └── ...
 │
 ├── app/
-│
 ├── actions/
-│
+├── components/
 ├── lib/
 │
 ├── dev.db
-│
-└── package.json
+├── package.json
+├── README.md
+└── dokumentasi.md
 ```
 
 ---
@@ -400,42 +621,52 @@ project-root/
 # 📋 Alur Sistem (End-to-End)
 
 ```text
-Import Excel
+Tarik Data SO
       │
       ▼
-Database (Status: PENDING)
+Sinkronisasi API ETL
       │
       ▼
 Dashboard QC
       │
       ▼
-Foto Barang + Input Status
+Cetak Barcode Label
+      │
+      ▼
+QC Barang
       │
       ▼
 Simpan Hasil QC
       │
       ▼
-Foto Tersimpan di Server
+Scan Barcode
       │
       ▼
-Export Laporan Excel
+Tentukan Resolution
       │
       ▼
-Selesai
+Export Report Excel
+      │
+      ▼
+      Selesai
 ```
 
 ---
 
 # 🎯 Single Source of Truth
 
-Dokumen ini merupakan referensi utama (Single Source of Truth) untuk:
+Dokumen ini merupakan referensi utama (*Single Source of Truth*) untuk:
 
-- Arsitektur sistem
-- Struktur database
-- Workflow QC
-- Deployment server
-- Git workflow
-- Pengelolaan file foto
-- Export laporan
+* Arsitektur Sistem
+* Integrasi API ETL
+* Struktur Database
+* Workflow QC
+* Closed-Loop Barcode System
+* Barcode Scanner
+* Resolution Management
+* Deployment Server
+* Git Workflow
+* Pengelolaan File Foto
+* Export Report
 
-Setiap perubahan fitur atau perubahan arsitektur wajib diperbarui pada dokumen ini agar tetap menjadi sumber dokumentasi yang akurat dan terkini.
+Seluruh perubahan fitur dan perubahan arsitektur sistem wajib diperbarui pada dokumen ini agar tetap menjadi sumber dokumentasi yang akurat, konsisten, dan terkini.

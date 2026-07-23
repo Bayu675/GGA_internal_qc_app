@@ -234,3 +234,23 @@ export async function editItemAction(payload: EditItemPayload) {
     return { success: false, error: "Gagal menyimpan perubahan data" };
   }
 }
+
+// Tambahkan di paling bawah src/app/actions.ts
+
+export async function updateResolutionAction(returnItemId: string, resolutionType: "DIJUAL_KEMBALI" | "SCRAP") {
+  try {
+    await prisma.qCResult.update({
+      where: { returnItemId: returnItemId },
+      data: { resolution: resolutionType }
+    });
+
+    // Refresh halaman biar UI nya langsung berubah
+    revalidatePath("/");
+    revalidatePath(`/qc/${returnItemId}`);
+    
+    return { success: true };
+  } catch (error: any) {
+    console.error("Update Resolution Error:", error);
+    return { success: false, error: "Gagal menyimpan tindakan lanjut." };
+  }
+}

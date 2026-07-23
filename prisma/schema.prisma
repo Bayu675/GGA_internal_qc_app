@@ -31,4 +31,5 @@ model QCResult {
   damagePhotoUrl  String?
   damageNotes     String?
   processedAt     DateTime   @default(now())
+  resolution      String? 
 }

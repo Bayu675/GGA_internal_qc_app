@@ -2,70 +2,105 @@
 
 Sistem manajemen Quality Control (QC) barang return berbasis web yang dirancang untuk menggantikan proses manual pengecekan barang, dokumentasi foto, dan pencatatan hasil inspeksi menjadi satu platform terpusat.
 
+Kini dilengkapi dengan **Ekosistem Barcode Tertutup (Closed-loop)** dan **Integrasi API VFP (Postgres ETL)** untuk mempercepat operasional gudang mulai dari penarikan data SO, inspeksi QC, pencetakan barcode, hingga eksekusi tindak lanjut barang.
+
 ---
 
 ## ✨ Fitur Utama
 
-- Import data master dari file Excel
-- Dashboard responsif (Desktop & Mobile)
-- Pencarian data real-time
-- Filter status QC
-- Bulk delete data
-- Kamera langsung dari browser HP
-- Multi-photo untuk barang rusak/minus
-- Catatan kerusakan (damage notes)
-- Edit data master dan hasil QC
-- Auto cleanup file foto yang tidak digunakan
-- Export laporan hasil QC ke Excel
-- Print Thermal Label 80x50mm untuk Pendataan 
+### Fitur Terbaru
+
+* **[NEW]** Integrasi API Tarik SO Otomatis dari Server VFP (Postgres ETL)
+* **[NEW]** Barcode Scanner In-App menggunakan kamera HP (`html5-qrcode`)
+* **[NEW]** Print Thermal Label 80x50mm dengan Barcode CODE128
+* **[NEW]** Status Tindak Lanjut Barang (`DIJUAL_KEMBALI` & `SCRAP`)
+* **[NEW]** Advanced Filter Dashboard (Dropdown Toko & Real-time Search)
+* **[NEW]** Export Excel Dinamis berdasarkan Toko & Rentang Tanggal
+* **[NEW]** Fitur Diagnostik & Cek Koneksi API ETL pada halaman Tarik SO
+
+### Fitur Existing
+
+* Import data master dari file Excel
+* Dashboard responsif (Desktop & Mobile)
+* Pencarian data secara real-time
+* Filter data berdasarkan Status QC
+* Bulk delete data
+* Kamera QC langsung dari browser HP
+* Multi-photo untuk barang rusak/minus
+* Catatan kerusakan (*Damage Notes*)
+* Edit data master dan hasil QC
+* Auto cleanup file foto yang tidak digunakan
+* Export laporan hasil QC ke Excel
+* Print Thermal Label 80x50mm untuk pendataan barang
 
 ---
 
 ## 🏗 Tech Stack
 
-- Next.js 15 (App Router)
-- TypeScript (Strict Mode)
-- Tailwind CSS
-- Prisma ORM
-- SQLite Database
-- SheetJS (xlsx)
-- PM2
-- Ngrok
+* Next.js 15 (App Router)
+* TypeScript (Strict Mode)
+* Tailwind CSS
+* Prisma ORM
+* SQLite Database
+* SheetJS (xlsx)
+* html5-qrcode
+* JsBarcode
+* PM2
+* Ngrok
 
 ---
 
 ## 📦 Instalasi
 
-### Clone Repository
+### 1. Clone Repository
 
 ```bash
 git clone <repository-url>
 cd return-qc-app
 ```
 
-### Install Dependencies
+### 2. Install Dependencies
 
 ```bash
 npm install
 ```
 
-### Setup Database
+### 3. Setup Database
 
 ```bash
 npx prisma db push
 ```
 
-### Jalankan Development Server
+### 4. Jalankan Development Server
 
 ```bash
 npm run dev
 ```
 
-Aplikasi akan berjalan di:
+Aplikasi akan berjalan pada:
 
 ```text
 http://localhost:3000
 ```
+
+---
+
+## ⚙ Persyaratan Integrasi API ETL
+
+Untuk menggunakan fitur **Tarik Data Sales Order (SO)**, pastikan Backend ETL telah berjalan pada:
+
+```text
+http://localhost:3001
+```
+
+> Aplikasi Return QC bertindak sebagai **Client** yang menarik data dari Microservice ETL tersebut.
+
+Pastikan:
+
+* Backend ETL telah aktif.
+* Port `3001` dapat diakses.
+* Endpoint API ETL berjalan dengan baik.
+* Status koneksi dapat dicek melalui fitur diagnostik pada halaman Tarik SO.
 
 ---
 
@@ -110,6 +145,12 @@ Contoh:
 https://abc123.ngrok-free.app
 ```
 
+Fitur yang membutuhkan akses kamera:
+
+* Kamera QC Barang
+* Barcode Scanner
+* Upload Foto Kerusakan
+
 ---
 
 ## 📂 Struktur Folder
@@ -131,57 +172,119 @@ https://abc123.ngrok-free.app
 
 ---
 
-## 🔄 Workflow Penggunaan
+## 🔄 Workflow Penggunaan (Closed-Loop)
 
-### 1. Import Excel
-
-Upload file Excel berisi data barang return.
-
-### 2. QC Barang
+### 1. Tarik Data Sales Order
 
 Staf melakukan:
 
-- Foto barang
-- Menentukan status QC
-- Menambahkan foto kerusakan
-- Menambahkan catatan
+* Input Nomor Sales Order
+* Menarik data dari ERP/VFP melalui API ETL
+* Melakukan validasi data barang return
 
-### 3. Simpan Hasil
+### 2. Cetak Barcode Label
 
-Data tersimpan ke database dan foto tersimpan ke server lokal.
+Staf mencetak Thermal Label berukuran `80x50mm` yang berisi:
 
-### 4. Export Report
+* Nomor SO
+* Informasi barang
+* Barcode CODE128
 
-Generate laporan Excel hasil QC.
+Label kemudian ditempelkan pada barang fisik.
+
+### 3. QC Barang
+
+Staf melakukan:
+
+* Foto barang
+* Menentukan Status QC
+* Menambahkan foto kerusakan
+* Menambahkan catatan kerusakan (*Damage Notes*)
+
+Status QC yang tersedia:
+
+* `PENDING`
+* `GOOD`
+* `BAD`
+* `PARTIAL_GOOD`
+
+### 4. Simpan Hasil QC
+
+Sistem akan:
+
+* Menyimpan data ke database
+* Menyimpan foto ke storage lokal
+* Membersihkan file foto lama secara otomatis apabila diganti atau dihapus
+
+### 5. Eksekusi Tindak Lanjut
+
+Setelah QC selesai, atasan dapat menentukan tindak lanjut barang.
+
+Pilihan yang tersedia:
+
+| Resolution     | Keterangan                     |
+| -------------- | ------------------------------ |
+| (Kosong)       | Menunggu keputusan             |
+| DIJUAL_KEMBALI | Barang kembali masuk stok jual |
+| SCRAP          | Barang dimusnahkan / dibuang   |
+
+Proses dilakukan dengan:
+
+* Scan Barcode menggunakan HP
+* Membuka detail barang
+* Menentukan status tindak lanjut
+
+### 6. Reporting
+
+Laporan dapat diexport ke Excel berdasarkan:
+
+* Toko
+* Rentang Tanggal
+* Status QC
+* Status Resolution
 
 ---
 
-## 📊 Status QC
+## 📊 Mapping Status Sistem
 
-| Status | Keterangan |
-|----------|----------|
-| PENDING | Belum dicek |
-| GOOD | Barang sesuai |
-| BAD | Barang rusak |
+### Status QC
+
+| Status       | Keterangan            |
+| ------------ | --------------------- |
+| PENDING      | Belum dicek fisik     |
+| GOOD         | Barang sesuai         |
+| BAD          | Barang rusak          |
 | PARTIAL_GOOD | Sebagian barang rusak |
+
+### Status Tindak Lanjut (Resolution)
+
+| Status         | Keterangan                     |
+| -------------- | ------------------------------ |
+| (Kosong)       | Menunggu keputusan atasan      |
+| DIJUAL_KEMBALI | Barang kembali masuk stok jual |
+| SCRAP          | Barang dimusnahkan / dibuang   |
 
 ---
 
 ## 📷 Penyimpanan Foto
 
-Semua foto disimpan pada:
+Seluruh foto QC disimpan pada:
 
 ```text
 public/uploads/
 ```
 
-Jika foto diganti atau dihapus, sistem akan otomatis menghapus file lama dari storage untuk menghindari file sampah.
+Sistem akan secara otomatis:
+
+* Menghapus file foto yang sudah tidak digunakan.
+* Membersihkan file lama apabila dilakukan penggantian foto.
+* Menghindari penumpukan file sampah pada storage.
 
 ---
 
 ## 🛡 File yang Tidak Boleh Masuk Git
 
-Pastikan `.gitignore` berisi:
+Pastikan file `.gitignore` berisi:
 
 ```gitignore
 *.db
@@ -194,7 +297,7 @@ node_modules/
 
 ## 🔄 Update Deployment
 
-Di server:
+Pada server jalankan:
 
 ```bash
 git pull origin main
@@ -215,16 +318,19 @@ dokumentasi.md
 
 Dokumen tersebut menjadi **Single Source of Truth** untuk:
 
-- Arsitektur Sistem
-- Database
-- Workflow QC
-- Deployment
-- Git Workflow
-- Pengelolaan Foto
-- Export Report
+* Arsitektur Sistem
+* Database Schema
+* Integrasi API ETL
+* Workflow QC
+* Sistem Barcode
+* Deployment
+* Git Workflow
+* Pengelolaan Foto
+* Export Report
+* Status Resolution Barang
 
 ---
 
 ## 👨‍💻 Author
 
-Internal Warehouse QC Tools
+**Bayu A.K.A Ryu**

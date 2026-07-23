@@ -1,0 +1,3118 @@
+This file is a merged representation of a subset of the codebase, containing files not matching ignore patterns, combined into a single document by Repomix.
+
+<file_summary>
+This section contains a summary of this file.
+
+<purpose>
+This file contains a packed representation of a subset of the repository's contents that is considered the most important context.
+It is designed to be easily consumable by AI systems for analysis, code review,
+or other automated processes.
+</purpose>
+
+<file_format>
+The content is organized as follows:
+1. This summary section
+2. Repository information
+3. Directory structure
+4. Repository files (if enabled)
+5. Multiple file entries, each consisting of:
+  - File path as an attribute
+  - Full contents of the file
+</file_format>
+
+<usage_guidelines>
+- This file should be treated as read-only. Any changes should be made to the
+  original repository files, not this packed version.
+- When processing this file, use the file path to distinguish
+  between different files in the repository.
+- Be aware that this file may contain sensitive information. Handle it with
+  the same level of security as you would the original repository.
+</usage_guidelines>
+
+<notes>
+- Some files may have been excluded based on .gitignore rules and Repomix's configuration
+- Binary files are not included in this packed representation. Please refer to the Repository Structure section for a complete list of file paths, including binary files
+- Files matching these patterns are excluded: *.db, prisma/*.db, public/uploads/**, public/*.svg, package-lock.json
+- Files matching patterns in .gitignore are excluded
+- Files matching default ignore patterns are excluded
+- Files are sorted by Git change count (files with more changes are at the bottom)
+</notes>
+
+</file_summary>
+
+<directory_structure>
+prisma/
+  schema.prisma
+src/
+  app/
+    api/
+      export/
+        route.ts
+      import/
+        route.ts
+    edit/
+      [id]/
+        page.tsx
+    import/
+      actions.ts
+      page.tsx
+    qc/
+      [id]/
+        page.tsx
+    actions.ts
+    favicon.ico
+    globals.css
+    layout.tsx
+    page.tsx
+  components/
+    Button.tsx
+    CameraCapture.tsx
+    EditForm.tsx
+    Input.tsx
+    Pagination.tsx
+    PrintLabelButton.tsx
+    QCForm.tsx
+    ReturnItemTable.tsx
+  lib/
+    api-utils.ts
+    prisma.ts
+.gitignore
+dokumentasi.md
+ecosystem.config.js
+eslint.config.mjs
+next-env.d.ts
+next.config.ts
+package.json
+postcss.config.mjs
+prisma.config.ts
+README.md
+repomix.config.json
+tsconfig.json
+</directory_structure>
+
+<files>
+This section contains the contents of the repository's files.
+
+<file path="repomix.config.json">
+{
+  "output": {
+    "filePath": "repomix-output.xml",
+    "style": "xml"
+  },
+  "ignore": {
+    "useGitignore": true,
+    "customPatterns": [
+      "*.db",
+      "prisma/*.db",
+      "public/uploads/**",
+      "public/*.svg",
+      "package-lock.json"
+    ]
+  }
+}
+</file>
+
+<file path="src/app/api/export/route.ts">
+import { NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { utils, write } from 'xlsx';
+
+export async function GET() {
+  try {
+    // 1. Fetch all items that have been processed (Not PENDING)
+    const items = await prisma.returnItem.findMany({
+      where: { qcStatus: { not: 'PENDING' } },
+      include: { qcResult: true },
+      orderBy: { qcResult: { processedAt: 'desc' } }, // Urutkan dari yang terbaru di-QC
+    });
+
+    if (items.length === 0) {
+      return new NextResponse("Belum ada data barang return yang selesai di-QC.", { status: 400 });
+    }
+
+    // 2. Map data into the exact format requested
+    const excelData = items.map((item, index) => {
+      // Format Date: YYYY-MM-DD
+      const dateStr = item.qcResult 
+        ? new Date(item.qcResult.processedAt).toISOString().split('T')[0] 
+        : '-';
+
+      return {
+        "NO": index + 1,
+        "tanggal terima barang": dateStr,
+        "SALES ORDER": item.soNumber,
+        "Kode SKU Barang": item.itemCode,
+        "Nama Barang": item.itemName,
+        "LEBAR": item.width,
+        "TINGGI": item.height,
+        "QTY ORDER": item.qtyOrder,
+        "Status": item.qcStatus,
+        "Notes": item.qcResult?.damageNotes || "-",
+      };
+    });
+
+    // 3. Create Workbook & Worksheet
+    const worksheet = utils.json_to_sheet(excelData);
+    const workbook = utils.book_new();
+    utils.book_append_sheet(workbook, worksheet, "Data QC Barang");
+
+    // 4. Generate Excel Buffer
+    const excelBuffer = write(workbook, { type: 'buffer', bookType: 'xlsx' });
+
+    // 5. Send file directly as a downloadable response
+    return new NextResponse(excelBuffer, {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'Content-Disposition': `attachment; filename="Export_QC_Return_${new Date().toISOString().split('T')[0]}.xlsx"`,
+      },
+    });
+
+  } catch (error: unknown) {
+    console.error("Export Action Error:", error);
+    return new NextResponse("Internal Server Error saat export data", { status: 500 });
+  }
+}
+</file>
+
+<file path="src/app/api/import/route.ts">
+import { NextRequest, NextResponse } from "next/server";
+import { read, utils } from "xlsx";
+import { prisma } from "@/lib/prisma";
+import { AppError, asyncHandler } from "@/lib/api-utils";
+
+// Interface representing the expected raw Excel row
+interface RawExcelRow {
+  "No. SO"?: string;
+  Customer?: string;
+  "Kode Barang"?: string;
+  "Nama Barang"?: string;
+  Lebar?: string | number;
+  Tinggi?: string | number;
+  "Qty Order"?: string | number;
+}
+
+// Interface for the sanitized data ready for database insertion
+interface CreateReturnItemInput {
+  soNumber: string;
+  customerName: string;
+  itemCode: string;
+  itemName: string;
+  width: number;
+  height: number;
+  qtyOrder: number;
+}
+
+const importExcelHandler = async (req: NextRequest): Promise<NextResponse> => {
+  const formData = await req.formData();
+  const file = formData.get("file") as File | null;
+
+  if (!file) {
+    throw new AppError("No file uploaded", 400);
+  }
+
+  // Convert File to Buffer for xlsx parser
+  const arrayBuffer = await file.arrayBuffer();
+  const buffer = Buffer.from(arrayBuffer);
+
+  // Parse the workbook
+  const workbook = read(buffer, { type: "buffer" });
+  if (workbook.SheetNames.length === 0) {
+    throw new AppError("Excel file is empty", 400);
+  }
+
+  // Read the first sheet
+  const firstSheetName = workbook.SheetNames[0];
+  const worksheet = workbook.Sheets[firstSheetName];
+  
+  // Convert sheet to JSON array
+  const rawData = utils.sheet_to_json<RawExcelRow>(worksheet, { defval: "" });
+
+  if (rawData.length === 0) {
+    throw new AppError("No data found in the Excel sheet", 400);
+  }
+
+  // Sanitize and map data
+  const sanitizedData: CreateReturnItemInput[] = [];
+
+  for (const row of rawData) {
+    // Skip empty rows by checking primary identifier
+    if (!row["No. SO"]) continue;
+
+    sanitizedData.push({
+      soNumber: String(row["No. SO"]).trim(),
+      customerName: String(row["Customer"] || "-").trim(),
+      itemCode: String(row["Kode Barang"] || "-").trim(),
+      itemName: String(row["Nama Barang"] || "-").trim(),
+      width: Number(row["Lebar"]) || 0,
+      height: Number(row["Tinggi"]) || 0,
+      qtyOrder: Number(row["Qty Order"]) || 1,
+    });
+  }
+
+  if (sanitizedData.length === 0) {
+    throw new AppError("No valid rows found to import", 400);
+  }
+
+  // Batch insert into SQLite using Prisma
+  const result = await prisma.returnItem.createMany({
+    data: sanitizedData,
+  });
+
+  return NextResponse.json({
+    success: true,
+    message: `Successfully imported ${result.count} items`,
+    data: { count: result.count },
+  }, { status: 201 });
+};
+
+// Export the wrapped handler for the POST method
+export async function POST(request: NextRequest, context: { params: Promise<Record<string, string>> }) {
+  return asyncHandler(importExcelHandler)(request, context);  
+}
+</file>
+
+<file path="src/app/layout.tsx">
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
+import "./globals.css";
+
+const geistSans = Geist({
+  variable: "--font-geist-sans",
+  subsets: ["latin"],
+});
+
+const geistMono = Geist_Mono({
+  variable: "--font-geist-mono",
+  subsets: ["latin"],
+});
+
+export const metadata: Metadata = {
+  title: "Create Next App",
+  description: "Generated by create next app",
+};
+
+export default function RootLayout({
+  children,
+}: Readonly<{
+  children: React.ReactNode;
+}>) {
+  return (
+    <html
+      lang="en"
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+    >
+      <body className="min-h-full flex flex-col">{children}</body>
+    </html>
+  );
+}
+</file>
+
+<file path="src/components/Button.tsx">
+import React, { ButtonHTMLAttributes } from 'react';
+
+// Strict interface extending default HTML button attributes
+interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
+  variant?: 'primary' | 'secondary' | 'danger';
+}
+
+export const Button: React.FC<ButtonProps> = ({ 
+  children, 
+  variant = 'primary', 
+  className = '', 
+  ...props 
+}) => {
+  // Base styling for all buttons
+  const baseStyle = "px-4 py-2 rounded-md font-medium transition-colors focus:outline-none focus:ring-2 focus:ring-offset-2";
+  
+  // Variant specific styling
+  const variants = {
+    primary: "bg-green-700 text-white hover:bg-green-800 focus:ring-green-500",
+    secondary: "bg-gray-200 text-gray-800 hover:bg-gray-300 focus:ring-gray-400",
+    danger: "bg-red-600 text-white hover:bg-red-700 focus:ring-red-500"
+  };
+
+  return (
+    <button 
+      className={`${baseStyle} ${variants[variant]} ${className}`}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+};
+</file>
+
+<file path="src/components/EditForm.tsx">
+"use client";
+
+import React, { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { CameraCapture } from "./CameraCapture";
+import { Button } from "./Button";
+import { Input } from "./Input";
+import { editItemAction } from "@/app/actions";
+
+interface EditFormProps {
+  item: any; // We receive the joined Prisma model (ReturnItem + QCResult)
+}
+
+export const EditForm: React.FC<EditFormProps> = ({ item }) => {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+
+  // 1. Master Data State
+  const [soNumber, setSoNumber] = useState(item.soNumber);
+  const [customerName, setCustomerName] = useState(item.customerName);
+  const [itemCode, setItemCode] = useState(item.itemCode);
+  const [itemName, setItemName] = useState(item.itemName);
+  const [width, setWidth] = useState(item.width);
+  const [height, setHeight] = useState(item.height);
+  const [qtyOrder, setQtyOrder] = useState(item.qtyOrder);
+
+  // 2. QC Data State
+  const [status, setStatus] = useState<"PENDING" | "GOOD" | "BAD" | "PARTIAL_GOOD">(item.qcStatus);
+  const [damageNotes, setDamageNotes] = useState(item.qcResult?.damageNotes || "");
+  
+  // General Photo
+  const [existingGeneralPhoto, setExistingGeneralPhoto] = useState<string | null>(item.qcResult?.generalPhotoUrl || null);
+  const [newGeneralPhotoBase64, setNewGeneralPhotoBase64] = useState<string>("");
+
+  // Damage Photos
+  const parseOldDamageUrls = () => {
+    if (!item.qcResult?.damagePhotoUrl) return [];
+    try { return JSON.parse(item.qcResult.damagePhotoUrl); } 
+    catch { return [item.qcResult.damagePhotoUrl]; }
+  };
+  const [keptDamagePhotos, setKeptDamagePhotos] = useState<string[]>(parseOldDamageUrls());
+  const [newDamagePhotosBase64, setNewDamagePhotosBase64] = useState<string[]>([]);
+
+  // Handlers for photos
+  const handleRemoveKeptPhoto = (urlToRemove: string) => {
+    setKeptDamagePhotos((prev) => prev.filter((url) => url !== urlToRemove));
+  };
+  const handleRemoveNewPhoto = (index: number) => {
+    setNewDamagePhotosBase64((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    // Validation
+    if (!soNumber || !itemName || !itemCode) return setError("Data master (SO, Kode, Nama) wajib diisi!");
+    if (status !== "PENDING") {
+      if (!existingGeneralPhoto && !newGeneralPhotoBase64) return setError("Foto fisik wajib ada!");
+      if (status !== "GOOD" && keptDamagePhotos.length === 0 && newDamagePhotosBase64.length === 0) {
+        return setError("Minimal 1 foto bukti rusak wajib disertakan!");
+      }
+      if (status !== "GOOD" && !damageNotes) return setError("Keterangan minus wajib diisi!");
+    }
+
+    startTransition(async () => {
+      const res = await editItemAction({
+        id: item.id,
+        soNumber, customerName, itemCode, itemName,
+        width: Number(width), height: Number(height), qtyOrder: Number(qtyOrder),
+        status,
+        newGeneralPhotoBase64: newGeneralPhotoBase64 || undefined,
+        keptDamagePhotoUrls: keptDamagePhotos,
+        newDamagePhotosBase64,
+        damageNotes,
+      });
+
+      if (res.success) {
+        alert("Data berhasil diperbarui!");
+        router.push(status === "PENDING" ? "/?tab=pending" : "/?tab=completed");
+      } else {
+        setError(res.error || "Gagal menyimpan data");
+      }
+    });
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+      {error && <div className="p-3 text-sm text-red-700 bg-red-100 rounded-md">{error}</div>}
+
+      {/* --- MASTER DATA SECTION --- */}
+      <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 flex flex-col gap-4">
+        <h2 className="font-bold text-gray-800 border-b pb-2">Master Data</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Input label="No. SO" value={soNumber} onChange={(e) => setSoNumber(e.target.value)} required />
+          <Input label="Customer" value={customerName} onChange={(e) => setCustomerName(e.target.value)} required />
+          <Input label="Kode Barang" value={itemCode} onChange={(e) => setItemCode(e.target.value)} required />
+          <Input label="Nama Barang" value={itemName} onChange={(e) => setItemName(e.target.value)} required />
+          <div className="grid grid-cols-2 gap-4">
+            <Input label="Lebar" type="number" value={width} onChange={(e) => setWidth(e.target.value)} />
+            <Input label="Tinggi" type="number" value={height} onChange={(e) => setHeight(e.target.value)} />
+          </div>
+          <Input label="Qty Order" type="number" value={qtyOrder} onChange={(e) => setQtyOrder(e.target.value)} required />
+        </div>
+      </div>
+
+      {/* --- QC DATA SECTION --- */}
+      <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 flex flex-col gap-4">
+        <h2 className="font-bold text-gray-800 border-b pb-2">Data Quality Control</h2>
+        
+        <div className="flex flex-col gap-2">
+          <label className="text-sm font-semibold text-gray-700">Status Barang</label>
+          <select 
+            value={status} 
+            onChange={(e) => setStatus(e.target.value as any)}
+            className="border border-gray-300 rounded-md px-3 py-3 w-full bg-white text-gray-800 focus:ring-green-500"
+          >
+            <option value="PENDING">Belum Dicek (PENDING)</option>
+            <option value="GOOD">✅ GOOD (Bagus)</option>
+            <option value="PARTIAL_GOOD">⚠️ PARTIAL GOOD (Bagus Sebagian)</option>
+            <option value="BAD">❌ BAD (Rusak Parah)</option>
+          </select>
+        </div>
+
+        {status !== "PENDING" && (
+          <>
+            {/* General Photo Edit */}
+            <div className="flex flex-col gap-2 mt-2">
+              <label className="text-sm font-semibold text-gray-700">Foto Fisik Keseluruhan</label>
+              {!newGeneralPhotoBase64 && existingGeneralPhoto ? (
+                <div className="relative aspect-[4/3] w-full max-w-sm bg-black rounded-md overflow-hidden">
+                  <img src={existingGeneralPhoto} alt="Existing Fisik" className="w-full h-full object-cover" />
+                  <button type="button" onClick={() => setExistingGeneralPhoto(null)} className="absolute bottom-2 left-2 bg-red-600 text-white text-xs px-2 py-1 rounded-md">
+                    Hapus & Ganti Foto
+                  </button>
+                </div>
+              ) : (
+                <CameraCapture label="Ambil Foto Fisik Baru" onCapture={setNewGeneralPhotoBase64} />
+              )}
+            </div>
+
+            {/* Damage Photos & Notes Edit */}
+            {(status === "BAD" || status === "PARTIAL_GOOD") && (
+              <div className="flex flex-col gap-4 mt-4 p-4 border border-orange-200 bg-orange-50 rounded-lg">
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-semibold text-gray-700">Foto Bukti Rusak / Minus</label>
+                  
+                  {/* Grid for Kept & New Photos */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    {/* Kept Photos from DB */}
+                    {keptDamagePhotos.map((url, idx) => (
+                      <div key={`kept-${idx}`} className="relative aspect-[4/3] bg-black rounded-md overflow-hidden">
+                        <img src={url} alt={`Lama ${idx + 1}`} className="w-full h-full object-cover" />
+                        <span className="absolute bottom-0 bg-black bg-opacity-50 text-white text-[10px] w-full text-center">Foto Lama</span>
+                        <button type="button" onClick={() => handleRemoveKeptPhoto(url)} className="absolute top-1 right-1 bg-red-600 text-white p-1 rounded-full text-xs w-6 h-6 flex items-center justify-center">X</button>
+                      </div>
+                    ))}
+                    
+                    {/* Newly Captured Photos */}
+                    {newDamagePhotosBase64.map((photo, idx) => (
+                      <div key={`new-${idx}`} className="relative aspect-[4/3] bg-black rounded-md overflow-hidden border-2 border-green-500">
+                        <img src={photo} alt={`Baru ${idx + 1}`} className="w-full h-full object-cover" />
+                        <span className="absolute bottom-0 bg-green-600 text-white text-[10px] w-full text-center font-bold">Baru</span>
+                        <button type="button" onClick={() => handleRemoveNewPhoto(idx)} className="absolute top-1 right-1 bg-red-600 text-white p-1 rounded-full text-xs w-6 h-6 flex items-center justify-center">X</button>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <CameraCapture label="+ Tambah Foto Rusak" onCapture={(b64) => setNewDamagePhotosBase64(p => [...p, b64])} />
+                </div>
+                
+                <div className="flex flex-col gap-1">
+                  <label className="text-sm font-semibold text-gray-700">Keterangan Minus</label>
+                  <textarea
+                    className="border border-gray-300 rounded-md px-3 py-2 w-full focus:ring-orange-500 min-h-[100px]"
+                    placeholder="Contoh: Lecet di bagian kanan atas..."
+                    value={damageNotes}
+                    onChange={(e) => setDamageNotes(e.target.value)}
+                  />
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      <div className="flex gap-4 pt-4 border-t border-gray-200">
+        <Button type="button" variant="secondary" className="flex-1" onClick={() => router.back()} disabled={isPending}>
+          Batal
+        </Button>
+        <Button type="submit" variant="primary" className="flex-1" disabled={isPending}>
+          {isPending ? "Menyimpan..." : "Simpan Perubahan"}
+        </Button>
+      </div>
+    </form>
+  );
+};
+</file>
+
+<file path="src/components/Input.tsx">
+import React, { InputHTMLAttributes } from 'react';
+
+// Strict interface extending default HTML input attributes
+interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
+  label?: string;
+}
+
+export const Input: React.FC<InputProps> = ({ label, id, className = '', ...props }) => {
+  return (
+    <div className="flex flex-col gap-1 w-full">
+      {label && (
+        <label htmlFor={id} className="text-sm font-medium text-gray-700">
+          {label}
+        </label>
+      )}
+      <input
+        id={id}
+        className={`border border-gray-300 rounded-md px-3 py-2 text-gray-900 placeholder:text-gray-400 focus:outline-none focus:ring-2 focus:ring-green-500 w-full ${className}`}
+        {...props}
+      />
+    </div>
+  );
+};
+</file>
+
+<file path="src/components/Pagination.tsx">
+import React from 'react';
+import Link from 'next/link';
+
+interface PaginationProps {
+  currentPage: number;
+  totalPages: number;
+  baseUrl: string; // e.g., "/?tab=pending&search=XYZ"
+}
+
+export const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages, baseUrl }) => {
+  if (totalPages <= 1) return null;
+
+  // Helper to construct URL with correct query parameters
+  const createPageUrl = (page: number) => {
+    const separator = baseUrl.includes('?') ? '&' : '?';
+    // Clean up existing page param if it exists in the base URL
+    const cleanBaseUrl = baseUrl.replace(/&?page=\d+/, '').replace(/\?$/, '');
+    const finalSeparator = cleanBaseUrl.includes('?') ? '&' : '?';
+    return `${cleanBaseUrl}${finalSeparator}page=${page}`;
+  };
+
+  return (
+    <div className="flex justify-center items-center space-x-2 mt-6">
+      {currentPage > 1 ? (
+        <Link href={createPageUrl(currentPage - 1)} className="px-3 py-1 border rounded-md hover:bg-gray-50">
+          Prev
+        </Link>
+      ) : (
+        <button disabled className="px-3 py-1 border rounded-md text-gray-400 cursor-not-allowed">
+          Prev
+        </button>
+      )}
+
+      <span className="text-sm font-medium text-gray-700">
+        Page {currentPage} of {totalPages}
+      </span>
+
+      {currentPage < totalPages ? (
+        <Link href={createPageUrl(currentPage + 1)} className="px-3 py-1 border rounded-md hover:bg-gray-50">
+          Next
+        </Link>
+      ) : (
+        <button disabled className="px-3 py-1 border rounded-md text-gray-400 cursor-not-allowed">
+          Next
+        </button>
+      )}
+    </div>
+  );
+};
+</file>
+
+<file path="src/components/QCForm.tsx">
+"use client";
+
+import React, { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { CameraCapture } from "./CameraCapture";
+import { Button } from "./Button";
+import { Input } from "./Input";
+import { TableItem } from "./ReturnItemTable";
+import { submitQCAction } from "@/app/actions";
+
+interface QCFormProps {
+  item: TableItem; // We reuse the TableItem interface for simplicity
+}
+
+export const QCForm: React.FC<QCFormProps> = ({ item }) => {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+
+  // Form State
+  const [status, setStatus] = useState<"GOOD" | "BAD" | "PARTIAL_GOOD" | "">("");
+  const [generalPhoto, setGeneralPhoto] = useState<string>("");
+  const [damagePhotos, setDamagePhotos] = useState<string[]>([]);
+  const [damageNotes, setDamageNotes] = useState<string>("");
+
+    // Handlers for multiple damage photos
+  const handleAddDamagePhoto = (base64: string) => {
+    setDamagePhotos((prev) => [...prev, base64]);
+  };
+  const handleRemoveDamagePhoto = (index: number) => {
+    setDamagePhotos((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    // Validation
+    if (!status) return setError("Pilih status barang bro!");
+    if (!generalPhoto) return setError("Foto fisik wajib ada!");
+    if (status !== "GOOD" && damagePhotos.length === 0) return setError("Minimal 1 foto bukti rusak wajib disertakan!");
+    if (status !== "GOOD" && !damageNotes) return setError("Tulis keterangan minusnya bro!");
+
+    startTransition(async () => {
+      const res = await submitQCAction({
+        returnItemId: item.id,
+        status: status as "GOOD" | "BAD" | "PARTIAL_GOOD",
+        generalPhotoBase64: generalPhoto,
+        damagePhotosBase64: status !== "GOOD" ? damagePhotos : undefined,
+        damageNotes: status !== "GOOD" ? damageNotes : undefined,
+      });
+
+      if (res.success) {
+        alert("Mantap! Data QC berhasil disimpan.");
+        router.push("/?tab=completed");
+      } else {
+        setError(res.error || "Gagal menyimpan data");
+      }
+    });
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-col gap-6 mt-6">
+      {error && (
+        <div className="p-3 text-sm text-red-700 bg-red-100 rounded-md">
+          {error}
+        </div>
+      )}
+
+      {/* 1. Capture General Photo */}
+      <CameraCapture label="1. Foto Fisik Keseluruhan" onCapture={setGeneralPhoto} />
+
+      {/* 2. Select Status */}
+      <div className="flex flex-col gap-2">
+        <label className="text-sm font-semibold text-gray-700">2. Status Barang</label>
+        <select 
+          value={status} 
+          onChange={(e) => setStatus(e.target.value as any)}
+          className="border border-gray-300 rounded-md px-3 py-3 w-full bg-white text-gray-800 focus:ring-green-500"
+        >
+          <option value="" disabled>-- Pilih Status --</option>
+          <option value="GOOD">✅ GOOD (Bagus)</option>
+          <option value="PARTIAL_GOOD">⚠️ PARTIAL GOOD (Bagus Sebagian)</option>
+          <option value="BAD">❌ BAD (Rusak Parah)</option>
+        </select>
+      </div>
+
+      {/* 3. Conditional: Damage Photo & Notes */}
+      {(status === "BAD" || status === "PARTIAL_GOOD") && (
+        <div className="flex flex-col gap-4 p-4 border border-orange-200 bg-orange-50 rounded-lg">
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-semibold text-gray-700">3a. Foto Bukti Rusak ({damagePhotos.length} Foto)</label>
+            
+            {/* List of captured damage photos */}
+            <div className="grid grid-cols-2 gap-2">
+              {damagePhotos.map((photo, idx) => (
+                <div key={idx} className="relative aspect-[4/3] bg-black rounded-md overflow-hidden">
+                  <img src={photo} alt={`Minus ${idx + 1}`} className="w-full h-full object-cover" />
+                  <button type="button" onClick={() => handleRemoveDamagePhoto(idx)} className="absolute top-1 right-1 bg-red-600 text-white p-1 rounded-full text-xs w-6 h-6 flex items-center justify-center">
+                    X
+                  </button>
+                </div>
+              ))}
+            </div>
+            
+            {/* Capture new damage photo component */}
+            <CameraCapture label={damagePhotos.length === 0 ? "Ambil Foto Rusak Pertama" : "+ Tambah Foto Rusak Lagi"} onCapture={handleAddDamagePhoto} />
+          </div>
+          
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-semibold text-gray-700">3b. Keterangan Minus</label>
+            <textarea
+              className="border border-gray-300 rounded-md px-3 py-2 w-full focus:ring-orange-500 min-h-[100px]"
+              placeholder="Contoh: Lecet di bagian kanan atas, sekrup hilang..."
+              value={damageNotes}
+              onChange={(e) => setDamageNotes(e.target.value)}
+            />
+          </div>
+        </div>
+      )}
+
+      <div className="flex gap-4 pt-4 border-t border-gray-200">
+        <Button type="button" variant="secondary" className="flex-1" onClick={() => router.push("/")} disabled={isPending}>
+          Batal
+        </Button>
+        <Button type="submit" variant="primary" className="flex-1" disabled={isPending}>
+          {isPending ? "Menyimpan..." : "Simpan QC"}
+        </Button>
+      </div>
+    </form>
+  );
+};
+</file>
+
+<file path="src/lib/api-utils.ts">
+import { NextRequest, NextResponse } from "next/server";
+
+// Custom Error class for predictable API responses
+export class AppError extends Error {
+  constructor(public message: string, public statusCode: number = 400) {
+    super(message);
+    this.name = "AppError";
+  }
+}
+
+// Next.js 15 strictly requires params context to be a Promise
+type RouteHandler = (
+  req: NextRequest,
+  context: { params: Promise<Record<string, string>> }
+) => Promise<NextResponse> | NextResponse;
+
+// Async handler wrapper updated for Next.js 15 context types
+export const asyncHandler = (handler: RouteHandler) => {
+  return async (
+    req: NextRequest,
+    context: { params: Promise<Record<string, string>> }
+  ): Promise<NextResponse> => {
+    try {
+      // Kita langsung oper context yang sudah kompatibel dengan Next.js 15
+      return await handler(req, context);
+    } catch (error: unknown) {
+      if (error instanceof AppError) {
+        return NextResponse.json(
+          { success: false, error: error.message },
+          { status: error.statusCode }
+        );
+      }
+      
+      console.error("Unhandled API Error:", error);
+      return NextResponse.json(
+        { success: false, error: "Internal Server Error" },
+        { status: 500 }
+      );
+    }
+  };
+};
+</file>
+
+<file path="src/lib/prisma.ts">
+import { PrismaClient } from '@prisma/client';
+import { PrismaBetterSqlite3 } from '@prisma/adapter-better-sqlite3';
+import Database from 'better-sqlite3';
+
+// Ambil lokasi file db dari env
+const dbPath = (process.env.DATABASE_URL ?? 'file:./dev.db').replace('file:', '');
+
+// 1. Buat instance database sqlite
+const sqlite = new Database(dbPath);
+
+// 2. Bungkus ke adapter dengan menyertakan properti url yang diminta Prisma 7
+const adapter = new PrismaBetterSqlite3({
+  url: dbPath,
+  // pass instance database-nya ke dalam objek internal adapter jika versinya meminta
+  // jika masih protes, cukup gunakan { url: dbPath } saja
+});
+
+export const prisma = new PrismaClient({ adapter });
+</file>
+
+<file path="dokumentasi.md">
+# Dokumentasi Sistem Manajemen QC Barang Return
+
+## 📌 Deskripsi Singkat
+
+Aplikasi web internal (tools) untuk manajemen Quality Control (QC) barang return. Aplikasi ini mengubah proses manual (pengecekan barang, foto via WhatsApp, dan pencatatan keterangan) menjadi sistem digital terpusat.
+
+Data awal di-import dari file Excel, staf gudang melakukan pengecekan fisik menggunakan kamera HP langsung dari browser, dan hasil akhirnya dapat di-export kembali menjadi laporan Excel.
+
+---
+
+# 🛠 Tech Stack
+
+| Komponen | Teknologi |
+|-----------|-----------|
+| Framework | Next.js 15 (App Router) |
+| Language | Strict TypeScript |
+| Styling | Tailwind CSS (Responsive Desktop & Mobile) |
+| Database | SQLite (File-based) |
+| ORM | Prisma |
+| Excel Processor | SheetJS (`xlsx`) |
+| Process Manager | PM2 |
+| Tunneling | Ngrok |
+
+### Catatan
+
+Ngrok digunakan untuk menyediakan koneksi HTTPS yang diwajibkan browser agar API kamera (`navigator.mediaDevices.getUserMedia`) dapat berjalan di perangkat mobile.
+
+---
+
+# 🚀 Fitur Utama
+
+## 1. Import Data Master (Excel)
+
+### Tujuan
+Mengimpor daftar Sales Order (SO) barang return dari file Excel ke database.
+
+### Fitur
+
+- Upload file Excel (`.xlsx`)
+- Parsing dilakukan menggunakan **Server Actions Next.js**
+- Menghindari beban parsing di browser client
+- Menghindari konflik Webpack saat memproses file Excel
+- Data otomatis disimpan ke database
+- Status awal otomatis:
+
+```text
+PENDING
+```
+
+---
+
+## 2. Dashboard Interaktif (Responsive)
+
+### Desktop View
+
+Menggunakan tampilan tabel (table view) standar.
+
+### Mobile View
+
+Tabel otomatis berubah menjadi card view agar lebih nyaman digunakan pada layar HP dan menghindari horizontal scroll.
+
+### Fitur Dashboard
+
+#### Filter Status
+
+Memisahkan data berdasarkan:
+
+- PENDING (Belum Dicek)
+- GOOD
+- BAD
+- PARTIAL_GOOD
+
+#### Search
+
+Pencarian real-time berdasarkan:
+
+- Nomor SO
+- Nama Barang
+- Nama Customer
+
+#### Bulk Delete
+
+Fitur hapus massal menggunakan checkbox untuk membersihkan data yang salah import.
+
+---
+
+## 3. Form QC & Custom Web Camera
+
+### Tujuan
+
+Memungkinkan staf gudang melakukan pengecekan langsung dari browser tanpa perlu membuka aplikasi kamera bawaan perangkat.
+
+### Teknologi
+
+```javascript
+navigator.mediaDevices.getUserMedia()
+```
+
+### Fitur
+
+#### Foto Barang Utama
+
+Mengambil foto keseluruhan kondisi barang.
+
+#### Logika Kondisional
+
+Jika status dipilih:
+
+```text
+BAD
+```
+
+atau
+
+```text
+PARTIAL_GOOD
+```
+
+maka sistem akan menampilkan field tambahan:
+
+- Upload foto kerusakan/minus
+- Mendukung multi-photo
+- Input catatan/keterangan kerusakan
+
+### Penyimpanan Foto
+
+Alur penyimpanan:
+
+```text
+Camera
+↓
+Base64
+↓
+Convert JPG
+↓
+public/uploads/
+```
+
+Foto disimpan sebagai file fisik `.jpg` pada server lokal.
+
+---
+
+## 4. Fitur Edit Terpusat
+
+### Tujuan
+
+Mengubah data master dan hasil QC dalam satu form.
+
+### Data yang Dapat Diedit
+
+#### Master Data
+
+- Nomor SO
+- Customer
+- Kode Barang
+- Nama Barang
+- Ukuran
+- Qty
+
+#### Hasil QC
+
+- Status
+- Foto Barang
+- Foto Kerusakan
+- Notes/Keterangan
+
+### Smart Storage Cleanup
+
+Saat foto lama:
+
+- Dihapus
+- Diganti
+
+maka sistem otomatis menghapus file fisik lama dari server menggunakan:
+
+```javascript
+fs.unlink()
+```
+
+### Manfaat
+
+- Menghemat storage
+- Mencegah file orphan/sampah menumpuk
+- Menjaga performa server
+
+---
+
+## 5. Export Report (Excel)
+
+### Tujuan
+
+Menghasilkan laporan QC lengkap yang menggabungkan data master dan hasil inspeksi.
+
+### Output
+
+File Excel (`.xlsx`) yang berisi:
+
+- Data master barang
+- Status QC
+- Foto barang
+- Foto kerusakan
+- Notes/Keterangan minus
+
+### Proses
+
+```text
+Master Data
++
+QC Result
+↓
+Generate Excel
+↓
+Download Otomatis
+```
+
+---
+
+# 🗄 Struktur Database (Prisma Schema)
+
+Sistem menggunakan relasi **1-to-1** antara data master hasil import dan data hasil QC.
+
+---
+
+## Model: ReturnItem
+
+Menyimpan data master yang berasal dari file Excel.
+
+### Fields
+
+| Field | Keterangan |
+|---------|---------|
+| id | Primary Key |
+| soNumber | Nomor Sales Order |
+| customerName | Nama Customer |
+| itemCode | Kode Barang |
+| itemName | Nama Barang |
+| width | Lebar |
+| height | Tinggi |
+| qtyOrder | Quantity Order |
+| qcStatus | Status QC |
+
+---
+
+## Model: QCResult
+
+Menyimpan hasil pemeriksaan QC.
+
+### Fields
+
+| Field | Keterangan |
+|---------|---------|
+| returnItemId | Foreign Key ke ReturnItem |
+| finalStatus | GOOD / BAD / PARTIAL_GOOD |
+| generalPhotoUrl | Path foto keseluruhan barang |
+| damagePhotoUrl | JSON Array path foto kerusakan |
+| damageNotes | Catatan kerusakan |
+
+### Relasi
+
+```text
+ReturnItem (1)
+      │
+      │
+      ▼
+QCResult (1)
+```
+
+---
+
+# 💻 Panduan Deployment (Local Server)
+
+Aplikasi dijalankan pada laptop server lokal dan diakses melalui internet menggunakan Ngrok.
+
+---
+
+## Instalasi Awal
+
+### 1. Update Source Code
+
+```bash
+git pull origin main
+```
+
+### 2. Install Dependencies
+
+```bash
+npm install
+```
+
+### 3. Sinkronisasi Database
+
+```bash
+npx prisma db push
+```
+
+---
+
+## Build & Run (Production)
+
+Wajib dijalankan pada mode production untuk performa terbaik.
+
+### 1. Build Aplikasi
+
+```bash
+npm run build
+```
+
+### 2. Jalankan dengan PM2
+
+```bash
+pm2 start npm --name "return-qc-app" -- start
+```
+
+### 3. Simpan Konfigurasi PM2
+
+```bash
+pm2 save
+pm2 startup
+```
+
+---
+
+# 🌐 Expose ke Internet (Akses Kamera HP)
+
+Jalankan Ngrok:
+
+```bash
+ngrok http 3000
+```
+
+### Catatan Penting
+
+Bagikan URL HTTPS yang dihasilkan Ngrok kepada staf gudang.
+
+API kamera browser (WebRTC) mewajibkan koneksi HTTPS untuk dapat berjalan.
+
+---
+
+# 🔄 Prosedur Update Kode (Git Workflow)
+
+## Tujuan
+
+Memastikan database lokal dan file foto tidak hilang saat deployment update.
+
+### Pastikan `.gitignore` Berisi
+
+```gitignore
+*.db
+public/uploads/
+```
+
+### Workflow Development
+
+#### Di Laptop Development
+
+```bash
+git add .
+git commit -m "update fitur"
+git push origin main
+```
+
+#### Di Laptop Server
+
+```bash
+git pull origin main
+npm install
+npm run build
+pm2 restart return-qc-app
+```
+
+---
+
+# 📂 Struktur Folder Penting
+
+```text
+project-root/
+│
+├── prisma/
+│   └── schema.prisma
+│
+├── public/
+│   └── uploads/
+│       ├── photo-1.jpg
+│       ├── photo-2.jpg
+│       └── ...
+│
+├── app/
+│
+├── actions/
+│
+├── lib/
+│
+├── dev.db
+│
+└── package.json
+```
+
+---
+
+# 📋 Alur Sistem (End-to-End)
+
+```text
+Import Excel
+      │
+      ▼
+Database (Status: PENDING)
+      │
+      ▼
+Dashboard QC
+      │
+      ▼
+Foto Barang + Input Status
+      │
+      ▼
+Simpan Hasil QC
+      │
+      ▼
+Foto Tersimpan di Server
+      │
+      ▼
+Export Laporan Excel
+      │
+      ▼
+Selesai
+```
+
+---
+
+# 🎯 Single Source of Truth
+
+Dokumen ini merupakan referensi utama (Single Source of Truth) untuk:
+
+- Arsitektur sistem
+- Struktur database
+- Workflow QC
+- Deployment server
+- Git workflow
+- Pengelolaan file foto
+- Export laporan
+
+Setiap perubahan fitur atau perubahan arsitektur wajib diperbarui pada dokumen ini agar tetap menjadi sumber dokumentasi yang akurat dan terkini.
+</file>
+
+<file path="ecosystem.config.js">
+module.exports = {
+  apps: [{
+    name: "qc-app",
+    script: "node_modules/next/dist/bin/next",
+    args: "start",
+    cwd: "/home/ryu/Desktop/TOOLS/Internal_Return_System/return-qc-app",
+    instances: 1,
+    autorestart: true,
+    watch: false,
+    env: {
+      NODE_ENV: "production",
+      PORT: 3000
+    }
+  }]
+}
+</file>
+
+<file path="next-env.d.ts">
+/// <reference types="next" />
+/// <reference types="next/image-types/global" />
+/// <reference path="./.next/types/routes.d.ts" />
+
+// NOTE: This file should not be edited
+// see https://nextjs.org/docs/app/api-reference/config/typescript for more information.
+</file>
+
+<file path="next.config.ts">
+import type { NextConfig } from "next";
+
+const nextConfig: NextConfig = {
+  /* config options here */
+};
+
+export default nextConfig;
+</file>
+
+<file path="postcss.config.mjs">
+const config = {
+  plugins: {
+    "@tailwindcss/postcss": {},
+  },
+};
+
+export default config;
+</file>
+
+<file path="prisma.config.ts">
+import "dotenv/config";
+import { defineConfig } from "@prisma/config";
+
+export default defineConfig({
+  schema: "prisma/schema.prisma",
+  datasource: {
+    url: process.env.DATABASE_URL ?? "file:./dev.db",
+  },
+});
+</file>
+
+<file path="prisma/schema.prisma">
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model ReturnItem {
+  id           String    @id @default(uuid())
+  soNumber     String
+  customerName String
+  itemCode     String
+  itemName     String
+  width        Float
+  height       Float
+  qtyOrder     Int
+  qcStatus     String    @default("PENDING") // PENDING, GOOD, BAD, PARTIAL_GOOD
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @default(now()) @updatedAt
+  
+  qcResult     QCResult?
+}
+
+model QCResult {
+  id              String     @id @default(uuid())
+  returnItemId    String     @unique
+  returnItem      ReturnItem @relation(fields: [returnItemId], references: [id])
+  finalStatus     String     // GOOD, BAD, PARTIAL_GOOD
+  generalPhotoUrl String
+  damagePhotoUrl  String?
+  damageNotes     String?
+  processedAt     DateTime   @default(now())
+}
+</file>
+
+<file path="src/app/edit/[id]/page.tsx">
+import { prisma } from "@/lib/prisma";
+import { notFound } from "next/navigation";
+import { EditForm } from "@/components/EditForm";
+import { PrintLabelButton } from "@/components/PrintLabelButton";
+
+interface EditPageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default async function EditPage(props: EditPageProps) {
+  // Next.js 15 requires awaiting params
+  const resolvedParams = await props.params;
+
+  // Fetch item and its QC relations
+  const item = await prisma.returnItem.findUnique({
+    where: { id: resolvedParams.id },
+    include: { qcResult: true },
+  });
+
+  if (!item) {
+    notFound();
+  }
+
+  return (
+    <main className="min-h-screen bg-gray-50 p-4 md:p-8 flex justify-center pb-20">
+      <div className="w-full max-w-3xl bg-white p-4 md:p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="mb-6 flex flex-col sm:flex-row justify-between items-start gap-4 border-b pb-4">
+          <div>
+            <h1 className="text-xl md:text-2xl font-bold text-gray-800">Edit Data Barang</h1>
+            <p className="text-sm text-gray-500 mt-1">Ubah master data SO, foto, atau ubah status QC.</p>
+          </div>
+          <div className="w-full sm:w-auto mt-2 sm:mt-0">
+            <PrintLabelButton 
+              customerName={item.customerName} soNumber={item.soNumber} 
+              itemCode={item.itemCode} width={item.width} height={item.height} 
+            />
+          </div>
+        </div>
+
+        {/* Pass fetched data to the Client Component Form */}
+        <EditForm item={item} />
+      </div>
+    </main>
+  );
+}
+</file>
+
+<file path="src/app/import/actions.ts">
+"use server";
+
+import { read, utils } from "xlsx";
+import { prisma } from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
+
+// Interface representing the expected raw Excel row
+interface RawExcelRow {
+  "No. SO"?: string;
+  Customer?: string;
+  "Kode Barang"?: string;
+  "Nama Barang"?: string;
+  Lebar?: string | number;
+  Tinggi?: string | number;
+  "Qty Order"?: string | number;
+}
+
+// Interface for predictable Server Action return types
+interface ImportActionResponse {
+  success: boolean;
+  count?: number;
+  error?: string;
+  requireConfirmation?: boolean;
+  message?: string;
+}
+
+export async function importExcelAction(formData: FormData): Promise<ImportActionResponse> {
+  try {
+    const file = formData.get("file") as File | null;
+
+    if (!file) {
+      return { success: false, error: "No file uploaded" };
+    }
+
+    const force = formData.get("force") === "true";
+
+    // Convert File to Buffer for xlsx parser
+    const arrayBuffer = await file.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+
+    // Parse the workbook
+    const workbook = read(buffer, { type: "buffer" });
+    if (workbook.SheetNames.length === 0) {
+      return { success: false, error: "Excel file is empty" };
+    }
+
+    // Read the first sheet
+    const firstSheetName = workbook.SheetNames[0];
+    const worksheet = workbook.Sheets[firstSheetName];
+    
+    // Convert sheet to JSON array
+    const rawData = utils.sheet_to_json<RawExcelRow>(worksheet, { defval: "" });
+
+    if (rawData.length === 0) {
+      return { success: false, error: "No data found in the Excel sheet" };
+    }
+
+    // Sanitize and map data
+    const sanitizedData = [];
+
+    for (const row of rawData) {
+      if (!row["No. SO"]) continue;
+
+      sanitizedData.push({
+        soNumber: String(row["No. SO"]).trim(),
+        customerName: String(row["Customer"] || "-").trim(),
+        itemCode: String(row["Kode Barang"] || "-").trim(),
+        itemName: String(row["Nama Barang"] || "-").trim(),
+        width: Number(row["Lebar"]) || 0,
+        height: Number(row["Tinggi"]) || 0,
+        qtyOrder: Number(row["Qty Order"]) || 1,
+      });
+    }
+
+    if (sanitizedData.length === 0) {
+      return { success: false, error: "No valid rows found to import" };
+    }
+
+    // --- BLOK VALIDASI DUPLIKAT ---
+    if (!force) {
+      const soNumbers = sanitizedData.map(d => d.soNumber);
+      const existingItems = await prisma.returnItem.findMany({
+        where: { soNumber: { in: soNumbers } },
+        select: { soNumber: true, itemCode: true }
+      });
+
+      if (existingItems.length > 0) {
+        const duplicates = sanitizedData.filter(d =>
+          existingItems.some(e => e.soNumber === d.soNumber && e.itemCode === d.itemCode)
+        );
+
+        if (duplicates.length > 0) {
+          return {
+            success: false,
+            requireConfirmation: true,
+            message: `⚠️ Peringatan: Ada ${duplicates.length} data yang sudah ada di sistem (Contoh: SO ${duplicates[0].soNumber} - ${duplicates[0].itemCode}).\n\nYakin ingin tetap memaksakan input data ini?`
+          };
+        }
+      }
+    }
+
+    // Batch insert into SQLite using Prisma
+    const result = await prisma.returnItem.createMany({
+      data: sanitizedData,
+    });
+
+    // Otomatis refresh data di Dashboard tanpa perlu router.refresh() di client
+    revalidatePath("/");
+
+    return { success: true, count: result.count };
+
+  } catch (error: unknown) {
+    console.error("Import Action Error:", error);
+    return { success: false, error: "Internal Server Error saat memproses Excel" };
+  }
+}
+</file>
+
+<file path="src/app/import/page.tsx">
+"use client";
+
+import React, { useState, useTransition } from 'react';
+import { useRouter } from 'next/navigation';
+import { Button } from '@/components/Button';
+import Link from 'next/link';
+import { importExcelAction } from './actions';
+
+export default function ImportPage() {
+  const router = useRouter();
+  const [file, setFile] = useState<File | null>(null);
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files.length > 0) {
+      setFile(e.target.files[0]);
+      setError(null);
+    }
+  };
+
+  const handleUpload = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    submitImport(false);
+  };
+
+  const submitImport = (force: boolean) => {
+    
+    if (!file) {
+      setError("Pilih file Excel-nya dulu bro!");
+      return;
+    }
+
+    setError(null);
+
+    const formData = new FormData();
+    formData.append("file", file);
+    formData.append("force", force ? "true" : "false");
+
+        startTransition(async () => {
+      const result = await importExcelAction(formData);
+
+            if (result.requireConfirmation) {
+        const ok = window.confirm(result.message);
+        if (ok) {
+          submitImport(true); // Panggil lagi tapi paksa masuk (force bypass)
+        }
+        return;
+      }
+      
+      if (!result.success) {
+        setError(result.error || "Gagal upload file Excel");
+        return;
+      }
+
+      alert(`Berhasil import ${result.count} data barang return!`);
+      router.push('/');
+    });
+  };
+
+  return (
+    <main className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="max-w-md w-full bg-white p-8 rounded-lg shadow-sm border border-gray-200">
+        <h1 className="text-2xl font-bold text-gray-800 mb-6">Import Data Master</h1>
+        
+        <form onSubmit={handleUpload} className="flex flex-col gap-6">
+          <div className="flex flex-col gap-2">
+            <label htmlFor="file-upload" className="text-sm font-medium text-gray-700">
+              Upload File Excel (.xlsx, .xls)
+            </label>
+            <input
+              id="file-upload"
+              type="file"
+              accept=".xlsx, .xls"
+              onChange={handleFileChange}
+              className="block w-full text-sm text-gray-500
+                file:mr-4 file:py-2 file:px-4
+                file:rounded-md file:border-0
+                file:text-sm file:font-semibold
+                file:bg-green-50 file:text-green-700
+                hover:file:bg-green-100 cursor-pointer"
+            />
+          </div>
+
+          {error && (
+            <div className="p-3 text-sm text-red-700 bg-red-100 rounded-md">
+              {error}
+            </div>
+          )}
+
+          <div className="flex gap-3 mt-4">
+            <Link href="/" className="flex-1">
+              <Button type="button" variant="secondary" className="w-full" disabled={isPending}>
+                Batal
+              </Button>
+            </Link>
+            <Button type="submit" variant="primary" className="flex-1" disabled={isPending}>
+              {isPending ? 'Memproses...' : 'Upload Data'}
+            </Button>
+          </div>
+        </form>
+      </div>
+    </main>
+  );
+}
+</file>
+
+<file path="src/app/qc/[id]/page.tsx">
+import { prisma } from "@/lib/prisma";
+import { notFound } from "next/navigation";
+import { QCForm } from "@/components/QCForm";
+import Link from "next/link";
+import { Button } from "@/components/Button";
+import { PrintLabelButton } from "@/components/PrintLabelButton";
+
+// Next.js App Router dynamic route params interface
+interface QCPageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default async function QCDetailPage(props: QCPageProps) {
+  // Next.js 15 requires awaiting params
+  const resolvedParams = await props.params;
+  // Fetch specific return item
+  const item = await prisma.returnItem.findUnique({
+    where: { id: resolvedParams.id },
+    include: { qcResult: true },
+  });
+
+  if (!item) {
+    notFound();
+  }
+
+  // If already checked, show summary instead of form
+  if (item.qcStatus !== "PENDING" && item.qcResult) {
+        let damageUrls: string[] = [];
+    if (item.qcResult.damagePhotoUrl) {
+      try {
+        damageUrls = JSON.parse(item.qcResult.damagePhotoUrl);
+      } catch {
+        damageUrls = [item.qcResult.damagePhotoUrl]; // Fallback for old single-string data
+      }
+    }
+    return (
+      <main className="min-h-screen bg-gray-50 p-4 md:p-8 flex justify-center">
+        <div className="w-full max-w-2xl bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          <h1 className="text-2xl font-bold text-gray-800 mb-4">Hasil QC: {item.soNumber}</h1>
+          <div className="flex flex-col gap-4">
+            <div className="bg-gray-100 p-4 rounded-md">
+              <p><strong>Barang:</strong> {item.itemName} ({item.itemCode})</p>
+              <p><strong>Status:</strong> {item.qcStatus}</p>
+              {item.qcResult.damageNotes && (
+                <p className="mt-2 text-red-600"><strong>Minus:</strong> {item.qcResult.damageNotes}</p>
+              )}
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <p className="font-semibold mb-2">Foto Fisik</p>
+                <img src={item.qcResult.generalPhotoUrl} className="w-full h-auto rounded-md border" alt="Fisik" />
+              </div>
+                            {damageUrls.length > 0 && (
+                <div className="flex flex-col gap-2">
+                  <p className="font-semibold mb-2">Foto Minus ({damageUrls.length})</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {damageUrls.map((url, idx) => (
+                      <img key={idx} src={url} className="w-full h-auto rounded-md border aspect-[4/3] object-cover" alt={`Minus ${idx + 1}`} />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            <Link href="/?tab=completed" className="mt-4">
+              <Button variant="secondary" className="w-full">Kembali</Button>
+            </Link>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  // If pending, render the QC Form
+  return (
+    <main className="min-h-screen bg-gray-50 p-4 md:p-8 flex justify-center pb-20">
+      <div className="w-full max-w-2xl bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="mb-4">
+          <h1 className="text-2xl font-bold text-gray-800">Form QC Barang</h1>
+          <div className="bg-blue-50 border border-blue-200 p-3 rounded-md mt-4 text-sm text-gray-900">
+            <p><strong>SO:</strong> {item.soNumber} | <strong>Cust:</strong> {item.customerName}</p>
+            <p><strong>Barang:</strong> {item.itemCode} - {item.itemName}</p>
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mt-1 gap-3">
+              <p><strong>Qty/Ukuran:</strong> {item.qtyOrder} pcs | {item.width} x {item.height}</p>
+              <div className="w-full sm:w-auto">
+                <PrintLabelButton 
+                  customerName={item.customerName} soNumber={item.soNumber} 
+                  itemCode={item.itemCode} width={item.width} height={item.height} 
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <QCForm item={item as any} />
+      </div>
+    </main>
+  );
+}
+</file>
+
+<file path="src/app/actions.ts">
+"use server";
+
+import { prisma } from "@/lib/prisma";
+import { revalidatePath } from "next/cache";
+import { promises as fs } from "fs";
+import path from "path";
+import crypto from "crypto";
+
+export async function bulkDeleteReturnItems(ids: string[]) {
+  try {
+    if (!ids || ids.length === 0) {
+      return { success: false, error: "Tidak ada data yang dipilih" };
+    }
+
+    // Hapus data anak (QCResult) terlebih dahulu untuk menghindari constraint error
+    await prisma.qCResult.deleteMany({
+      where: { returnItemId: { in: ids } },
+    });
+
+    // 1. Ambil data yang mau dihapus buat ngecek fotonya
+    const itemsToDelete = await prisma.returnItem.findMany({
+      where: { id: { in: ids } },
+      include: { qcResult: true }
+    });
+
+    // 2. Hapus semua foto fisik dari hardisk biar gak menuh-menuhin
+    for (const item of itemsToDelete) {
+      if (item.qcResult) {
+        if (item.qcResult.generalPhotoUrl) await deleteLocalFile(item.qcResult.generalPhotoUrl);
+        if (item.qcResult.damagePhotoUrl) {
+          let oldUrls: string[] = [];
+          try { oldUrls = JSON.parse(item.qcResult.damagePhotoUrl); } 
+          catch { oldUrls = [item.qcResult.damagePhotoUrl]; }
+          for (const u of oldUrls) await deleteLocalFile(u);
+        }
+      }
+    }
+
+    // 3. Hapus data QCResult dulu (mencegah error foreign key)
+    await prisma.qCResult.deleteMany({
+      where: { returnItemId: { in: ids } }
+    });
+
+    const result = await prisma.returnItem.deleteMany({
+      where: { id: { in: ids } },
+    });
+
+    // Otomatis refresh data di Dashboard
+    revalidatePath("/");
+    
+    return { success: true, count: result.count };
+  } catch (error: unknown) {
+    console.error("Bulk Delete Action Error:", error);
+    return { success: false, error: "Internal Server Error saat menghapus data" };
+  }
+}
+
+// Interface for QC Form payload
+interface QCSubmitPayload {
+  returnItemId: string;
+  status: "GOOD" | "BAD" | "PARTIAL_GOOD";
+  generalPhotoBase64: string;
+  damagePhotosBase64?: string[];
+  damageNotes?: string;
+}
+
+// Helper to save base64 image to local filesystem
+async function saveBase64Image(base64String: string, prefix: string): Promise<string> {
+  // Remove the data:image/jpeg;base64, part
+  const base64Data = base64String.replace(/^data:image\/\w+;base64,/, "");
+  const buffer = Buffer.from(base64Data, "base64");
+  const fileName = `${prefix}-${crypto.randomBytes(4).toString("hex")}-${Date.now()}.jpg`;
+  
+  const uploadDir = path.join(process.cwd(), "public", "uploads");
+  const filePath = path.join(uploadDir, fileName);
+  
+  // Ensure directory exists, just in case
+  await fs.mkdir(uploadDir, { recursive: true });
+  await fs.writeFile(filePath, buffer);
+  
+  return `/uploads/${fileName}`; // Return relative URL for frontend
+}
+
+// Helper to delete physical file from local filesystem
+async function deleteLocalFile(fileUrl: string) {
+  if (!fileUrl) return;
+  try {
+    const filePath = path.join(process.cwd(), "public", fileUrl);
+    await fs.unlink(filePath);
+  } catch (error) {
+    console.error("Gagal menghapus file lama (mungkin sudah terhapus):", fileUrl);
+  }
+}
+
+export async function submitQCAction(payload: QCSubmitPayload) {
+  try {
+    // 1. Save general photo
+    const generalPhotoUrl = await saveBase64Image(payload.generalPhotoBase64, "general");
+    
+    // 2. Save damage photo if exists and status is not GOOD
+    let damagePhotoUrl = null;
+        if (payload.status !== "GOOD" && payload.damagePhotosBase64 && payload.damagePhotosBase64.length > 0) {
+      // Save all photos concurrently and stringify the array of paths
+      const savedUrls = await Promise.all(
+        payload.damagePhotosBase64.map((base64) => saveBase64Image(base64, "damage"))
+      );
+      damagePhotoUrl = JSON.stringify(savedUrls);
+    }
+
+    // 3. Save to database using Prisma Transaction
+    await prisma.$transaction([
+      prisma.qCResult.create({
+        data: {
+          returnItemId: payload.returnItemId,
+          finalStatus: payload.status,
+          generalPhotoUrl,
+          damagePhotoUrl,
+          damageNotes: payload.status !== "GOOD" ? payload.damageNotes : null,
+        },
+      }),
+      prisma.returnItem.update({
+        where: { id: payload.returnItemId },
+        data: { qcStatus: payload.status },
+      })
+    ]);
+
+    revalidatePath("/");
+    return { success: true };
+  } catch (error: unknown) {
+    console.error("Submit QC Action Error:", error);
+    return { success: false, error: "Gagal menyimpan data QC" };
+  }
+}
+
+
+// Interface for Edit Form payload
+export interface EditItemPayload {
+  id: string;
+  soNumber: string;
+  customerName: string;
+  itemCode: string;
+  itemName: string;
+  width: number;
+  height: number;
+  qtyOrder: number;
+  status: "PENDING" | "GOOD" | "BAD" | "PARTIAL_GOOD";
+  newGeneralPhotoBase64?: string;
+  keptDamagePhotoUrls: string[];
+  newDamagePhotosBase64: string[];
+  damageNotes: string;
+}
+
+export async function editItemAction(payload: EditItemPayload) {
+  try {
+    // 1. Fetch existing data to compare photos
+    const existing = await prisma.returnItem.findUnique({
+      where: { id: payload.id },
+      include: { qcResult: true }
+    });
+
+    if (!existing) return { success: false, error: "Data tidak ditemukan" };
+
+    // 2. Update Master Data (Teks)
+    await prisma.returnItem.update({
+      where: { id: payload.id },
+      data: {
+        soNumber: payload.soNumber,
+        customerName: payload.customerName,
+        itemCode: payload.itemCode,
+        itemName: payload.itemName,
+        width: payload.width,
+        height: payload.height,
+        qtyOrder: payload.qtyOrder,
+        qcStatus: payload.status,
+      }
+    });
+
+    // 3. Update QC Data (Jika status bukan PENDING)
+    if (payload.status !== "PENDING") {
+      let finalGeneralUrl = existing.qcResult?.generalPhotoUrl || "";
+      
+      // Jika ada foto fisik baru, hapus yang lama, simpan yang baru
+      if (payload.newGeneralPhotoBase64) {
+        if (existing.qcResult?.generalPhotoUrl) await deleteLocalFile(existing.qcResult.generalPhotoUrl);
+        finalGeneralUrl = await saveBase64Image(payload.newGeneralPhotoBase64, "general");
+      }
+
+      let finalDamageUrls = [...payload.keptDamagePhotoUrls];
+      
+      // Hapus foto damage lama yang tidak di-keep (dihapus user dari UI)
+      if (existing.qcResult?.damagePhotoUrl) {
+        let oldUrls: string[] = [];
+        try {
+          oldUrls = JSON.parse(existing.qcResult.damagePhotoUrl);
+        } catch {
+          oldUrls = [existing.qcResult.damagePhotoUrl];
+        }
+        for (const oldUrl of oldUrls) {
+          if (!payload.keptDamagePhotoUrls.includes(oldUrl)) {
+            await deleteLocalFile(oldUrl);
+          }
+        }
+      }
+
+      // Simpan foto damage baru jika ada
+      if (payload.newDamagePhotosBase64.length > 0) {
+        const newUrls = await Promise.all(
+          payload.newDamagePhotosBase64.map((b64) => saveBase64Image(b64, "damage"))
+        );
+        finalDamageUrls = [...finalDamageUrls, ...newUrls];
+      }
+
+      const damageNotes = payload.status === "GOOD" ? null : payload.damageNotes;
+      const damagePhotoUrl = payload.status === "GOOD" || finalDamageUrls.length === 0 
+        ? null 
+        : JSON.stringify(finalDamageUrls);
+
+      // Update atau Create (Upsert) QC Result
+      await prisma.qCResult.upsert({
+        where: { returnItemId: payload.id },
+        update: { finalStatus: payload.status, generalPhotoUrl: finalGeneralUrl, damagePhotoUrl, damageNotes },
+        create: { returnItemId: payload.id, finalStatus: payload.status as "GOOD" | "BAD" | "PARTIAL_GOOD", generalPhotoUrl: finalGeneralUrl, damagePhotoUrl, damageNotes }
+      });
+    }
+
+    // Refresh tampilan
+    revalidatePath("/");
+    revalidatePath(`/qc/${payload.id}`);
+    revalidatePath(`/edit/${payload.id}`);
+    
+    return { success: true };
+  } catch (error: unknown) {
+    console.error("Edit Action Error:", error);
+    return { success: false, error: "Gagal menyimpan perubahan data" };
+  }
+}
+</file>
+
+<file path="src/app/globals.css">
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
+</file>
+
+<file path="src/components/CameraCapture.tsx">
+"use client";
+
+import React, { useRef, useState, useEffect, useCallback } from "react";
+import { Button } from "./Button";
+
+interface CameraCaptureProps {
+  label: string;
+  onCapture: (base64Image: string) => void;
+}
+
+export const CameraCapture: React.FC<CameraCaptureProps> = ({ label, onCapture }) => {
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
+  const [stream, setStream] = useState<MediaStream | null>(null);
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [hasPermissionError, setHasPermissionError] = useState(false);
+
+  const startCamera = useCallback(async () => {
+    try {
+      setHasPermissionError(false);
+      const mediaStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: "environment" }, // Prioritize back camera on mobile
+        audio: false,
+      });
+      setStream(mediaStream);
+      if (videoRef.current) {
+        videoRef.current.srcObject = mediaStream;
+      }
+    } catch (err) {
+      console.error("Error accessing camera:", err);
+      setHasPermissionError(true);
+    }
+  }, []);
+
+  // Clean up camera stream when component unmounts
+  useEffect(() => {
+    return () => {
+      if (stream) {
+        stream.getTracks().forEach((track) => track.stop());
+      }
+    };
+  }, [stream]);
+
+  const capturePhoto = () => {
+    if (videoRef.current && canvasRef.current) {
+      const video = videoRef.current;
+      const canvas = canvasRef.current;
+      
+      // Set canvas dimensions to match video source
+      canvas.width = video.videoWidth;
+      canvas.height = video.videoHeight;
+      
+      const ctx = canvas.getContext("2d");
+      if (ctx) {
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+        // Compress to JPEG with 80% quality to save space
+        const base64Image = canvas.toDataURL("image/jpeg", 0.8);
+        setPhotoPreview(base64Image);
+        onCapture(base64Image);
+        
+        // Stop stream after capture to save battery
+        stream?.getTracks().forEach(track => track.stop());
+      }
+    }
+  };
+
+  const retakePhoto = () => {
+    setPhotoPreview(null);
+    // onCapture(""); <--- DIBUANG: Ini biang kerok yang masukin string kosong ke array parent
+    startCamera();
+  };
+
+  return (
+    <div className="flex flex-col gap-2 border border-gray-300 p-4 rounded-lg bg-gray-50">
+      <span className="text-sm font-semibold text-gray-700">{label}</span>
+      
+      {hasPermissionError ? (
+        <div className="p-4 bg-red-100 text-red-800 text-sm rounded-md text-center">
+          Gagal akses kamera! Pastikan browser diizinkan atau pakai HTTPS/ngrok.
+          <Button type="button" variant="secondary" className="mt-2 w-full" onClick={startCamera}>Coba Lagi</Button>
+        </div>
+      ) : (
+        <div className="relative w-full aspect-[4/3] bg-black rounded-md overflow-hidden flex items-center justify-center">
+          {!photoPreview ? (
+            <>
+              {/* playsInline is required for iOS Safari to not go fullscreen */}
+              <video 
+                ref={videoRef} 
+                autoPlay 
+                playsInline 
+                muted 
+                className="w-full h-full object-cover"
+                onLoadedMetadata={() => videoRef.current?.play()}
+              />
+              {!stream && (
+                <Button type="button" variant="primary" onClick={startCamera} className="absolute">
+                  Nyalakan Kamera
+                </Button>
+              )}
+            </>
+          ) : (
+            <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
+          )}
+          
+          {/* Hidden Canvas to handle the image processing */}
+          <canvas ref={canvasRef} className="hidden" />
+        </div>
+      )}
+
+      {stream && !photoPreview && (
+        <Button type="button" variant="primary" onClick={capturePhoto} className="w-full mt-2">
+          📸 Jepret Foto
+        </Button>
+      )}
+
+      {photoPreview && (
+        <Button type="button" variant="secondary" onClick={retakePhoto} className="w-full mt-2 border-dashed border-2 border-gray-400">
+          ➕ Lanjut Tambah Foto Lain / 🔄 Foto Ulang
+        </Button>
+      )}
+    </div>
+  );
+};
+</file>
+
+<file path="src/components/PrintLabelButton.tsx">
+"use client";
+
+import React from 'react';
+import { Button } from './Button';
+
+// Struktur dasar satu item label
+interface LabelItem {
+  customerName: string;
+  soNumber: string;
+  itemCode: string;
+  width: number;
+  height: number;
+}
+
+// Menyatukan tipe: Bisa menerima props satuan (seperti cara lama lo) ATAU props massal (pake array data)
+interface PrintLabelProps {
+  customerName?: string;
+  soNumber?: string;
+  itemCode?: string;
+  width?: number;
+  height?: number;
+  data?: LabelItem[]; // Untuk cetak massal jika diisi array
+}
+
+export const PrintLabelButton: React.FC<PrintLabelProps> = ({ 
+  customerName, 
+  soNumber, 
+  itemCode, 
+  width, 
+  height,
+  data 
+}) => {
+  
+  const handlePrint = () => {
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = 'none';
+    
+    document.body.appendChild(iframe);
+    
+    const iframeDoc = iframe.contentWindow?.document;
+    if (!iframeDoc) return;
+
+    // Menentukan daftar item yang mau dicetak
+    let itemsToPrint: LabelItem[] = [];
+
+    if (data && Array.isArray(data)) {
+      // Jika dikirim data array (Massal)
+      itemsToPrint = data;
+    } else if (customerName && soNumber && itemCode && width !== undefined && height !== undefined) {
+      // Jika dikirim eceran/satuan via props individual (Cara lama lo)
+      itemsToPrint = [{ customerName, soNumber, itemCode, width, height }];
+    }
+
+    if (itemsToPrint.length === 0) return;
+
+    // Generate konten HTML untuk semua label yang masuk daftar cetak
+    const labelsHTML = itemsToPrint.map((item) => {
+      const formattedSO = `SO/${item.soNumber.split('/').slice(1).join('/')}`;
+      return `
+        <div class="print-page">
+          <div class="title">${item.customerName.toUpperCase()}</div>
+          <div class="so">${formattedSO}</div>
+          <div class="footer-row">
+            <div class="sku">${item.itemCode}</div>
+            <div class="dimension">${item.width}x${item.height}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    iframeDoc.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <style>
+            @page {
+              size: 80mm 50mm;
+              margin: 0;
+            }
+            html, body {
+              margin: 0;
+              padding: 0;
+              background-color: #ffffff;
+              color: #000000;
+              font-family: Arial, sans-serif;
+            }
+            .print-page {
+              width: 80mm;
+              height: 50mm;
+              padding: 5mm 6mm 4mm 6mm;
+              box-sizing: border-box;
+              display: flex;
+              flex-direction: column;
+              justify-content: flex-start;
+              page-break-after: always;
+              page-break-inside: avoid;
+            }
+            .print-page:last-child {
+              page-break-after: auto;
+            }
+            .title {
+              font-size: 8pt;
+              font-weight: bold;
+              margin-bottom: 2px;
+              line-height: 1.2;
+            }
+            .so {
+              font-size: 16pt;
+              font-weight: bold;
+              margin-bottom: 6px;
+              line-height: 1.1;
+            }
+            .footer-row {
+              border-top: 3px solid #000000;
+              padding-top: 5px;
+              display: flex;
+              justify-content: space-between;
+              align-items: flex-start;
+            }
+            .sku {
+              font-size: 11pt;
+              font-weight: bold;
+              line-height: 1.2;
+              word-break: break-all;
+              padding-right: 6px;
+            }
+            .dimension {
+              font-size: 11pt;
+              font-weight: bold;
+              white-space: nowrap;
+            }
+          </style>
+        </head>
+        <body>
+          ${labelsHTML}
+        </body>
+      </html>
+    `);
+    
+    iframeDoc.close();
+
+    iframe.contentWindow?.focus();
+    iframe.contentWindow?.print();
+
+    setTimeout(() => {
+      document.body.removeChild(iframe);
+    }, 1000);
+  };
+
+  // Menentukan jumlah total item untuk label teks tombol
+  const totalItems = data ? data.length : 1;
+
+  return (
+    <Button 
+      variant="secondary" 
+      onClick={handlePrint}
+      className="w-full text-sm py-1 md:py-2 border-gray-300 bg-white hover:bg-gray-50 flex items-center justify-center gap-2"
+    >
+      🖨️ {data ? `Cetak Massal (${totalItems} Label)` : 'Cetak Label 80x50mm'}
+    </Button>
+  );
+};
+</file>
+
+<file path=".gitignore">
+# Node modules & build
+node_modules/
+.next/
+out/
+build/
+
+# Database SQLite (Ini kuncinya!)
+*.db
+*.db-journal
+.env.local
+
+# Log files
+*.log
+</file>
+
+<file path="eslint.config.mjs">
+import { defineConfig, globalIgnores } from "eslint/config";
+import nextPlugin from "@next/eslint-plugin-next";
+import tsPlugin from "@typescript-eslint/eslint-plugin";
+import tsParser from "@typescript-eslint/parser";
+
+const eslintConfig = defineConfig([
+  {
+    plugins: {
+      "@next/next": nextPlugin,
+      "@typescript-eslint": tsPlugin,
+    },
+    languageOptions: {
+      parser: tsParser,
+      parserOptions: {
+        ecmaVersion: "latest",
+        sourceType: "module",
+        ecmaFeatures: {
+          jsx: true,
+        },
+      },
+    },
+    rules: {
+      ...nextPlugin.configs.recommended.rules,
+      ...nextPlugin.configs["core-web-vitals"].rules,
+      ...tsPlugin.configs.recommended.rules,
+    },
+  },
+  // Custom global ignores lo tetap aman di bawah sini
+  globalIgnores([
+    ".next/**",
+    "out/**",
+    "build/**",
+    "next-env.d.ts",
+  ]),
+]);
+
+export default eslintConfig;
+</file>
+
+<file path="package.json">
+{
+  "name": "return-qc-app",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "next dev",
+    "build": "next build",
+    "start": "next start",
+    "lint": "next lint"
+  },
+  "dependencies": {
+    "@prisma/adapter-better-sqlite3": "^7.8.0",
+    "@prisma/client": "^7.8.0",
+    "better-sqlite3": "^12.11.1",
+    "date-fns": "^4.4.0",
+    "next": "^15.1.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "xlsx": "^0.18.5"
+  },
+  "devDependencies": {
+    "@tailwindcss/postcss": "^4.3.2",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^22",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "eslint": "^9",
+    "eslint-config-next": "^15.1.0",
+    "postcss": "^8",
+    "prisma": "^7.8.0",
+    "tailwindcss": "^4.0.0",
+    "typescript": "^5"
+  }
+}
+</file>
+
+<file path="tsconfig.json">
+{
+  "compilerOptions": {
+    "target": "ES2017",
+    "lib": [
+      "dom",
+      "dom.iterable",
+      "esnext"
+    ],
+    "allowJs": true,
+    "skipLibCheck": true,
+    "strict": true,
+    "noEmit": true,
+    "esModuleInterop": true,
+    "module": "esnext",
+    "moduleResolution": "bundler",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "preserve",
+    "incremental": true,
+    "plugins": [
+      {
+        "name": "next"
+      }
+    ],
+    "paths": {
+      "@/*": [
+        "./src/*"
+      ]
+    }
+  },
+  "include": [
+    "next-env.d.ts",
+    "**/*.ts",
+    "**/*.tsx",
+    ".next/types/**/*.ts",
+    ".next/dev/types/**/*.ts",
+    "**/*.mts"
+  ],
+  "exclude": [
+    "node_modules"
+  ]
+}
+</file>
+
+<file path="src/app/page.tsx">
+import { prisma } from "@/lib/prisma";
+import Link from "next/link";
+import { Input } from "@/components/Input";
+import { Button } from "@/components/Button";
+import { Pagination } from "@/components/Pagination";
+import { ReturnItemTable } from "@/components/ReturnItemTable";
+
+// Next.js App Router convention for Page props containing searchParams
+interface PageProps {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+export default async function DashboardPage(props: PageProps) {
+  // Next.js 15 requires awaiting searchParams
+  const searchParams = await props.searchParams;
+
+  // Parse URL search parameters
+  const page = Number(searchParams?.page) || 1;
+  const search = typeof searchParams?.search === 'string' ? searchParams.search : '';
+  const tab = searchParams?.tab === 'completed' ? 'completed' : 'pending';
+  const dateQuery = typeof searchParams?.date === 'string' ? searchParams.date : '';
+
+  const take = 10;
+  const skip = (page - 1) * take;
+  // Setup filter tanggal masuk
+  let dateFilter = undefined;
+  if (dateQuery) {
+    const startDate = new Date(dateQuery);
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + 1);
+    dateFilter = { gte: startDate, lt: endDate };
+  }
+
+  // Build Prisma where clause based on search and tab filters
+  const whereCondition = {
+    AND: [
+      ...(dateFilter ? [{ createdAt: dateFilter }] : []),
+      {
+        OR: [
+          { soNumber: { contains: search } },
+          { itemName: { contains: search } },
+          { customerName: { contains: search } },
+        ],
+      },
+      {
+        qcStatus: tab === 'pending' ? 'PENDING' : { not: 'PENDING' },
+      },
+    ],
+  };
+
+  // Fetch data and total count concurrently
+  const [items, totalItems] = await Promise.all([
+    prisma.returnItem.findMany({
+      where: whereCondition,
+      take,
+      skip,
+      orderBy: { createdAt: 'desc' },
+    }),
+    prisma.returnItem.count({ where: whereCondition }),
+  ]);
+
+  const totalPages = Math.ceil(totalItems / take);
+  const baseUrl = `/?tab=${tab}${search ? `&search=${encodeURIComponent(search)}` : ''}`;
+
+  return (
+    <main className="min-h-screen bg-gray-50 p-8">
+      <div className="max-w-7xl mx-auto bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+          <h1 className="text-xl md:text-2xl font-bold text-gray-800">Dashboard QC Barang Return</h1>
+          
+          <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+            {/* Direct link to API Route forces a file download */}
+            <a href="/api/export" target="_blank" rel="noreferrer" className="w-full sm:w-auto">
+              <Button variant="secondary" className="w-full">📥 Export Excel</Button>
+            </a>
+              <Link href="/import" className="w-full sm:w-auto">
+              <Button className="w-full">+ Import Excel</Button>
+            </Link>
+          </div>
+        </div>
+
+        {/* Tabs & Search */}
+        <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
+          <div className="flex space-x-2 w-full md:w-auto">
+            <Link href="/?tab=pending" className="flex-1 md:flex-none">
+              <Button 
+                variant={tab === 'pending' ? 'primary' : 'secondary'} 
+                className="w-full"
+              >
+                Belum Dicek
+              </Button>
+            </Link>
+            <Link href="/?tab=completed" className="flex-1 md:flex-none">
+              <Button 
+                variant={tab === 'completed' ? 'primary' : 'secondary'}
+                className="w-full"
+              >
+                Sudah Dicek
+              </Button>
+            </Link>
+          </div>
+
+          <form className="flex w-full md:w-auto gap-2 flex-col sm:flex-row" action="/" method="GET">
+            <input type="hidden" name="tab" value={tab} />
+            <Input type="date" name="date" defaultValue={dateQuery} className="w-full sm:w-auto" />
+            <Input 
+              name="search" 
+              placeholder="Cari SO, Barang, Customer..." 
+              defaultValue={search}
+              className="w-full md:w-80"
+            />
+            <Button type="submit" variant="secondary">Cari</Button>
+          </form>
+        </div>
+
+        {/* Data Table */}
+        <ReturnItemTable items={items} tab={tab} />
+
+        {/* Pagination */}
+        <Pagination currentPage={page} totalPages={totalPages} baseUrl={baseUrl} />
+
+      </div>
+    </main>
+  );
+}
+</file>
+
+<file path="src/components/ReturnItemTable.tsx">
+"use client";
+
+import React, { useState, useTransition } from 'react';
+import Link from 'next/link';
+import { Button } from './Button';
+import { bulkDeleteReturnItems } from '@/app/actions';
+
+// Strict interface matching Prisma's generated type for the subset we need
+export interface TableItem {
+  id: string;
+  soNumber: string;
+  customerName: string;
+  itemCode: string;
+  itemName: string;
+  width: number;
+  height: number;
+  qtyOrder: number;
+  qcStatus: string;
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+interface ReturnItemTableProps {
+  items: TableItem[];
+  tab: 'pending' | 'completed';
+}
+
+export const ReturnItemTable: React.FC<ReturnItemTableProps> = ({ items, tab }) => {
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [isPending, startTransition] = useTransition();
+
+  const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.checked) {
+      setSelectedIds(items.map(item => item.id));
+    } else {
+      setSelectedIds([]);
+    }
+  };
+
+  const handleSelectItem = (id: string, checked: boolean) => {
+    if (checked) {
+      setSelectedIds(prev => [...prev, id]);
+    } else {
+      setSelectedIds(prev => prev.filter(itemId => itemId !== id));
+    }
+  };
+
+  const handleBulkDelete = () => {
+    if (selectedIds.length === 0) return;
+    
+    const confirmDelete = window.confirm(`Yakin mau hapus ${selectedIds.length} data ini?`);
+    if (!confirmDelete) return;
+
+    startTransition(async () => {
+      const res = await bulkDeleteReturnItems(selectedIds);
+      if (res.success) {
+        alert(`Berhasil menghapus ${res.count} data!`);
+        setSelectedIds([]); // Reset selection setelah berhasil hapus
+      } else {
+        alert(res.error || "Gagal menghapus data");
+      }
+    });
+  };
+
+  // --- LOGIC TERBARU FIX CETAK MASSAL MENGGUNAKAN IFRAME TERISOLASI ---
+  const handleBulkPrint = () => {
+    const selectedItemsData = items.filter(item => selectedIds.includes(item.id));
+    if (selectedItemsData.length === 0) return;
+
+    // 1. Buat iframe tersembunyi agar terisolasi dari UI dashboard utama
+    const iframe = document.createElement('iframe');
+    iframe.style.position = 'fixed';
+    iframe.style.right = '0';
+    iframe.style.bottom = '0';
+    iframe.style.width = '0';
+    iframe.style.height = '0';
+    iframe.style.border = 'none';
+    
+    document.body.appendChild(iframe);
+    
+    const iframeDoc = iframe.contentWindow?.document;
+    if (!iframeDoc) return;
+
+    // 2. Generate HTML string per halaman label thermal (mendukung cetak massal multi-page)
+    const labelsHTML = selectedItemsData.map((item) => {
+      const formattedSO = `SO/${item.soNumber.split('/').slice(1).join('/')}`;
+      return `
+        <div class="print-page">
+          <div class="title">${item.customerName.toUpperCase()}</div>
+          <div class="so">${formattedSO}</div>
+          <div class="footer-row">
+            <div class="sku">${item.itemCode}</div>
+            <div class="dimension">${item.width}x${item.height}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+
+    // 3. Suntikkan dokumen HTML mini khusus ukuran thermal lengkap dengan logic page-break
+    iframeDoc.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <style>
+            @page {
+              size: 80mm 50mm;
+              margin: 0;
+            }
+            html, body {
+              margin: 0;
+              padding: 0;
+              background-color: #ffffff;
+              color: #000000;
+              font-family: Arial, sans-serif;
+            }
+            /* Kotak per label halaman thermal */
+            .print-page {
+              width: 80mm;
+              height: 50mm;
+              padding: 5mm 6mm 4mm 6mm;
+              box-sizing: border-box;
+              display: flex;
+              flex-direction: column;
+              justify-content: flex-start;
+              
+              /* Memaksa ganti kertas/halaman baru tiap ganti label */
+              page-break-after: always;
+              page-break-inside: avoid;
+            }
+            /* Hilangkan ganti halaman pada label yang paling akhir */
+            .print-page:last-child {
+              page-break-after: auto;
+            }
+            .title {
+              font-size: 8pt;
+              font-weight: bold;
+              margin-bottom: 2px;
+              line-height: 1.2;
+            }
+            .so {
+              font-size: 16pt;
+              font-weight: bold;
+              margin-bottom: 6px;
+              line-height: 1.1;
+            }
+            .footer-row {
+              border-top: 3px solid #000000;
+              padding-top: 5px;
+              display: flex;
+              justify-content: space-between;
+              align-items: flex-start;
+            }
+            .sku {
+              font-size: 11pt;
+              font-weight: bold;
+              line-height: 1.2;
+              word-break: break-all;
+              padding-right: 6px;
+            }
+            .dimension {
+              font-size: 11pt;
+              font-weight: bold;
+              white-space: nowrap;
+            }
+          </style>
+        </head>
+        <body>
+          ${labelsHTML}
+        </body>
+      </html>
+    `);
+    
+    iframeDoc.close();
+
+    // 4. Trigger print pada dokumen terisolasi di dalam iframe
+    iframe.contentWindow?.focus();
+    iframe.contentWindow?.print();
+
+    // 5. Hapus kembali iframe dari DOM setelah pop-up print terbuka
+    setTimeout(() => {
+      document.body.removeChild(iframe);
+    }, 1000);
+  };
+
+
+  return (
+    <div className="flex flex-col gap-4">
+      {/* Action Bar muncul cuma kalo ada yang di-select */}
+      {selectedIds.length > 0 && (
+        <div className="bg-red-50 border border-red-200 p-3 rounded-md flex justify-between items-center">
+          <span className="font-bold text-red-800 text-sm">{selectedIds.length} Data Dipilih</span>
+          <div className="flex gap-2">
+            <Button variant="secondary" onClick={handleBulkPrint} className="bg-white hover:bg-gray-100 text-gray-800 text-xs py-1 px-3 border border-gray-300">
+              🖨️ Cetak Massal
+            </Button>
+            <Button variant="danger" onClick={handleBulkDelete} disabled={isPending} className="text-xs py-1 px-3">
+              {isPending ? '...' : 'Hapus Massal'}
+            </Button>
+          </div>
+        </div>
+      )}
+
+      <div className="hidden md:block overflow-x-auto border rounded-lg">
+        <table className="w-full text-sm text-left text-gray-600">
+          <thead className="text-xs text-white uppercase bg-green-700">
+            <tr>
+              <th className="px-4 py-3 text-center w-10"><input type="checkbox" onChange={handleSelectAll} checked={selectedIds.length === items.length && items.length > 0} /></th>
+              <th className="px-4 py-3">Tgl Masuk</th>
+              <th className="px-4 py-3">No. SO</th>
+              <th className="px-4 py-3">Customer</th>
+              <th className="px-4 py-3">Kode / Nama Barang</th>
+              <th className="px-4 py-3 text-center">Ukuran (L x T)</th>
+              <th className="px-4 py-3 text-center">Qty</th>
+              <th className="px-4 py-3 text-center">Status</th>
+              <th className="px-4 py-3">Tgl Edit</th>
+              <th className="px-4 py-3 text-center">Aksi</th>
+            </tr>
+          </thead>
+          <tbody>
+            {items.length === 0 ? (
+              <tr>
+                <td colSpan={10} className="px-4 py-8 text-center text-gray-500">
+                  Tidak ada data barang ditemukan.
+                </td>
+              </tr>
+            ) : (
+              items.map((item) => (
+                <tr key={item.id} className={`border-b hover:bg-gray-50 ${selectedIds.includes(item.id) ? 'bg-green-50' : ''}`}>
+                  <td className="px-4 py-3 text-center">
+                    <input 
+                      type="checkbox" 
+                      className="rounded border-gray-300 text-green-600 focus:ring-green-500"
+                      checked={selectedIds.includes(item.id)}
+                      onChange={(e) => handleSelectItem(item.id, e.target.checked)}
+                    />
+                  </td>
+                  <td className="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">
+                    {new Date(item.createdAt).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}
+                  </td>
+                  <td className="px-4 py-3 font-medium text-gray-900">{item.soNumber}</td>
+                  <td className="px-4 py-3">{item.customerName}</td>
+                  <td className="px-4 py-3">
+                    <div className="font-semibold text-gray-800">{item.itemCode}</div>
+                    <div className="text-xs">{item.itemName}</div>
+                  </td>
+                  <td className="px-4 py-3 text-center">{item.width} x {item.height}</td>
+                  <td className="px-4 py-3 text-center font-bold">{item.qtyOrder}</td>
+                  <td className="px-4 py-3 text-center">
+                    <span className={`px-2 py-1 rounded-full text-xs font-bold ${item.qcStatus === 'PENDING' ? 'bg-gray-200' : item.qcStatus === 'GOOD' ? 'bg-green-100' : item.qcStatus === 'BAD' ? 'bg-red-100' : 'bg-orange-100'}`}>{item.qcStatus}</span>
+                  </td>
+                  <td className="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">
+                    {new Date(item.updatedAt).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}
+                  </td>
+                  <td className="px-4 py-3 text-center">
+                    <div className="flex justify-center gap-2">
+                      <Link href={`/qc/${item.id}`}><Button variant={tab === 'pending' ? 'primary' : 'secondary'} className="text-xs py-1 px-2">{tab === 'pending' ? 'Cek' : 'Detail'}</Button></Link>
+                      <Link href={`/edit/${item.id}`}><Button className="text-xs py-1 px-2 bg-yellow-500 hover:bg-yellow-600 text-white">Edit</Button></Link>
+                    </div>
+                  </td>
+                </tr>
+              ))
+            )}
+          </tbody>
+        </table>
+      </div>
+
+      {/* --- MOBILE CARD VIEW (Hidden on Desktop) --- */}
+      <div className="md:hidden flex flex-col gap-3">
+        {items.map((item) => (
+          <div key={item.id} className={`p-4 border rounded-lg shadow-sm bg-white ${selectedIds.includes(item.id) ? 'border-green-500 bg-green-50' : ''}`}>
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-3">
+                <input type="checkbox" className="w-5 h-5 rounded border-gray-300 text-green-600" checked={selectedIds.includes(item.id)} onChange={(e) => handleSelectItem(item.id, e.target.checked)} />
+                <div>
+                  <div className="font-bold text-gray-900">{item.soNumber}</div>
+                  <div className="text-xs text-gray-500">{item.customerName}</div>
+                </div>
+              </div>
+              <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${item.qcStatus === 'GOOD' ? 'bg-green-100 text-green-700' : item.qcStatus === 'BAD' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'}`}>
+                {item.qcStatus}
+              </span>
+            </div>
+            
+            <div className="mt-3 text-xs text-gray-600 border-t pt-2 grid grid-cols-2 gap-2">
+              <div><span className="font-bold">Barang:</span> {item.itemName}</div>
+              <div><span className="font-bold">Qty:</span> {item.qtyOrder}</div>
+              <div className="col-span-2 mt-1 border-t border-dashed pt-1 flex justify-between text-[10px] text-gray-400">
+                <span>Masuk: {new Date(item.createdAt).toLocaleDateString('id-ID')}</span>
+                <span>Edit: {new Date(item.updatedAt).toLocaleDateString('id-ID')}</span>
+              </div>
+            </div>
+
+            <div className="mt-3 flex gap-2">
+              <Link href={`/qc/${item.id}`} className="flex-1">
+                <Button variant={tab === 'pending' ? 'primary' : 'secondary'} className="w-full py-1 text-xs">
+                  {tab === 'pending' ? 'Cek QC' : 'Detail'}
+                </Button>
+              </Link>
+              <Link href={`/edit/${item.id}`} className="flex-1">
+                <Button className="w-full py-1 text-xs bg-yellow-500 hover:bg-yellow-600 text-white">Edit</Button>
+              </Link>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+};
+</file>
+
+<file path="README.md">
+# Return QC Management System
+
+Sistem manajemen Quality Control (QC) barang return berbasis web yang dirancang untuk menggantikan proses manual pengecekan barang, dokumentasi foto, dan pencatatan hasil inspeksi menjadi satu platform terpusat.
+
+---
+
+## ✨ Fitur Utama
+
+- Import data master dari file Excel
+- Dashboard responsif (Desktop & Mobile)
+- Pencarian data real-time
+- Filter status QC
+- Bulk delete data
+- Kamera langsung dari browser HP
+- Multi-photo untuk barang rusak/minus
+- Catatan kerusakan (damage notes)
+- Edit data master dan hasil QC
+- Auto cleanup file foto yang tidak digunakan
+- Export laporan hasil QC ke Excel
+- Print Thermal Label 80x50mm untuk Pendataan 
+
+---
+
+## 🏗 Tech Stack
+
+- Next.js 15 (App Router)
+- TypeScript (Strict Mode)
+- Tailwind CSS
+- Prisma ORM
+- SQLite Database
+- SheetJS (xlsx)
+- PM2
+- Ngrok
+
+---
+
+## 📦 Instalasi
+
+### Clone Repository
+
+```bash
+git clone <repository-url>
+cd return-qc-app
+```
+
+### Install Dependencies
+
+```bash
+npm install
+```
+
+### Setup Database
+
+```bash
+npx prisma db push
+```
+
+### Jalankan Development Server
+
+```bash
+npm run dev
+```
+
+Aplikasi akan berjalan di:
+
+```text
+http://localhost:3000
+```
+
+---
+
+## 🚀 Production Deployment
+
+### Build Application
+
+```bash
+npm run build
+```
+
+### Run with PM2
+
+```bash
+pm2 start npm --name "return-qc-app" -- start
+```
+
+### Save PM2 Configuration
+
+```bash
+pm2 save
+pm2 startup
+```
+
+---
+
+## 🌐 Akses dari HP (Camera Support)
+
+Browser hanya mengizinkan akses kamera melalui koneksi HTTPS.
+
+Jalankan Ngrok:
+
+```bash
+ngrok http 3000
+```
+
+Kemudian bagikan URL HTTPS yang dihasilkan kepada staf gudang.
+
+Contoh:
+
+```text
+https://abc123.ngrok-free.app
+```
+
+---
+
+## 📂 Struktur Folder
+
+```text
+.
+├── app/
+├── actions/
+├── components/
+├── lib/
+├── prisma/
+│   └── schema.prisma
+├── public/
+│   └── uploads/
+├── dev.db
+├── package.json
+└── README.md
+```
+
+---
+
+## 🔄 Workflow Penggunaan
+
+### 1. Import Excel
+
+Upload file Excel berisi data barang return.
+
+### 2. QC Barang
+
+Staf melakukan:
+
+- Foto barang
+- Menentukan status QC
+- Menambahkan foto kerusakan
+- Menambahkan catatan
+
+### 3. Simpan Hasil
+
+Data tersimpan ke database dan foto tersimpan ke server lokal.
+
+### 4. Export Report
+
+Generate laporan Excel hasil QC.
+
+---
+
+## 📊 Status QC
+
+| Status | Keterangan |
+|----------|----------|
+| PENDING | Belum dicek |
+| GOOD | Barang sesuai |
+| BAD | Barang rusak |
+| PARTIAL_GOOD | Sebagian barang rusak |
+
+---
+
+## 📷 Penyimpanan Foto
+
+Semua foto disimpan pada:
+
+```text
+public/uploads/
+```
+
+Jika foto diganti atau dihapus, sistem akan otomatis menghapus file lama dari storage untuk menghindari file sampah.
+
+---
+
+## 🛡 File yang Tidak Boleh Masuk Git
+
+Pastikan `.gitignore` berisi:
+
+```gitignore
+*.db
+public/uploads/
+.next/
+node_modules/
+```
+
+---
+
+## 🔄 Update Deployment
+
+Di server:
+
+```bash
+git pull origin main
+npm install
+npm run build
+pm2 restart return-qc-app
+```
+
+---
+
+## 📚 Dokumentasi Lengkap
+
+Dokumentasi teknis lengkap tersedia pada:
+
+```text
+dokumentasi.md
+```
+
+Dokumen tersebut menjadi **Single Source of Truth** untuk:
+
+- Arsitektur Sistem
+- Database
+- Workflow QC
+- Deployment
+- Git Workflow
+- Pengelolaan Foto
+- Export Report
+
+---
+
+## 👨‍💻 Author
+
+Internal Warehouse QC Tools
+</file>
+
+</files>

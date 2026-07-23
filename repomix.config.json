@@ -1,0 +1,16 @@
+{
+  "output": {
+    "filePath": "repomix-output.xml",
+    "style": "xml"
+  },
+  "ignore": {
+    "useGitignore": true,
+    "customPatterns": [
+      "*.db",
+      "prisma/*.db",
+      "public/uploads/**",
+      "public/*.svg",
+      "package-lock.json"
+    ]
+  }
+}
