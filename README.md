@@ -15,7 +15,7 @@ Kini dilengkapi dengan **Ekosistem Barcode Tertutup (Closed-loop)** dan **Integr
 * **[NEW]** Print Thermal Label 80x50mm dengan Barcode CODE128
 * **[NEW]** Status Tindak Lanjut Barang (`DIJUAL_KEMBALI` & `SCRAP`)
 * **[NEW]** Advanced Filter Dashboard (Dropdown Toko & Real-time Search)
-* **[NEW]** Export Excel Dinamis berdasarkan Toko & Rentang Tanggal
+* **[NEW]** Export Laporan Excel Dinamis (Bisa Custom Filter Multi-Toko Sekaligus)
 * **[NEW]** Fitur Diagnostik & Cek Koneksi API ETL pada halaman Tarik SO
 
 ### Fitur Existing

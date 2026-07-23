@@ -8,7 +8,10 @@ export async function GET(req: NextRequest) {
     const searchParams = req.nextUrl.searchParams;
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
-    const customerName = searchParams.get('customerName');
+    
+    // Tangkap daftar toko. Formatnya: "Toko A|Toko B|Toko C"
+    const customersParam = searchParams.get('customers');
+    const customerArray = customersParam ? customersParam.split('|').filter(Boolean) : [];
 
     let dateFilter = undefined;
     if (startDate && endDate) {
@@ -21,7 +24,8 @@ export async function GET(req: NextRequest) {
       where: { 
         qcStatus: { not: 'PENDING' },
         ...(dateFilter ? { createdAt: dateFilter } : {}),
-        ...(customerName ? { customerName: customerName } : {})
+        // Filter IN: Ambil data jika nama customer ada di dalam array
+        ...(customerArray.length > 0 ? { customerName: { in: customerArray } } : {})
       },
       include: { qcResult: true },
       orderBy: { qcResult: { processedAt: 'desc' } }, 
@@ -36,7 +40,6 @@ export async function GET(req: NextRequest) {
         ? new Date(item.qcResult.processedAt).toISOString().split('T')[0] 
         : '-';
 
-      // Terjemahkan status database ke bahasa manusia yang enak dibaca bos
       const resolutionText = item.qcResult?.resolution === 'DIJUAL_KEMBALI' 
         ? 'Dijual Kembali' 
         : item.qcResult?.resolution === 'SCRAP' 
@@ -45,29 +48,30 @@ export async function GET(req: NextRequest) {
 
       return {
         "NO": index + 1,
-        "tanggal terima barang": dateStr,
-        "SALES ORDER": item.soNumber,
+        "Tanggal Terima": dateStr,
+        "Sales Order": item.soNumber,
         "Customer": item.customerName,
-        "Kode SKU Barang": item.itemCode,
+        "Kode Barang": item.itemCode,
         "Nama Barang": item.itemName,
-        "LEBAR": item.width,
-        "TINGGI": item.height,
-        "QTY ORDER": item.qtyOrder,
+        "L": item.width,
+        "T": item.height,
+        "Qty": item.qtyOrder,
         "Status QC": item.qcStatus,
-        "Tindak Lanjut": resolutionText, // <--- INI KOLOM BARUNYA
-        "Notes": item.qcResult?.damageNotes || "-",
+        "Tindak Lanjut": resolutionText,
+        "Notes Minus": item.qcResult?.damageNotes || "-",
       };
     });
 
     const worksheet = utils.json_to_sheet(excelData);
     const workbook = utils.book_new();
-    utils.book_append_sheet(workbook, worksheet, "Data QC Barang");
+    utils.book_append_sheet(workbook, worksheet, "Data QC");
 
     const excelBuffer = write(workbook, { type: 'buffer', bookType: 'xlsx' });
 
-    let fileName = "Export_QC_Return";
-    if (customerName) fileName += `_${customerName}`;
-    if (startDate && endDate) fileName += `_${startDate}_sampai_${endDate}`;
+    let fileName = "Export_QC";
+    if (customerArray.length === 1) fileName += `_${customerArray[0]}`;
+    else if (customerArray.length > 1) fileName += `_MultiToko`;
+    if (startDate && endDate) fileName += `_${startDate}_to_${endDate}`;
     fileName += ".xlsx";
 
     return new NextResponse(excelBuffer, {

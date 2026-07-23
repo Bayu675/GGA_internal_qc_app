@@ -67,7 +67,6 @@ export const ReturnItemTable: React.FC<ReturnItemTableProps> = ({ items, tab }) 
     const selectedItemsData = items.filter(item => selectedIds.includes(item.id));
     if (selectedItemsData.length === 0) return;
 
-    // 1. Buat iframe tersembunyi agar terisolasi dari UI dashboard utama
     const iframe = document.createElement('iframe');
     iframe.style.position = 'fixed';
     iframe.style.right = '0';
@@ -81,13 +80,27 @@ export const ReturnItemTable: React.FC<ReturnItemTableProps> = ({ items, tab }) 
     const iframeDoc = iframe.contentWindow?.document;
     if (!iframeDoc) return;
 
-    // 2. Generate HTML string per halaman label thermal (mendukung cetak massal multi-page)
+    // Generate HTML dengan Barcode untuk cetak massal
     const labelsHTML = selectedItemsData.map((item) => {
+      const cleanSO = item.soNumber; 
       const formattedSO = `SO/${item.soNumber.split('/').slice(1).join('/')}`;
+      
       return `
         <div class="print-page">
           <div class="title">${item.customerName.toUpperCase()}</div>
           <div class="so">${formattedSO}</div>
+          
+          <div class="barcode-container">
+             <svg class="barcode"
+                jsbarcode-value="${cleanSO}"
+                jsbarcode-format="CODE128"
+                jsbarcode-height="40"
+                jsbarcode-width="1.5"
+                jsbarcode-displayvalue="false"
+                jsbarcode-margin="0">
+             </svg>
+          </div>
+
           <div class="footer-row">
             <div class="sku">${item.itemCode}</div>
             <div class="dimension">${item.width}x${item.height}</div>
@@ -96,80 +109,44 @@ export const ReturnItemTable: React.FC<ReturnItemTableProps> = ({ items, tab }) 
       `;
     }).join('');
 
-    // 3. Suntikkan dokumen HTML mini khusus ukuran thermal lengkap dengan logic page-break
     iframeDoc.write(`
       <!DOCTYPE html>
       <html>
         <head>
+          <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
           <style>
-            @page {
-              size: 80mm 50mm;
-              margin: 0;
-            }
-            html, body {
-              margin: 0;
-              padding: 0;
-              background-color: #ffffff;
-              color: #000000;
-              font-family: Arial, sans-serif;
-            }
-            /* Kotak per label halaman thermal */
+            @page { size: 80mm 50mm; margin: 0; }
+            html, body { margin: 0; padding: 0; background-color: #ffffff; color: #000000; font-family: Arial, sans-serif; }
             .print-page {
-              width: 80mm;
-              height: 50mm;
-              padding: 5mm 6mm 4mm 6mm;
-              box-sizing: border-box;
-              display: flex;
-              flex-direction: column;
-              justify-content: flex-start;
-              
-              /* Memaksa ganti kertas/halaman baru tiap ganti label */
-              page-break-after: always;
-              page-break-inside: avoid;
+              width: 80mm; height: 50mm; padding: 3mm 6mm 3mm 6mm;
+              box-sizing: border-box; display: flex; flex-direction: column;
+              justify-content: flex-start; page-break-after: always; page-break-inside: avoid;
             }
-            /* Hilangkan ganti halaman pada label yang paling akhir */
-            .print-page:last-child {
-              page-break-after: auto;
-            }
-            .title {
-              font-size: 8pt;
-              font-weight: bold;
-              margin-bottom: 2px;
-              line-height: 1.2;
-            }
-            .so {
-              font-size: 16pt;
-              font-weight: bold;
-              margin-bottom: 6px;
-              line-height: 1.1;
-            }
-            .footer-row {
-              border-top: 3px solid #000000;
-              padding-top: 5px;
-              display: flex;
-              justify-content: space-between;
-              align-items: flex-start;
-            }
-            .sku {
-              font-size: 11pt;
-              font-weight: bold;
-              line-height: 1.2;
-              word-break: break-all;
-              padding-right: 6px;
-            }
-            .dimension {
-              font-size: 11pt;
-              font-weight: bold;
-              white-space: nowrap;
-            }
+            .print-page:last-child { page-break-after: auto; }
+            .title { font-size: 8pt; font-weight: bold; margin-bottom: 2px; line-height: 1.2; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+            .so { font-size: 13pt; font-weight: bold; margin-bottom: 2px; line-height: 1.1; }
+            .barcode-container { flex-grow: 1; display: flex; align-items: center; justify-content: center; margin-bottom: 2px; width: 100%; overflow: hidden; }
+            .barcode-container svg { width: 100%; max-height: 100%; }
+            .footer-row { border-top: 2px solid #000000; padding-top: 3px; display: flex; justify-content: space-between; align-items: flex-start; }
+            .sku { font-size: 10pt; font-weight: bold; line-height: 1.2; word-break: break-all; padding-right: 6px; }
+            .dimension { font-size: 10pt; font-weight: bold; white-space: nowrap; }
           </style>
         </head>
         <body>
           ${labelsHTML}
+          <script>
+            window.onload = function() {
+              JsBarcode(".barcode").init();
+              setTimeout(() => {
+                window.focus();
+                window.print();
+              }, 300);
+            }
+          </script>
         </body>
       </html>
     `);
-    
+      
     iframeDoc.close();
 
     // 4. Trigger print pada dokumen terisolasi di dalam iframe
