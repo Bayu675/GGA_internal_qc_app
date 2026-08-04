@@ -79,10 +79,17 @@ export async function importExcelAction(formData: FormData): Promise<ImportActio
     // --- BLOK VALIDASI DUPLIKAT ---
     if (!force) {
       const soNumbers = sanitizedData.map(d => d.soNumber);
-      const existingItems = await prisma.returnItem.findMany({
-        where: { soNumber: { in: soNumbers } },
-        select: { soNumber: true, itemCode: true }
-      });
+      const existingItems: { soNumber: string; itemCode: string }[] = [];
+      
+      const chunkSize = 500;
+      for (let i = 0; i < soNumbers.length; i += chunkSize) {
+        const chunk = soNumbers.slice(i, i + chunkSize);
+        const res = await prisma.returnItem.findMany({
+          where: { soNumber: { in: chunk } },
+          select: { soNumber: true, itemCode: true }
+        });
+        existingItems.push(...res);
+      }
 
       if (existingItems.length > 0) {
         const duplicates = sanitizedData.filter(d =>

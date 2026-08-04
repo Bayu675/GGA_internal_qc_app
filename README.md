@@ -10,13 +10,17 @@ Kini dilengkapi dengan **Ekosistem Barcode Tertutup (Closed-loop)** dan **Integr
 
 ### Fitur Terbaru
 
+* **[NEW]** Logika Penanganan Return Berulang (Otomatis deteksi & tambah suffix `- R2`, `- R3`)
 * **[NEW]** Integrasi API Tarik SO Otomatis dari Server VFP (Postgres ETL)
-* **[NEW]** Barcode Scanner In-App menggunakan kamera HP (`html5-qrcode`)
+* **[NEW]** Barcode Scanner In-App dengan Audio Feedback (Beep)
 * **[NEW]** Print Thermal Label 80x50mm dengan Barcode CODE128
 * **[NEW]** Status Tindak Lanjut Barang (`DIJUAL_KEMBALI` & `SCRAP`)
-* **[NEW]** Advanced Filter Dashboard (Dropdown Toko & Real-time Search)
+* **[NEW]** Advanced Filter Dashboard dengan Pencarian Toko di Modal Export
 * **[NEW]** Export Laporan Excel Dinamis (Bisa Custom Filter Multi-Toko Sekaligus)
 * **[NEW]** Fitur Diagnostik & Cek Koneksi API ETL pada halaman Tarik SO
+* **[NEW]** Client-Side Image Compression (Hemat storage server hingga 80%)
+* **[NEW]** Lightbox / Click-to-Zoom untuk detail foto QC
+* **[NEW]** Sticky Bottom Action Bar untuk form QC dan Edit
 
 ### Fitur Existing
 
@@ -165,6 +169,8 @@ Fitur yang membutuhkan akses kamera:
 │   └── schema.prisma
 ├── public/
 │   └── uploads/
+│   ├── js/
+│   └── beep.mp3
 ├── dev.db
 ├── package.json
 └── README.md

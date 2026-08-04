@@ -14,8 +14,10 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan }) => {
   const scannerRef = useRef<Html5Qrcode | null>(null);
 
   useEffect(() => {
+    let isMounted = true;
     if (isScanning) {
       const timer = setTimeout(() => {
+        if (!isMounted) return;
         // 1. Inisialisasi dengan Format Eksplisit (Wajib buat baca garis)
         scannerRef.current = new Html5Qrcode("reader", {
         verbose: false,
@@ -41,13 +43,18 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan }) => {
           },
           (decodedText) => {
             // JIKA BERHASIL SCAN
-            if (scannerRef.current) {
+            if (scannerRef.current && isMounted) {
               // Bikin bunyi Beep (opsional, UX biar staf tau kalo berhasil)
-              try { navigator.vibrate(200); } catch(e){} 
+                            try { 
+                navigator.vibrate(200); 
+                new Audio('/beep.mp3').play().catch(()=>{});
+              } catch(e){}
 
               scannerRef.current.stop().then(() => {
-                setIsScanning(false);
-                onScan(decodedText);
+                if (isMounted) {
+                  setIsScanning(false);
+                  onScan(decodedText);
+                }
               }).catch((err) => console.error("Gagal stop:", err));
             }
           },
@@ -55,19 +62,19 @@ export const BarcodeScanner: React.FC<BarcodeScannerProps> = ({ onScan }) => {
             // Ignore error per-frame (normal)
           }
         ).catch((err) => {
-          setError("Gagal akses kamera! Pastikan pakai HTTPS (Ngrok) dan izinkan akses kamera.");
+          if (isMounted) setError("Gagal akses kamera! Pastikan pakai HTTPS (Ngrok) dan izinkan akses kamera.");
         });
       }, 200);
 
-      return () => clearTimeout(timer);
+      return () => {
+        isMounted = false;
+        clearTimeout(timer);
+        if (scannerRef.current && scannerRef.current.isScanning) {
+          scannerRef.current.stop().catch(() => {});
+        }
+      };
     }
 
-    // Cleanup
-    return () => {
-      if (scannerRef.current && scannerRef.current.isScanning) {
-        scannerRef.current.stop().catch(() => {});
-      }
-    };
   }, [isScanning, onScan]);
 
   const handleStop = () => {

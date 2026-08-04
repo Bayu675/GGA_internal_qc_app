@@ -6,6 +6,7 @@
   "ignore": {
     "useGitignore": true,
     "customPatterns": [
+      "**/.git/**",
       "*.db",
       "prisma/*.db",
       "public/uploads/**",

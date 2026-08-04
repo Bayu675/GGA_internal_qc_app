@@ -6,7 +6,22 @@ import { useRouter } from "next/navigation";
 import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
 import Link from "next/link";
-import { DraftItem, saveTarikSOAction, fetchSOFromETL, checkEtlConnection } from "./actions";
+import { DraftItem, saveTarikSOAction, fetchSOFromETL, checkEtlConnection, checkDuplicateReturn } from "./actions";
+
+interface ETLItem {
+  productCode: string;
+  product?: { name: string };
+  width: string | number;
+  height: string | number;
+  qty: string | number;
+}
+
+interface ETLOrder {
+  soNumber: string;
+  customerCode: string;
+  customer?: { name: string };
+  items: ETLItem[];
+}
 
 export default function TarikSOPage() {
   const router = useRouter();
@@ -57,8 +72,14 @@ export default function TarikSOPage() {
     }
 
     // Skenario 3: Sukses & Data Ketemu
-    const newItems: DraftItem[] = resData.data.flatMap((order: any) =>
-      order.items.map((item: any) => ({
+        if (!Array.isArray(resData.data)) {
+      setError("Format data dari server tidak valid (bukan array).");
+      setIsFetching(false);
+      return;
+    }
+
+    const newItems: DraftItem[] = resData.data.flatMap((order: ETLOrder) =>
+      order.items.map((item: ETLItem) => ({
         soNumber: order.soNumber,
         customerName: order.customer?.name || order.customerCode,
         itemCode: item.productCode,
@@ -77,10 +98,30 @@ export default function TarikSOPage() {
     setDraftItems((prev) => prev.filter((_, idx) => idx !== indexToRemove));
   };
 
-  const handleSaveToQC = () => {
+  const handleSaveToQC = async () => {
     if (draftItems.length === 0) return;
+
+    const firstItem = draftItems[0];
+    const returnCount = await checkDuplicateReturn(firstItem.soNumber, firstItem.itemCode);
+    let finalItems = [...draftItems];
+
+    if (returnCount > 0) {
+      const nextR = returnCount + 1;
+      const isRepeated = window.confirm(
+        `⚠️ PERINGATAN: Barang ini sudah pernah di-return ${returnCount} kali!\n\nApakah ini adalah return yang ke-${nextR}? (Jika OK, nomor SO akan ditambahkan kode - R${nextR})`
+      );
+
+      if (isRepeated) {
+        finalItems = finalItems.map(item => ({
+          ...item,
+          soNumber: `${item.soNumber} - R${nextR}`
+        }));
+      } else {
+        return;
+      }
+    }
     startTransition(async () => {
-      const res = await saveTarikSOAction(draftItems);
+      const res = await saveTarikSOAction(finalItems);
       if (res.success) {
         alert(`Berhasil menyimpan ${res.count} item!`);
         router.push("/");

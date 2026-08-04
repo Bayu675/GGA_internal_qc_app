@@ -83,12 +83,13 @@ async function saveBase64Image(base64String: string, prefix: string): Promise<st
 
 // Helper to delete physical file from local filesystem
 async function deleteLocalFile(fileUrl: string) {
-  if (!fileUrl) return;
+  if (!fileUrl || fileUrl.startsWith("http")) return;
   try {
     const filePath = path.join(process.cwd(), "public", fileUrl);
+    await fs.access(filePath); // Cek eksistensi file dulu
     await fs.unlink(filePath);
   } catch (error) {
-    console.error("Gagal menghapus file lama (mungkin sudah terhapus):", fileUrl);
+    // Abaikan jika file tidak ada
   }
 }
 

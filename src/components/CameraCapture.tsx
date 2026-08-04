@@ -46,15 +46,16 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ label, onCapture }
       const video = videoRef.current;
       const canvas = canvasRef.current;
       
-      // Set canvas dimensions to match video source
-      canvas.width = video.videoWidth;
-      canvas.height = video.videoHeight;
+      const MAX_WIDTH = 1080;
+      const scale = Math.min(MAX_WIDTH / video.videoWidth, 1);
+      
+      canvas.width = video.videoWidth * scale;
+      canvas.height = video.videoHeight * scale;
       
       const ctx = canvas.getContext("2d");
       if (ctx) {
         ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-        // Compress to JPEG with 80% quality to save space
-        const base64Image = canvas.toDataURL("image/jpeg", 0.8);
+        const base64Image = canvas.toDataURL("image/jpeg", 0.7);
         setPhotoPreview(base64Image);
         onCapture(base64Image);
         
@@ -80,24 +81,26 @@ export const CameraCapture: React.FC<CameraCaptureProps> = ({ label, onCapture }
           <Button type="button" variant="secondary" className="mt-2 w-full" onClick={startCamera}>Coba Lagi</Button>
         </div>
       ) : (
-        <div className="relative w-full aspect-[4/3] bg-black rounded-md overflow-hidden flex items-center justify-center">
+        <div className="relative w-full aspect-[4/3] bg-black rounded-md overflow-hidden">
           {!photoPreview ? (
-            <>
+            <div className="w-full h-full relative">
               {/* playsInline is required for iOS Safari to not go fullscreen */}
               <video 
                 ref={videoRef} 
                 autoPlay 
                 playsInline 
                 muted 
-                className="w-full h-full object-cover"
+                className="absolute inset-0 w-full h-full object-cover"
                 onLoadedMetadata={() => videoRef.current?.play()}
               />
               {!stream && (
-                <Button type="button" variant="primary" onClick={startCamera} className="absolute">
-                  Nyalakan Kamera
-                </Button>
+                <div className="absolute inset-0 flex items-center justify-center">
+                  <Button type="button" variant="primary" onClick={startCamera}>
+                    Nyalakan Kamera
+                  </Button>
+                </div>
               )}
-            </>
+            </div>
           ) : (
             <img src={photoPreview} alt="Preview" className="w-full h-full object-cover" />
           )}

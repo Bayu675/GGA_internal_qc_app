@@ -113,7 +113,7 @@ export const ReturnItemTable: React.FC<ReturnItemTableProps> = ({ items, tab }) 
       <!DOCTYPE html>
       <html>
         <head>
-          <script src="https://cdn.jsdelivr.net/npm/jsbarcode@3.11.5/dist/JsBarcode.all.min.js"></script>
+          <script src="/js/JsBarcode.all.min.js"></script>
           <style>
             @page { size: 80mm 50mm; margin: 0; }
             html, body { margin: 0; padding: 0; background-color: #ffffff; color: #000000; font-family: Arial, sans-serif; }
@@ -149,23 +149,23 @@ export const ReturnItemTable: React.FC<ReturnItemTableProps> = ({ items, tab }) 
       
     iframeDoc.close();
 
-    // 4. Trigger print pada dokumen terisolasi di dalam iframe
-    iframe.contentWindow?.focus();
-    iframe.contentWindow?.print();
-
-    // 5. Hapus kembali iframe dari DOM setelah pop-up print terbuka
     setTimeout(() => {
-      document.body.removeChild(iframe);
-    }, 1000);
+    try { document.body.removeChild(iframe); } catch(e){}
+    }, 3000);
   };
 
 
   return (
     <div className="flex flex-col gap-4">
       {/* Action Bar muncul cuma kalo ada yang di-select */}
-      {selectedIds.length > 0 && (
+      <div className={`transition-all duration-300 ease-in-out overflow-hidden ${selectedIds.length > 0 ? 'max-h-20 opacity-100 mb-4' : 'max-h-0 opacity-0'}`}>
         <div className="bg-red-50 border border-red-200 p-3 rounded-md flex justify-between items-center">
-          <span className="font-bold text-red-800 text-sm">{selectedIds.length} Data Dipilih</span>
+          <div className="flex flex-col">
+            <span className="font-bold text-red-800 text-sm">{selectedIds.length} Data Dipilih</span>
+            {selectedIds.length === items.length && items.length > 0 && (
+              <span className="text-[10px] text-red-600">*(Hanya data di halaman ini)</span>
+            )}
+          </div>
           <div className="flex gap-2">
             <Button variant="secondary" onClick={handleBulkPrint} className="bg-white hover:bg-gray-100 text-gray-800 text-xs py-1 px-3 border border-gray-300">
               🖨️ Cetak Massal
@@ -175,7 +175,7 @@ export const ReturnItemTable: React.FC<ReturnItemTableProps> = ({ items, tab }) 
             </Button>
           </div>
         </div>
-      )}
+      </div>
 
       <div className="hidden md:block overflow-x-auto border rounded-lg">
         <table className="w-full text-sm text-left text-gray-600">
@@ -212,9 +212,16 @@ export const ReturnItemTable: React.FC<ReturnItemTableProps> = ({ items, tab }) 
                     />
                   </td>
                   <td className="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">
-                    {new Date(item.createdAt).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}
+                    {new Date(item.createdAt).toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }).replace('.', ':')}
                   </td>
-                  <td className="px-4 py-3 font-medium text-gray-900">{item.soNumber}</td>
+                 <td className="px-4 py-3 font-medium text-gray-900">
+                    {item.soNumber}
+                    {item.soNumber.includes('- R') && (
+                      <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded text-[10px] font-bold bg-red-100 text-red-800 border border-red-200">
+                        ⚠️ RETURN BERULANG
+                      </span>
+                    )}
+                  </td>
                   <td className="px-4 py-3">{item.customerName}</td>
                   <td className="px-4 py-3">
                     <div className="font-semibold text-gray-800">{item.itemCode}</div>
@@ -226,7 +233,7 @@ export const ReturnItemTable: React.FC<ReturnItemTableProps> = ({ items, tab }) 
                     <span className={`px-2 py-1 rounded-full text-xs font-bold ${item.qcStatus === 'PENDING' ? 'bg-gray-200' : item.qcStatus === 'GOOD' ? 'bg-green-100' : item.qcStatus === 'BAD' ? 'bg-red-100' : 'bg-orange-100'}`}>{item.qcStatus}</span>
                   </td>
                   <td className="px-4 py-3 text-xs text-gray-500 whitespace-nowrap">
-                    {new Date(item.updatedAt).toLocaleDateString('id-ID', { day: '2-digit', month: 'short' })}
+                    {new Date(item.updatedAt).toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }).replace('.', ':')}
                   </td>
                   <td className="px-4 py-3 text-center">
                     <div className="flex justify-center gap-2">
@@ -246,13 +253,18 @@ export const ReturnItemTable: React.FC<ReturnItemTableProps> = ({ items, tab }) 
         {items.map((item) => (
           <div key={item.id} className={`p-4 border rounded-lg shadow-sm bg-white ${selectedIds.includes(item.id) ? 'border-green-500 bg-green-50' : ''}`}>
             <div className="flex items-start justify-between">
-              <div className="flex items-center gap-3">
-                <input type="checkbox" className="w-5 h-5 rounded border-gray-300 text-green-600" checked={selectedIds.includes(item.id)} onChange={(e) => handleSelectItem(item.id, e.target.checked)} />
+              <label className="flex items-center gap-3 cursor-pointer w-full">
+              <input type="checkbox" className="w-5 h-5 rounded border-gray-300 text-green-600" checked={selectedIds.includes(item.id)} onChange={(e) => handleSelectItem(item.id, e.target.checked)} />
                 <div>
-                  <div className="font-bold text-gray-900">{item.soNumber}</div>
+                  <div className="font-bold text-gray-900 flex items-center gap-2">
+                    {item.soNumber}
+                    {item.soNumber.includes('- R') && (
+                      <span className="px-1.5 py-0.5 rounded text-[8px] font-bold bg-red-100 text-red-800 border border-red-200">R2</span>
+                    )}
+                  </div>
                   <div className="text-xs text-gray-500">{item.customerName}</div>
                 </div>
-              </div>
+              </label>
               <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase ${item.qcStatus === 'GOOD' ? 'bg-green-100 text-green-700' : item.qcStatus === 'BAD' ? 'bg-red-100 text-red-700' : 'bg-orange-100 text-orange-700'}`}>
                 {item.qcStatus}
               </span>
@@ -262,8 +274,8 @@ export const ReturnItemTable: React.FC<ReturnItemTableProps> = ({ items, tab }) 
               <div><span className="font-bold">Barang:</span> {item.itemName}</div>
               <div><span className="font-bold">Qty:</span> {item.qtyOrder}</div>
               <div className="col-span-2 mt-1 border-t border-dashed pt-1 flex justify-between text-[10px] text-gray-400">
-                <span>Masuk: {new Date(item.createdAt).toLocaleDateString('id-ID')}</span>
-                <span>Edit: {new Date(item.updatedAt).toLocaleDateString('id-ID')}</span>
+                <span>Masuk: {new Date(item.createdAt).toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }).replace('.', ':')}</span>
+                <span>Edit: {new Date(item.updatedAt).toLocaleString('id-ID', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' }).replace('.', ':')}</span>
               </div>
             </div>
 

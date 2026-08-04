@@ -45,7 +45,8 @@ export async function fetchSOFromETL(soNumber: string) {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ soNumbers: [soNumber] }),
-      cache: 'no-store'
+      cache: 'no-store',
+      signal: AbortSignal.timeout(10000)
     });
 
     if (!response.ok) {
@@ -76,4 +77,15 @@ export async function saveTarikSOAction(items: DraftItem[]) {
     console.error(`[TARIK SO] ❌ GAGAL SIMPAN KE SQLITE:`, error.message);
     return { success: false, error: `Gagal simpan ke database QC: ${error.message}` };
   }
+}
+
+export async function checkDuplicateReturn(soNumber: string, itemCode: string) {
+  const existing = await prisma.returnItem.findMany({
+    where: {
+      soNumber: { startsWith: soNumber },
+      itemCode: itemCode
+    },
+    select: { soNumber: true }
+  });
+  return existing.length;
 }

@@ -1,3 +1,4 @@
+
 // src/components/DashboardFilters.tsx
 "use client";
 
@@ -28,8 +29,8 @@ export const DashboardFilters: React.FC<DashboardFiltersProps> = ({
   const [isExportOpen, setIsExportOpen] = useState(false);
   const [expStartDate, setExpStartDate] = useState("");
   const [expEndDate, setExpEndDate] = useState("");
-  // Ubah expCustomer jadi Array buat nampung banyak toko
   const [expSelectedCustomers, setExpSelectedCustomers] = useState<string[]>([]);
+  const [expSearchToko, setExpSearchToko] = useState("");
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -38,10 +39,12 @@ export const DashboardFilters: React.FC<DashboardFiltersProps> = ({
       if (searchText) params.set('search', searchText);
       if (dateValue) params.set('date', dateValue);
       if (customerValue) params.set('customer', customerValue);
-      router.push(`/?${params.toString()}`);
+      router.replace(`/?${params.toString()}`);
     }, 500);
     return () => clearTimeout(timer);
   }, [searchText, dateValue, customerValue, tab, router]);
+
+  const filteredCustomerList = customerList.filter(c => c.toLowerCase().includes(expSearchToko.toLowerCase()));
 
   // Logic Toggle Checkbox Toko
   const handleToggleCustomer = (custName: string) => {
@@ -127,11 +130,17 @@ export const DashboardFilters: React.FC<DashboardFiltersProps> = ({
                 </div>
                 
                 {/* Checkbox List Scrollable */}
+                <Input 
+              placeholder="Cari nama toko..." 
+              value={expSearchToko} 
+              onChange={(e) => setExpSearchToko(e.target.value)} 
+              className="mb-2 text-sm py-1"
+            />
                 <div className="border border-gray-200 rounded-md p-3 max-h-48 overflow-y-auto bg-gray-50 flex flex-col gap-2">
-                  {customerList.length === 0 ? (
-                    <span className="text-sm text-gray-500 italic">Belum ada data toko.</span>
+                  {filteredCustomerList.length === 0 ? (
+                <span className="text-sm text-gray-500 italic">Toko tidak ditemukan.</span>
                   ) : (
-                    customerList.map((cust, idx) => (
+                     filteredCustomerList.map((cust, idx) => (
                       <label key={idx} className="flex items-center gap-2 cursor-pointer hover:bg-gray-100 p-1 rounded">
                         <input 
                           type="checkbox" 

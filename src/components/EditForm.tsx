@@ -86,7 +86,7 @@ export const EditForm: React.FC<EditFormProps> = ({ item }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-6">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-6 pb-24">
       {error && <div className="p-3 text-sm text-red-700 bg-red-100 rounded-md">{error}</div>}
 
       {/* --- MASTER DATA SECTION --- */}
@@ -185,13 +185,15 @@ export const EditForm: React.FC<EditFormProps> = ({ item }) => {
         )}
       </div>
 
-      <div className="flex gap-4 pt-4 border-t border-gray-200">
-        <Button type="button" variant="secondary" className="flex-1" onClick={() => router.back()} disabled={isPending}>
-          Batal
-        </Button>
-        <Button type="submit" variant="primary" className="flex-1" disabled={isPending}>
-          {isPending ? "Menyimpan..." : "Simpan Perubahan"}
-        </Button>
+      <div className="fixed bottom-0 left-0 w-full bg-white p-4 border-t border-gray-200 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-40 flex justify-center">
+        <div className="w-full max-w-3xl flex gap-4">
+          <Button type="button" variant="secondary" className="flex-1" onClick={() => router.back()} disabled={isPending}>
+            Batal
+          </Button>
+          <Button type="submit" variant="primary" className="flex-1" disabled={isPending}>
+            {isPending ? "Menyimpan..." : "Simpan Perubahan"}
+          </Button>
+        </div>
       </div>
     </form>
   );

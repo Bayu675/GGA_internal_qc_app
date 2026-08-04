@@ -12,11 +12,10 @@ export const Pagination: React.FC<PaginationProps> = ({ currentPage, totalPages,
 
   // Helper to construct URL with correct query parameters
   const createPageUrl = (page: number) => {
-    const separator = baseUrl.includes('?') ? '&' : '?';
-    // Clean up existing page param if it exists in the base URL
-    const cleanBaseUrl = baseUrl.replace(/&?page=\d+/, '').replace(/\?$/, '');
-    const finalSeparator = cleanBaseUrl.includes('?') ? '&' : '?';
-    return `${cleanBaseUrl}${finalSeparator}page=${page}`;
+    const [path, query] = baseUrl.split('?');
+    const params = new URLSearchParams(query || '');
+    params.set('page', page.toString());
+    return `${path}?${params.toString()}`;
   };
 
   return (

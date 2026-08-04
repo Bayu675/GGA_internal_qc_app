@@ -188,6 +188,23 @@ ReturnItem
 
 ---
 
+## 1b. Penanganan Return Berulang (R2, R3)
+
+Sistem memiliki logika untuk mendeteksi barang yang di-return lebih dari satu kali.
+
+### Workflow
+```text
+Tarik SO -> Cek Database (Berdasarkan SO & Item Code)
+      ↓
+Jika Ditemukan -> Munculkan Peringatan Konfirmasi
+      ↓
+Jika OK -> Tambahkan Suffix (Contoh: SO/123 - R2)
+      ↓
+Simpan ke Database & Tampilkan Badge Peringatan di Dashboard
+```
+
+---
+
 ## 2. Dashboard Interaktif
 
 Dashboard dirancang untuk mendukung penggunaan Desktop maupun Mobile.
@@ -286,12 +303,14 @@ maka sistem akan menampilkan:
 
 ### Penyimpanan Foto
 
+Sistem menggunakan **Client-Side Image Compression** via HTML5 Canvas sebelum dikirim ke server.
+
 ```text
 Camera
    ↓
-Base64
+Resize Max 1080px & Compress JPEG 70%
    ↓
-Convert JPG
+Base64 -> Convert JPG
    ↓
 public/uploads/
 ```

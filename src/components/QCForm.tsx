@@ -60,7 +60,7 @@ export const QCForm: React.FC<QCFormProps> = ({ item }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-6 mt-6">
+    <form onSubmit={handleSubmit} className="flex flex-col gap-6 mt-6 pb-24">
       {error && (
         <div className="p-3 text-sm text-red-700 bg-red-100 rounded-md">
           {error}
@@ -75,8 +75,12 @@ export const QCForm: React.FC<QCFormProps> = ({ item }) => {
         <label className="text-sm font-semibold text-gray-700">2. Status Barang</label>
         <select 
           value={status} 
-          onChange={(e) => setStatus(e.target.value as any)}
-          className="border border-gray-300 rounded-md px-3 py-3 w-full bg-white text-gray-800 focus:ring-green-500"
+          onChange={(e) => setStatus(e.target.value as "GOOD" | "BAD" | "PARTIAL_GOOD" | "")}
+          className={`border border-gray-300 rounded-md px-3 py-3 w-full focus:ring-green-500 font-bold ${
+            status === 'GOOD' ? 'bg-green-100 text-green-800' : 
+            status === 'BAD' ? 'bg-red-100 text-red-800' : 
+            status === 'PARTIAL_GOOD' ? 'bg-orange-100 text-orange-800' : 'bg-white text-gray-800'
+          }`}
         >
           <option value="" disabled>-- Pilih Status --</option>
           <option value="GOOD">✅ GOOD (Bagus)</option>
@@ -119,13 +123,15 @@ export const QCForm: React.FC<QCFormProps> = ({ item }) => {
         </div>
       )}
 
-      <div className="flex gap-4 pt-4 border-t border-gray-200">
-        <Button type="button" variant="secondary" className="flex-1" onClick={() => router.push("/")} disabled={isPending}>
-          Batal
-        </Button>
-        <Button type="submit" variant="primary" className="flex-1" disabled={isPending}>
-          {isPending ? "Menyimpan..." : "Simpan QC"}
-        </Button>
+      <div className="fixed bottom-0 left-0 w-full bg-white p-4 border-t border-gray-200 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-40 flex justify-center">
+        <div className="w-full max-w-2xl flex gap-4">
+          <Button type="button" variant="secondary" className="flex-1" onClick={() => router.push("/")} disabled={isPending}>
+            Batal
+          </Button>
+          <Button type="submit" variant="primary" className="flex-1" disabled={isPending}>
+            {isPending ? "Menyimpan..." : "Simpan QC"}
+          </Button>
+        </div>
       </div>
     </form>
   );

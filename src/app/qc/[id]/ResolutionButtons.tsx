@@ -28,7 +28,8 @@ export const ResolutionButtons = ({ returnItemId, currentResolution }: { returnI
   return (
     <div className="flex gap-3">
       <Button 
-        type="button" 
+        type="button"
+        variant="secondary"
         onClick={() => handleUpdate("DIJUAL_KEMBALI")}
         disabled={isPending || currentResolution === "DIJUAL_KEMBALI"}
         className={`flex-1 flex justify-center items-center gap-2 py-3 ${
@@ -42,6 +43,7 @@ export const ResolutionButtons = ({ returnItemId, currentResolution }: { returnI
 
       <Button 
         type="button" 
+        variant="secondary"
         onClick={() => handleUpdate("SCRAP")}
         disabled={isPending || currentResolution === "SCRAP"}
         className={`flex-1 flex justify-center items-center gap-2 py-3 ${

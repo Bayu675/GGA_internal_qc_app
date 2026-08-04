@@ -6,6 +6,7 @@ import Link from "next/link";
 import { Button } from "@/components/Button";
 import { PrintLabelButton } from "@/components/PrintLabelButton";
 import { ResolutionButtons } from "./ResolutionButtons";
+import { PhotoViewer } from "@/components/PhotoViewer";
 
 interface QCPageProps {
   params: Promise<{ id: string }>;
@@ -63,14 +64,14 @@ export default async function QCDetailPage(props: QCPageProps) {
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <div>
                 <p className="font-semibold mb-2 text-sm text-gray-600">Foto Fisik</p>
-                <img src={item.qcResult.generalPhotoUrl} className="w-full h-auto rounded-md border" alt="Fisik" />
+                <PhotoViewer url={item.qcResult.generalPhotoUrl} alt="Fisik" className="w-full h-auto rounded-md border" />
               </div>
               {damageUrls.length > 0 && (
                 <div className="flex flex-col gap-2">
                   <p className="font-semibold mb-2 text-sm text-gray-600">Foto Minus ({damageUrls.length})</p>
                   <div className="grid grid-cols-2 gap-2">
                     {damageUrls.map((url, idx) => (
-                      <img key={idx} src={url} className="w-full h-auto rounded-md border aspect-[4/3] object-cover" alt={`Minus ${idx + 1}`} />
+                      <PhotoViewer key={idx} url={url} alt={`Minus ${idx + 1}`} className="w-full h-auto rounded-md border aspect-[4/3] object-cover" />
                     ))}
                   </div>
                 </div>
