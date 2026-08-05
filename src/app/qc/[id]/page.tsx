@@ -51,7 +51,7 @@ export default async function QCDetailPage(props: QCPageProps) {
           </div>
 
           <div className="flex flex-col gap-4">
-            <div className="bg-gray-100 p-4 rounded-md text-sm">
+            <div className="bg-gray-100 p-4 rounded-md text-sm text-gray-900">
               <p><strong>SO Number:</strong> {item.soNumber}</p>
               <p><strong>Customer:</strong> {item.customerName}</p>
               <p className="mt-2"><strong>Barang:</strong> {item.itemName} ({item.itemCode})</p>

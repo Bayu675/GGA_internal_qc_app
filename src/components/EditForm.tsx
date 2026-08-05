@@ -130,7 +130,7 @@ export const EditForm: React.FC<EditFormProps> = ({ item }) => {
               <label className="text-sm font-semibold text-gray-700">Foto Fisik Keseluruhan</label>
               {!newGeneralPhotoBase64 && existingGeneralPhoto ? (
                 <div className="relative aspect-[4/3] w-full max-w-sm bg-black rounded-md overflow-hidden">
-                  <img src={existingGeneralPhoto} alt="Existing Fisik" className="w-full h-full object-cover" />
+                  <img src={existingGeneralPhoto.replace('/uploads/', '/api/uploads/')} alt="Existing Fisik" className="w-full h-full object-cover" />
                   <button type="button" onClick={() => setExistingGeneralPhoto(null)} className="absolute bottom-2 left-2 bg-red-600 text-white text-xs px-2 py-1 rounded-md">
                     Hapus & Ganti Foto
                   </button>
@@ -151,7 +151,7 @@ export const EditForm: React.FC<EditFormProps> = ({ item }) => {
                     {/* Kept Photos from DB */}
                     {keptDamagePhotos.map((url, idx) => (
                       <div key={`kept-${idx}`} className="relative aspect-[4/3] bg-black rounded-md overflow-hidden">
-                        <img src={url} alt={`Lama ${idx + 1}`} className="w-full h-full object-cover" />
+                        <img src={url.replace('/uploads/', '/api/uploads/')} alt={`Lama ${idx + 1}`} className="w-full h-full object-cover" />
                         <span className="absolute bottom-0 bg-black bg-opacity-50 text-white text-[10px] w-full text-center">Foto Lama</span>
                         <button type="button" onClick={() => handleRemoveKeptPhoto(url)} className="absolute top-1 right-1 bg-red-600 text-white p-1 rounded-full text-xs w-6 h-6 flex items-center justify-center">X</button>
                       </div>
