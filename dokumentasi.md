@@ -19,6 +19,7 @@ Aplikasi beroperasi menggunakan arsitektur **Microservice** dan terintegrasi den
 | Styling           | Tailwind CSS                       |
 | Database          | SQLite                             |
 | ORM               | Prisma ORM                         |
+| UI Management     | React Context (Global UI Provider) |
 | Excel Processor   | SheetJS (`xlsx`)                   |
 | Barcode Generator | JsBarcode                          |
 | Barcode Scanner   | html5-qrcode                       |
@@ -37,6 +38,12 @@ Ngrok digunakan untuk menyediakan koneksi HTTPS yang diwajibkan browser agar fit
 dapat berjalan dengan baik pada perangkat mobile.
 
 ---
+
+# 🎨 Standar UI & Error Handling
+
+* Aplikasi tidak lagi menggunakan `window.alert()` atau `window.confirm()` bawaan browser.
+* Seluruh notifikasi sukses/gagal dan konfirmasi tindakan wajib memanggil hook `useUI()` dari `src/components/UIProvider.tsx` yang akan merender *Toast* atau *Modal* berbasis Tailwind CSS.
+* Seluruh interaksi *Server Action* dibungkus dengan *Error Handling* (`try-catch`) komprehensif, sehingga apabila koneksi database terputus atau jaringan bermasalah, state `isPending` akan kembali normal dan *Toast error* ramah pengguna akan muncul tanpa membuat aplikasi *crash*.
 
 # 🚀 Arsitektur Sistem (Microservice)
 
@@ -281,25 +288,19 @@ Digunakan untuk:
 * Foto keseluruhan barang.
 * Dokumentasi kondisi fisik.
 
-#### Logika Kondisional
+#### Logika Kondisional (Status Barang)
 
-Jika status dipilih:
+Jika status dipilih **BAD**, sistem akan menampilkan form untuk:
 
-```text
-BAD
-```
-
-atau
-
-```text
-PARTIAL_GOOD
-```
-
-maka sistem akan menampilkan:
-
-* Upload foto kerusakan
-* Multi-photo support
+* Upload foto kerusakan (Multi-photo support)
 * Damage Notes
+
+Jika status dipilih **PARTIAL_GOOD**, sistem akan mengaktifkan fitur ekstra:
+
+* Input jumlah barang Bagus (Good Qty) dengan validasi minimal 1.
+* Kalkulasi otomatis jumlah barang Rusak (Bad Qty) secara *read-only*.
+* Form Upload foto kerusakan (untuk bagian yang *bad*).
+* Damage Notes.
 
 ### Penyimpanan Foto
 
@@ -383,15 +384,25 @@ Digunakan untuk Resolution
 
 ## 6. Resolution Management
 
-Fitur terbaru yang digunakan untuk menentukan keputusan akhir barang.
+Fitur terbaru yang digunakan untuk menentukan keputusan akhir barang, kini dilengkapi dengan kemampuan penanganan barang secara parsial (dibagi).
 
 ### Resolution Status
 
-| Status         | Keterangan                     |
-| -------------- | ------------------------------ |
-| (Kosong)       | Menunggu keputusan             |
-| DIJUAL_KEMBALI | Barang kembali masuk stok jual |
-| SCRAP          | Barang dimusnahkan / dibuang   |
+| Status         | Keterangan                                       |
+| -------------- | ------------------------------------------------ |
+| (Kosong)       | Menunggu keputusan                               |
+| DIJUAL_KEMBALI | Seluruh barang kembali masuk stok jual           |
+| SCRAP          | Seluruh barang dimusnahkan / dibuang             |
+| PARTIAL_SOLD   | Sebagian barang dijual kembali (akumulatif)      |
+| PARTIAL_SCRAP  | Sebagian barang dimusnahkan / dibuang (akumulatif)|
+
+### Fitur Partial Resolution (Akumulatif)
+
+Sistem memiliki kecerdasan untuk menangani resolusi barang secara bertahap (*accumulative*).
+
+* User dapat memasukkan jumlah barang yang di-scrap atau dijual kembali secara manual tanpa *auto-fill*.
+* Sistem akan secara otomatis melacak dan mengakumulasi riwayat resolusi sebelumnya (contoh: dari 10 barang, 5 dijual hari ini, dan 2 di-scrap keesokan harinya).
+* Terdapat validasi ketat yang mencegah total input resolusi melebihi **sisa barang yang belum diresolusi**.
 
 ### Workflow
 
@@ -491,11 +502,16 @@ Digunakan untuk menyimpan hasil inspeksi QC dan keputusan akhir barang.
 | --------------- | --------- | ------------------------- |
 | returnItemId    | String    | Foreign Key               |
 | finalStatus     | String    | GOOD / BAD / PARTIAL_GOOD |
-| generalPhotoUrl | String    | Foto Barang               |
-| damagePhotoUrl  | String?   | Foto Kerusakan            |
-| damageNotes     | String?   | Catatan Kerusakan         |
-| resolution      | String?   | DIJUAL_KEMBALI / SCRAP    |
-| processedAt     | DateTime  | Waktu QC Selesai          |
+| generalPhotoUrl | String    | Foto Barang                                     |
+| damagePhotoUrl  | String?   | Foto Kerusakan (Array URL dalam JSON string)    |
+| damageNotes     | String?   | Catatan Kerusakan                               |
+| processedAt     | DateTime  | Waktu QC Selesai                                |
+| resolution      | String?   | DIJUAL_KEMBALI / SCRAP / PARTIAL...             |
+| goodQty         | Int?      | (BARU) Jumlah barang bagus dari hasil QC        |
+| badQty          | Int?      | (BARU) Jumlah barang rusak dari hasil QC        |
+| soldQty         | Int?      | (BARU) Akumulasi jumlah qty dijual kembali      |
+| scrapQty        | Int?      | (BARU) Akumulasi jumlah qty di-scrap            |
+| resolvedAt      | DateTime? | (BARU) Waktu eksekusi tindakan resolusi terakhir|
 
 ---
 

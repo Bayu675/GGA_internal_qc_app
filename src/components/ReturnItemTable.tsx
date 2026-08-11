@@ -4,6 +4,7 @@ import React, { useState, useTransition } from 'react';
 import Link from 'next/link';
 import { Button } from './Button';
 import { bulkDeleteReturnItems } from '@/app/actions';
+import { useUI } from './UIProvider';
 
 // Strict interface matching Prisma's generated type for the subset we need
 export interface TableItem {
@@ -28,6 +29,7 @@ interface ReturnItemTableProps {
 export const ReturnItemTable: React.FC<ReturnItemTableProps> = ({ items, tab }) => {
   const [selectedIds, setSelectedIds] = useState<string[]>([]);
   const [isPending, startTransition] = useTransition();
+  const { showToast, showConfirm } = useUI();
 
   const handleSelectAll = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.checked) {
@@ -48,17 +50,16 @@ export const ReturnItemTable: React.FC<ReturnItemTableProps> = ({ items, tab }) 
   const handleBulkDelete = () => {
     if (selectedIds.length === 0) return;
     
-    const confirmDelete = window.confirm(`Yakin mau hapus ${selectedIds.length} data ini?`);
-    if (!confirmDelete) return;
-
-    startTransition(async () => {
-      const res = await bulkDeleteReturnItems(selectedIds);
-      if (res.success) {
-        alert(`Berhasil menghapus ${res.count} data!`);
-        setSelectedIds([]); // Reset selection setelah berhasil hapus
-      } else {
-        alert(res.error || "Gagal menghapus data");
-      }
+    showConfirm(`Yakin mau hapus ${selectedIds.length} data ini?`, () => {
+      startTransition(async () => {
+        const res = await bulkDeleteReturnItems(selectedIds);
+        if (res.success) {
+          showToast(`Berhasil menghapus ${res.count} data!`, 'success');
+          setSelectedIds([]); // Reset selection setelah berhasil hapus
+        } else {
+          showToast(res.error || "Gagal menghapus data", 'error');
+        }
+      });
     });
   };
 

@@ -7,6 +7,7 @@ import { Button } from "@/components/Button";
 import { Input } from "@/components/Input";
 import Link from "next/link";
 import { DraftItem, saveTarikSOAction, fetchSOFromETL, checkEtlConnection, checkDuplicateReturn } from "./actions";
+import { useUI } from "@/components/UIProvider";
 
 interface ETLItem {
   productCode: string;
@@ -30,6 +31,7 @@ export default function TarikSOPage() {
   const [isFetching, setIsFetching] = useState(false);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const { showToast, showConfirm } = useUI();
   
   // State untuk Cek Koneksi
   const [connStatus, setConnStatus] = useState<{success: boolean, text: string}>({ success: false, text: "Mengecek koneksi..." });
@@ -103,30 +105,35 @@ export default function TarikSOPage() {
 
     const firstItem = draftItems[0];
     const returnCount = await checkDuplicateReturn(firstItem.soNumber, firstItem.itemCode);
-    let finalItems = [...draftItems];
+    
+    // Bikin fungsi helper biar gak nulis ulang startTransition
+    const executeSave = (itemsToSave: DraftItem[]) => {
+      startTransition(async () => {
+        const res = await saveTarikSOAction(itemsToSave);
+        if (res.success) {
+          showToast(`Berhasil menyimpan ${res.count} item!`, 'success');
+          router.push("/");
+        } else {
+          setError(`GAGAL SIMPAN: ${res.error}`);
+        }
+      });
+    };
 
     if (returnCount > 0) {
       const nextR = returnCount + 1;
-      const isRepeated = window.confirm(
-        `⚠️ PERINGATAN: Barang ini sudah pernah di-return ${returnCount} kali!\n\nApakah ini adalah return yang ke-${nextR}? (Jika OK, nomor SO akan ditambahkan kode - R${nextR})`
+      showConfirm(
+        `⚠️ PERINGATAN: Barang ini sudah pernah di-return ${returnCount} kali!\n\nApakah ini adalah return yang ke-${nextR}? (Jika OK, nomor SO akan ditambahkan kode - R${nextR})`,
+        () => {
+          const finalItems = draftItems.map(item => ({
+            ...item,
+            soNumber: `${item.soNumber} - R${nextR}`
+          }));
+          executeSave(finalItems);
+        }
       );
-
-      if (isRepeated) {
-        finalItems = finalItems.map(item => ({
-          ...item,
-          soNumber: `${item.soNumber} - R${nextR}`
-        }));
-      } else {
-        return;
-      }
+    } else {
+      executeSave(draftItems);
     }
-    startTransition(async () => {
-      const res = await saveTarikSOAction(finalItems);
-      if (res.success) {
-        alert(`Berhasil menyimpan ${res.count} item!`);
-        router.push("/");
-      } else setError(`GAGAL SIMPAN: ${res.error}`);
-    });
   };
 
   return (

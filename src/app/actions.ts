@@ -62,6 +62,8 @@ interface QCSubmitPayload {
   generalPhotoBase64: string;
   damagePhotosBase64?: string[];
   damageNotes?: string;
+  goodQty?: number;
+  badQty?: number;
 }
 
 // Helper to save base64 image to local filesystem
@@ -117,6 +119,8 @@ export async function submitQCAction(payload: QCSubmitPayload) {
           generalPhotoUrl,
           damagePhotoUrl,
           damageNotes: payload.status !== "GOOD" ? payload.damageNotes : null,
+          goodQty: payload.goodQty,
+          badQty: payload.badQty,
         },
       }),
       prisma.returnItem.update({
@@ -129,7 +133,7 @@ export async function submitQCAction(payload: QCSubmitPayload) {
     return { success: true };
   } catch (error: unknown) {
     console.error("Submit QC Action Error:", error);
-    return { success: false, error: "Gagal menyimpan data QC" };
+    return { success: false, error: "Maaf, gagal menyimpan data QC. Silakan periksa koneksi internet Anda dan coba lagi." };
   }
 }
 
@@ -149,6 +153,8 @@ export interface EditItemPayload {
   keptDamagePhotoUrls: string[];
   newDamagePhotosBase64: string[];
   damageNotes: string;
+  goodQty?: number;
+  badQty?: number;
 }
 
 export async function editItemAction(payload: EditItemPayload) {
@@ -219,8 +225,23 @@ export async function editItemAction(payload: EditItemPayload) {
       // Update atau Create (Upsert) QC Result
       await prisma.qCResult.upsert({
         where: { returnItemId: payload.id },
-        update: { finalStatus: payload.status, generalPhotoUrl: finalGeneralUrl, damagePhotoUrl, damageNotes },
-        create: { returnItemId: payload.id, finalStatus: payload.status as "GOOD" | "BAD" | "PARTIAL_GOOD", generalPhotoUrl: finalGeneralUrl, damagePhotoUrl, damageNotes }
+        update: { 
+          finalStatus: payload.status, 
+          generalPhotoUrl: finalGeneralUrl, 
+          damagePhotoUrl, 
+          damageNotes,
+          goodQty: payload.goodQty,
+          badQty: payload.badQty
+        },
+        create: { 
+          returnItemId: payload.id, 
+          finalStatus: payload.status as "GOOD" | "BAD" | "PARTIAL_GOOD", 
+          generalPhotoUrl: finalGeneralUrl, 
+          damagePhotoUrl, 
+          damageNotes,
+          goodQty: payload.goodQty,
+          badQty: payload.badQty
+        }
       });
     }
 
@@ -232,17 +253,43 @@ export async function editItemAction(payload: EditItemPayload) {
     return { success: true };
   } catch (error: unknown) {
     console.error("Edit Action Error:", error);
-    return { success: false, error: "Gagal menyimpan perubahan data" };
+    return { success: false, error: "Sistem gagal menyimpan perubahan data. Pastikan jaringan Anda stabil dan coba beberapa saat lagi." };
   }
 }
 
 // Tambahkan di paling bawah src/app/actions.ts
 
-export async function updateResolutionAction(returnItemId: string, resolutionType: "DIJUAL_KEMBALI" | "SCRAP") {
+export async function updateResolutionAction(
+  returnItemId: string, 
+  resolutionType: "DIJUAL_KEMBALI" | "SCRAP" | "PARTIAL_SOLD" | "PARTIAL_SCRAP",
+  inputSoldQty: number = 0,
+  inputScrapQty: number = 0
+) {
   try {
+    // 1. Ambil data existing untuk keperluan akumulasi
+    const existing = await prisma.qCResult.findUnique({
+      where: { returnItemId: returnItemId },
+      include: { returnItem: true }
+    });
+
+    if (!existing) return { success: false, error: "Data QC tidak ditemukan." };
+
+    // 2. Tambahkan input baru dengan nilai yang sudah pernah disimpan di database
+    const finalSoldQty = (existing.soldQty || 0) + inputSoldQty;
+    const finalScrapQty = (existing.scrapQty || 0) + inputScrapQty;
+
+    // 3. Validasi pertahanan lapis kedua (Server Side) agar total tidak melebihi pesanan
+    if (finalSoldQty + finalScrapQty > existing.returnItem.qtyOrder) {
+      return { success: false, error: `Gagal! Total akumulasi melebihi Qty Order (${existing.returnItem.qtyOrder} pcs).` };
+    }
     await prisma.qCResult.update({
       where: { returnItemId: returnItemId },
-      data: { resolution: resolutionType }
+      data: { 
+        resolution: resolutionType,
+        soldQty: finalSoldQty,
+        scrapQty: finalScrapQty,
+        resolvedAt: new Date()
+      }
     });
 
     // Refresh halaman biar UI nya langsung berubah
@@ -250,8 +297,8 @@ export async function updateResolutionAction(returnItemId: string, resolutionTyp
     revalidatePath(`/qc/${returnItemId}`);
     
     return { success: true };
-  } catch (error: any) {
+  } catch (error: unknown) {
     console.error("Update Resolution Error:", error);
-    return { success: false, error: "Gagal menyimpan tindakan lanjut." };
+    return { success: false, error: "Koneksi terputus atau terjadi gangguan. Gagal menyimpan tindakan lanjut, silakan coba lagi." };
   }
 }

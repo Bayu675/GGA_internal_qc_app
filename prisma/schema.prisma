@@ -7,7 +7,7 @@ datasource db {
 }
 
 model ReturnItem {
-  id           String    @id @default(uuid())
+  id           String   @id @default(uuid())
   soNumber     String
   customerName String
   itemCode     String
@@ -15,11 +15,11 @@ model ReturnItem {
   width        Float
   height       Float
   qtyOrder     Int
-  qcStatus     String    @default("PENDING") // PENDING, GOOD, BAD, PARTIAL_GOOD
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @default(now()) @updatedAt
-  
-  qcResult     QCResult?
+  qcStatus     String   @default("PENDING") // PENDING, GOOD, BAD, PARTIAL_GOOD
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now()) @updatedAt
+
+  qcResult QCResult?
 }
 
 model QCResult {
@@ -31,5 +31,12 @@ model QCResult {
   damagePhotoUrl  String?
   damageNotes     String?
   processedAt     DateTime   @default(now())
-  resolution      String? 
+  resolution      String?
+  
+  // Field Baru
+  goodQty         Int?
+  badQty          Int?
+  soldQty         Int?
+  scrapQty        Int?
+  resolvedAt      DateTime?
 }

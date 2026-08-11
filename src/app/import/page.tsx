@@ -5,12 +5,14 @@ import { useRouter } from 'next/navigation';
 import { Button } from '@/components/Button';
 import Link from 'next/link';
 import { importExcelAction } from './actions';
+import { useUI } from '@/components/UIProvider';
 
 export default function ImportPage() {
   const router = useRouter();
   const [file, setFile] = useState<File | null>(null);
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const { showToast, showConfirm } = useUI();
 
   const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files.length > 0) {
@@ -26,7 +28,6 @@ export default function ImportPage() {
   };
 
   const submitImport = (force: boolean) => {
-    
     if (!file) {
       setError("Pilih file Excel-nya dulu bro!");
       return;
@@ -38,14 +39,13 @@ export default function ImportPage() {
     formData.append("file", file);
     formData.append("force", force ? "true" : "false");
 
-        startTransition(async () => {
+    startTransition(async () => {
       const result = await importExcelAction(formData);
 
-            if (result.requireConfirmation) {
-        const ok = window.confirm(result.message);
-        if (ok) {
+      if (result.requireConfirmation) {
+        showConfirm(result.message || "Ada data duplikat, tetap lanjutkan?", () => {
           submitImport(true); // Panggil lagi tapi paksa masuk (force bypass)
-        }
+        });
         return;
       }
       
@@ -54,7 +54,7 @@ export default function ImportPage() {
         return;
       }
 
-      alert(`Berhasil import ${result.count} data barang return!`);
+      showToast(`Berhasil import ${result.count} data barang return!`, 'success');
       router.push('/');
     });
   };

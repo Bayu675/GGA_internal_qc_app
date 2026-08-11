@@ -6,6 +6,7 @@ import { CameraCapture } from "./CameraCapture";
 import { Button } from "./Button";
 import { Input } from "./Input";
 import { editItemAction } from "@/app/actions";
+import { useUI } from "./UIProvider";
 
 interface EditFormProps {
   item: any; // We receive the joined Prisma model (ReturnItem + QCResult)
@@ -15,6 +16,7 @@ export const EditForm: React.FC<EditFormProps> = ({ item }) => {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [error, setError] = useState<string | null>(null);
+  const { showToast } = useUI();
 
   // 1. Master Data State
   const [soNumber, setSoNumber] = useState(item.soNumber);
@@ -28,7 +30,8 @@ export const EditForm: React.FC<EditFormProps> = ({ item }) => {
   // 2. QC Data State
   const [status, setStatus] = useState<"PENDING" | "GOOD" | "BAD" | "PARTIAL_GOOD">(item.qcStatus);
   const [damageNotes, setDamageNotes] = useState(item.qcResult?.damageNotes || "");
-  
+  const [goodQty, setGoodQty] = useState<number | "">(item.qcResult?.goodQty || "");
+
   // General Photo
   const [existingGeneralPhoto, setExistingGeneralPhoto] = useState<string | null>(item.qcResult?.generalPhotoUrl || null);
   const [newGeneralPhotoBase64, setNewGeneralPhotoBase64] = useState<string>("");
@@ -54,6 +57,8 @@ export const EditForm: React.FC<EditFormProps> = ({ item }) => {
     e.preventDefault();
     setError(null);
 
+    const currentQtyOrder = Number(qtyOrder) || 0;
+
     // Validation
     if (!soNumber || !itemName || !itemCode) return setError("Data master (SO, Kode, Nama) wajib diisi!");
     if (status !== "PENDING") {
@@ -62,25 +67,40 @@ export const EditForm: React.FC<EditFormProps> = ({ item }) => {
         return setError("Minimal 1 foto bukti rusak wajib disertakan!");
       }
       if (status !== "GOOD" && !damageNotes) return setError("Keterangan minus wajib diisi!");
+      if (status === "PARTIAL_GOOD") {
+        if (goodQty === "" || goodQty < 1 || goodQty >= currentQtyOrder) {
+          return setError(`Jumlah Good harus minimal 1 dan kurang dari total order (${currentQtyOrder}).`);
+        }
+      }
     }
 
     startTransition(async () => {
-      const res = await editItemAction({
-        id: item.id,
-        soNumber, customerName, itemCode, itemName,
-        width: Number(width), height: Number(height), qtyOrder: Number(qtyOrder),
-        status,
-        newGeneralPhotoBase64: newGeneralPhotoBase64 || undefined,
-        keptDamagePhotoUrls: keptDamagePhotos,
-        newDamagePhotosBase64,
-        damageNotes,
-      });
+      try {
+        const finalGoodQty = status === "GOOD" ? currentQtyOrder : status === "BAD" ? 0 : Number(goodQty);
+        const finalBadQty = status === "BAD" ? currentQtyOrder : status === "GOOD" ? 0 : currentQtyOrder - Number(goodQty);
 
-      if (res.success) {
-        alert("Data berhasil diperbarui!");
-        router.push(status === "PENDING" ? "/?tab=pending" : "/?tab=completed");
-      } else {
-        setError(res.error || "Gagal menyimpan data");
+        const res = await editItemAction({
+          id: item.id,
+          soNumber, customerName, itemCode, itemName,
+          width: Number(width), height: Number(height), qtyOrder: currentQtyOrder,
+          status,
+          newGeneralPhotoBase64: newGeneralPhotoBase64 || undefined,
+          keptDamagePhotoUrls: keptDamagePhotos,
+          newDamagePhotosBase64,
+          damageNotes,
+          goodQty: status === "PENDING" ? undefined : finalGoodQty,
+          badQty: status === "PENDING" ? undefined : finalBadQty,
+        });
+
+        if (res.success) {
+          showToast("Data berhasil diperbarui!", "success");
+          router.push(status === "PENDING" ? "/?tab=pending" : "/?tab=completed");
+        } else {
+          setError(res.error || "Gagal menyimpan data");
+        }
+      } catch (err: unknown) {
+        console.error("Gagal melakukan aksi:", err);
+        setError("Koneksi terputus atau terjadi kesalahan sistem. Silakan periksa jaringan Anda dan coba lagi.");
       }
     });
   };
@@ -121,6 +141,31 @@ export const EditForm: React.FC<EditFormProps> = ({ item }) => {
             <option value="PARTIAL_GOOD">⚠️ PARTIAL GOOD (Bagus Sebagian)</option>
             <option value="BAD">❌ BAD (Rusak Parah)</option>
           </select>
+          {/* Input Qty Khusus PARTIAL_GOOD */}
+          {status === "PARTIAL_GOOD" && (
+            <div className="flex gap-4 p-4 border border-orange-200 bg-orange-50 rounded-lg mt-2">
+              <div className="flex-1 flex flex-col gap-1">
+                <label className="text-sm font-semibold text-gray-700">Jumlah Bagus (Good)</label>
+                <input 
+                  type="number" 
+                  className="border border-gray-300 rounded-md px-3 py-2 focus:ring-green-500 w-full"
+                  value={goodQty} 
+                  onChange={(e) => setGoodQty(e.target.value ? Number(e.target.value) : "")}
+                  min="1"
+                  max={Number(qtyOrder) - 1}
+                />
+              </div>
+              <div className="flex-1 flex flex-col gap-1">
+                <label className="text-sm font-semibold text-gray-700">Jumlah Rusak (Bad)</label>
+                <input 
+                  type="number" 
+                  readOnly 
+                  className="border border-gray-300 rounded-md px-3 py-2 bg-gray-100 text-gray-600 font-bold w-full cursor-not-allowed"
+                  value={typeof goodQty === 'number' ? Number(qtyOrder) - goodQty : ""}
+                />
+              </div>
+            </div>
+          )}
         </div>
 
         {status !== "PENDING" && (

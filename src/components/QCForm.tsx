@@ -7,6 +7,7 @@ import { Button } from "./Button";
 import { Input } from "./Input";
 import { TableItem } from "./ReturnItemTable";
 import { submitQCAction } from "@/app/actions";
+import { useUI } from "./UIProvider";
 
 interface QCFormProps {
   item: TableItem; // We reuse the TableItem interface for simplicity
@@ -22,6 +23,8 @@ export const QCForm: React.FC<QCFormProps> = ({ item }) => {
   const [generalPhoto, setGeneralPhoto] = useState<string>("");
   const [damagePhotos, setDamagePhotos] = useState<string[]>([]);
   const [damageNotes, setDamageNotes] = useState<string>("");
+  const [goodQty, setGoodQty] = useState<number | "">("");
+  const { showToast } = useUI();
 
     // Handlers for multiple damage photos
   const handleAddDamagePhoto = (base64: string) => {
@@ -40,21 +43,36 @@ export const QCForm: React.FC<QCFormProps> = ({ item }) => {
     if (!generalPhoto) return setError("Foto fisik wajib ada!");
     if (status !== "GOOD" && damagePhotos.length === 0) return setError("Minimal 1 foto bukti rusak wajib disertakan!");
     if (status !== "GOOD" && !damageNotes) return setError("Tulis keterangan minusnya bro!");
+        if (status === "PARTIAL_GOOD") {
+      if (goodQty === "" || goodQty < 1 || goodQty >= item.qtyOrder) {
+        return setError(`Jumlah Good harus minimal 1 dan kurang dari total order (${item.qtyOrder}).`);
+      }
+    }
 
     startTransition(async () => {
-      const res = await submitQCAction({
-        returnItemId: item.id,
-        status: status as "GOOD" | "BAD" | "PARTIAL_GOOD",
-        generalPhotoBase64: generalPhoto,
-        damagePhotosBase64: status !== "GOOD" ? damagePhotos : undefined,
-        damageNotes: status !== "GOOD" ? damageNotes : undefined,
-      });
+      try {
+        const finalGoodQty = status === "GOOD" ? item.qtyOrder : status === "BAD" ? 0 : Number(goodQty);
+        const finalBadQty = status === "BAD" ? item.qtyOrder : status === "GOOD" ? 0 : item.qtyOrder - Number(goodQty);
 
-      if (res.success) {
-        alert("Mantap! Data QC berhasil disimpan.");
-        router.push("/?tab=completed");
-      } else {
-        setError(res.error || "Gagal menyimpan data");
+        const res = await submitQCAction({
+          returnItemId: item.id,
+          status: status as "GOOD" | "BAD" | "PARTIAL_GOOD",
+          generalPhotoBase64: generalPhoto,
+          damagePhotosBase64: status !== "GOOD" ? damagePhotos : undefined,
+          damageNotes: status !== "GOOD" ? damageNotes : undefined,
+          goodQty: finalGoodQty,
+          badQty: finalBadQty,
+        });
+
+        if (res.success) {
+          showToast("Mantap! Data QC berhasil disimpan.", 'success');
+          router.push("/?tab=completed");
+        } else {
+          setError(res.error || "Gagal menyimpan data");
+        }
+      } catch (err: unknown) {
+        console.error("Gagal melakukan aksi:", err);
+        setError("Koneksi terputus atau terjadi kesalahan sistem. Silakan periksa jaringan Anda dan coba lagi.");
       }
     });
   };
@@ -87,6 +105,31 @@ export const QCForm: React.FC<QCFormProps> = ({ item }) => {
           <option value="PARTIAL_GOOD">⚠️ PARTIAL GOOD (Bagus Sebagian)</option>
           <option value="BAD">❌ BAD (Rusak Parah)</option>
         </select>
+        {/* Input Qty Khusus PARTIAL_GOOD */}
+        {status === "PARTIAL_GOOD" && (
+          <div className="flex gap-4 p-4 border border-orange-200 bg-orange-50 rounded-lg mt-2">
+            <div className="flex-1 flex flex-col gap-1">
+              <label className="text-sm font-semibold text-gray-700">Jumlah Bagus (Good)</label>
+              <input 
+                type="number" 
+                className="border border-gray-300 rounded-md px-3 py-2 focus:ring-green-500 w-full"
+                value={goodQty} 
+                onChange={(e) => setGoodQty(e.target.value ? Number(e.target.value) : "")}
+                min="1"
+                max={item.qtyOrder - 1}
+              />
+            </div>
+            <div className="flex-1 flex flex-col gap-1">
+              <label className="text-sm font-semibold text-gray-700">Jumlah Rusak (Bad)</label>
+              <input 
+                type="number" 
+                readOnly 
+                className="border border-gray-300 rounded-md px-3 py-2 bg-gray-100 text-gray-600 font-bold w-full cursor-not-allowed"
+                value={typeof goodQty === 'number' ? item.qtyOrder - goodQty : ""}
+              />
+            </div>
+          </div>
+        )}
       </div>
 
       {/* 3. Conditional: Damage Photo & Notes */}

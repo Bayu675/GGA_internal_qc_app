@@ -30,6 +30,17 @@ export default async function QCDetailPage(props: QCPageProps) {
       catch { damageUrls = [item.qcResult.damagePhotoUrl]; }
     }
 
+    // Helper untuk format tanggal resolusi
+    const formatDateTime = (dateString: Date) => {
+      const d = new Date(dateString);
+      const day = String(d.getDate()).padStart(2, '0');
+      const month = d.toLocaleString('en-GB', { month: 'short' });
+      const year = d.getFullYear();
+      const hours = String(d.getHours()).padStart(2, '0');
+      const mins = String(d.getMinutes()).padStart(2, '0');
+      return `${day} ${month} ${year}, ${hours}:${mins}`;
+    };
+
     return (
       <main className="min-h-screen bg-gray-50 p-4 md:p-8 flex justify-center pb-20">
         <div className="w-full max-w-2xl bg-white p-6 rounded-lg shadow-sm border border-gray-200">
@@ -38,16 +49,28 @@ export default async function QCDetailPage(props: QCPageProps) {
             <h1 className="text-2xl font-bold text-gray-800">Detail Hasil QC</h1>
             
             {/* Tampilkan Badge Jika Sudah Ada Tindak Lanjut */}
-            {item.qcResult.resolution === "DIJUAL_KEMBALI" && (
-              <span className="bg-blue-100 text-blue-800 font-bold px-3 py-1 rounded-full text-sm border border-blue-300">
-                ♻️ SIAP DIJUAL KEMBALI
-              </span>
-            )}
-            {item.qcResult.resolution === "SCRAP" && (
-              <span className="bg-gray-200 text-gray-800 font-bold px-3 py-1 rounded-full text-sm border border-gray-400">
-                🗑️ DI-SCRAP / BUANG
-              </span>
-            )}
+            <div className="flex flex-col items-end gap-1">
+              {item.qcResult.resolution === "DIJUAL_KEMBALI" && (
+                <span className="bg-blue-100 text-blue-800 font-bold px-3 py-1 rounded-full text-sm border border-blue-300">
+                  ♻️ SIAP DIJUAL KEMBALI
+                </span>
+              )}
+              {item.qcResult.resolution === "SCRAP" && (
+                <span className="bg-gray-200 text-gray-800 font-bold px-3 py-1 rounded-full text-sm border border-gray-400">
+                  🗑️ DI-SCRAP / BUANG
+                </span>
+              )}
+              {(item.qcResult.resolution === "PARTIAL_SOLD" || item.qcResult.resolution === "PARTIAL_SCRAP") && (
+                <span className="bg-purple-100 text-purple-800 font-bold px-3 py-1 rounded-full text-sm border border-purple-300">
+                  ⚖️ RESOLUSI PARTIAL
+                </span>
+              )}
+              {item.qcResult.resolvedAt && (
+                <span className="text-xs text-gray-500 font-medium mt-1">
+                  {formatDateTime(item.qcResult.resolvedAt)}
+                </span>
+              )}
+            </div>
           </div>
 
           <div className="flex flex-col gap-4">
@@ -55,9 +78,25 @@ export default async function QCDetailPage(props: QCPageProps) {
               <p><strong>SO Number:</strong> {item.soNumber}</p>
               <p><strong>Customer:</strong> {item.customerName}</p>
               <p className="mt-2"><strong>Barang:</strong> {item.itemName} ({item.itemCode})</p>
-              <p><strong>Kondisi Fisik (QC):</strong> <span className="font-bold">{item.qcStatus}</span></p>
+              <p><strong>Ukuran:</strong> {item.width} x {item.height}</p>
+              <p><strong>Total Qty:</strong> {item.qtyOrder} pcs</p>
+              <p className="mt-2">
+                <strong>Kondisi Fisik (QC):</strong> <span className="font-bold">{item.qcStatus}</span>
+              </p>
+              {item.qcStatus === "PARTIAL_GOOD" && (
+                <p className="text-orange-700 font-medium">
+                  ↳ {item.qcResult.goodQty || 0} pcs Good, {item.qcResult.badQty || 0} pcs Bad
+                </p>
+              )}
               {item.qcResult.damageNotes && (
                 <p className="mt-2 text-red-600"><strong>Catatan Minus:</strong> {item.qcResult.damageNotes}</p>
+                )}
+              
+              {/* Rincian Partial Resolution */}
+              {(item.qcResult.resolution === "PARTIAL_SOLD" || item.qcResult.resolution === "PARTIAL_SCRAP") && (
+                <p className="mt-2 text-purple-700 font-medium border-t border-gray-200 pt-2">
+                  <strong>Rincian Eksekusi:</strong> {item.qcResult.soldQty || 0} pcs Dijual, {item.qcResult.scrapQty || 0} pcs Scrap
+                </p>
               )}
             </div>
             
@@ -83,7 +122,10 @@ export default async function QCDetailPage(props: QCPageProps) {
               <h3 className="font-bold text-gray-800 mb-3">Eksekusi / Tindak Lanjut</h3>
               <ResolutionButtons 
                 returnItemId={item.id} 
-                currentResolution={item.qcResult.resolution} 
+                currentResolution={item.qcResult.resolution}
+                qtyOrder={item.qtyOrder}
+                currentSoldQty={item.qcResult.soldQty}
+                currentScrapQty={item.qcResult.scrapQty}
               />
             </div>
 
