@@ -11,7 +11,9 @@
       "prisma/*.db",
       "public/uploads/**",
       "public/*.svg",
-      "package-lock.json"
+      "package-lock.json",
+      "README.md",
+      "dokumentasi.md"
     ]
   }
 }

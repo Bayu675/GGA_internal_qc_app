@@ -261,12 +261,11 @@ export async function editItemAction(payload: EditItemPayload) {
 
 export async function updateResolutionAction(
   returnItemId: string, 
-  resolutionType: "DIJUAL_KEMBALI" | "SCRAP" | "PARTIAL_SOLD" | "PARTIAL_SCRAP",
+  resolutionType: "DIJUAL_KEMBALI" | "SCRAP" | "PARTIAL_SOLD" | "PARTIAL_SCRAP" | "RESOLVED_MIXED",
   inputSoldQty: number = 0,
   inputScrapQty: number = 0
 ) {
   try {
-    // 1. Ambil data existing untuk keperluan akumulasi
     const existing = await prisma.qCResult.findUnique({
       where: { returnItemId: returnItemId },
       include: { returnItem: true }
@@ -274,31 +273,49 @@ export async function updateResolutionAction(
 
     if (!existing) return { success: false, error: "Data QC tidak ditemukan." };
 
-    // 2. Tambahkan input baru dengan nilai yang sudah pernah disimpan di database
-    const finalSoldQty = (existing.soldQty || 0) + inputSoldQty;
-    const finalScrapQty = (existing.scrapQty || 0) + inputScrapQty;
+    const qtyOrder = existing.returnItem.qtyOrder;
+    let finalSoldQty = (existing.soldQty || 0) + inputSoldQty;
+    let finalScrapQty = (existing.scrapQty || 0) + inputScrapQty;
 
-    // 3. Validasi pertahanan lapis kedua (Server Side) agar total tidak melebihi pesanan
-    if (finalSoldQty + finalScrapQty > existing.returnItem.qtyOrder) {
-      return { success: false, error: `Gagal! Total akumulasi melebihi Qty Order (${existing.returnItem.qtyOrder} pcs).` };
+    // Jika user klik tombol utama (Full Dijual / Full Scrap), sisa stok langsung dihabiskan
+    if (resolutionType === "DIJUAL_KEMBALI") {
+      finalSoldQty = qtyOrder - (existing.scrapQty || 0);
+    } else if (resolutionType === "SCRAP") {
+      finalScrapQty = qtyOrder - (existing.soldQty || 0);
     }
+
+    if (finalSoldQty + finalScrapQty > qtyOrder) {
+      return { success: false, error: `Gagal! Total akumulasi melebihi Qty Order (${qtyOrder} pcs).` };
+    }
+
+    // AUTO-CORRECTION LOGIC: Jika stok sudah habis (0)
+    let finalResolution = resolutionType;
+    if (finalSoldQty + finalScrapQty === qtyOrder) {
+      if (finalSoldQty === qtyOrder) {
+        finalResolution = "DIJUAL_KEMBALI"; // Full terjual
+      } else if (finalScrapQty === qtyOrder) {
+        finalResolution = "SCRAP"; // Full dibuang
+      } else {
+        finalResolution = "RESOLVED_MIXED"; // Campuran tapi sudah selesai
+      }
+    }
+
     await prisma.qCResult.update({
       where: { returnItemId: returnItemId },
       data: { 
-        resolution: resolutionType,
+        resolution: finalResolution,
         soldQty: finalSoldQty,
         scrapQty: finalScrapQty,
         resolvedAt: new Date()
       }
     });
 
-    // Refresh halaman biar UI nya langsung berubah
     revalidatePath("/");
     revalidatePath(`/qc/${returnItemId}`);
     
     return { success: true };
   } catch (error: unknown) {
     console.error("Update Resolution Error:", error);
-    return { success: false, error: "Koneksi terputus atau terjadi gangguan. Gagal menyimpan tindakan lanjut, silakan coba lagi." };
+    return { success: false, error: "Koneksi terputus atau terjadi gangguan. Gagal menyimpan tindakan lanjut." };
   }
 }

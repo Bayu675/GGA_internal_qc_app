@@ -60,6 +60,11 @@ export default async function QCDetailPage(props: QCPageProps) {
                   🗑️ DI-SCRAP / BUANG
                 </span>
               )}
+              {item.qcResult.resolution === "RESOLVED_MIXED" && (
+                <span className="bg-teal-100 text-teal-800 font-bold px-3 py-1 rounded-full text-sm border border-teal-300">
+                  ✅ SELESAI (MIXED)
+                </span>
+              )}
               {(item.qcResult.resolution === "PARTIAL_SOLD" || item.qcResult.resolution === "PARTIAL_SCRAP") && (
                 <span className="bg-purple-100 text-purple-800 font-bold px-3 py-1 rounded-full text-sm border border-purple-300">
                   ⚖️ RESOLUSI PARTIAL

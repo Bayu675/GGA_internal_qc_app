@@ -9,7 +9,6 @@ export async function GET(req: NextRequest) {
     const startDate = searchParams.get('startDate');
     const endDate = searchParams.get('endDate');
     
-    // Tangkap daftar toko. Formatnya: "Toko A|Toko B|Toko C"
     const customersParam = searchParams.get('customers');
     const customerArray = customersParam ? customersParam.split('|').filter(Boolean) : [];
 
@@ -24,7 +23,6 @@ export async function GET(req: NextRequest) {
       where: { 
         qcStatus: { not: 'PENDING' },
         ...(dateFilter ? { createdAt: dateFilter } : {}),
-        // Filter IN: Ambil data jika nama customer ada di dalam array
         ...(customerArray.length > 0 ? { customerName: { in: customerArray } } : {})
       },
       include: { qcResult: true },
@@ -40,11 +38,22 @@ export async function GET(req: NextRequest) {
         ? new Date(item.qcResult.processedAt).toISOString().split('T')[0] 
         : '-';
 
-      const resolutionText = item.qcResult?.resolution === 'DIJUAL_KEMBALI' 
-        ? 'Dijual Kembali' 
-        : item.qcResult?.resolution === 'SCRAP' 
-        ? 'Di-Scrap / Buang' 
-        : 'Belum Ada Keputusan';
+      // Kalkulasi Stok
+      const soldQty = item.qcResult?.soldQty || 0;
+      const scrapQty = item.qcResult?.scrapQty || 0;
+      const sisaStok = item.qtyOrder - (soldQty + scrapQty);
+
+      // Logika Text Tindak Lanjut
+      let resolutionText = 'Belum Ada Keputusan';
+      if (item.qcResult?.resolution === 'DIJUAL_KEMBALI' || (sisaStok === 0 && soldQty === item.qtyOrder)) {
+        resolutionText = 'Dijual Kembali (Full)';
+      } else if (item.qcResult?.resolution === 'SCRAP' || (sisaStok === 0 && scrapQty === item.qtyOrder)) {
+        resolutionText = 'Di-Scrap / Buang (Full)';
+      } else if (sisaStok === 0 && soldQty > 0 && scrapQty > 0) {
+        resolutionText = 'Selesai (Campuran Dijual & Scrap)';
+      } else if (sisaStok > 0 && sisaStok < item.qtyOrder) {
+        resolutionText = `Parsial (Sisa Stok: ${sisaStok})`;
+      }
 
       return {
         "NO": index + 1,
@@ -55,7 +64,10 @@ export async function GET(req: NextRequest) {
         "Nama Barang": item.itemName,
         "L": item.width,
         "T": item.height,
-        "Qty": item.qtyOrder,
+        "Qty Order": item.qtyOrder,
+        "Qty Dijual": soldQty,
+        "Qty Scrap": scrapQty,
+        "Sisa Stok": sisaStok,
         "Status QC": item.qcStatus,
         "Tindak Lanjut": resolutionText,
         "Notes Minus": item.qcResult?.damageNotes || "-",
