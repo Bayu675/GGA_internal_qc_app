@@ -162,6 +162,7 @@ export default async function ReportPage(props: ReportPageProps) {
                     <>
                       <th className="px-4 py-3 border-b">Dijual</th>
                       <th className="px-4 py-3 border-b">Scrap</th>
+                      <th className="px-4 py-3 border-b">Sisa</th> {/* TAMBAHAN KOLOM SISA */}
                       <th className="px-4 py-3 border-b">Status Resolusi</th>
                     </>
                   )}
@@ -170,7 +171,7 @@ export default async function ReportPage(props: ReportPageProps) {
               <tbody>
                 {items.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="px-4 py-8 text-center text-gray-500">
+                    <td colSpan={reportType === 'pemasukan' ? 8 : 9} className="px-4 py-8 text-center text-gray-500">
                       Tidak ada data {reportType} pada tanggal ini.
                     </td>
                   </tr>
@@ -181,6 +182,9 @@ export default async function ReportPage(props: ReportPageProps) {
                     const sold = item.qcResult?.soldQty || 0;
                     const scrap = item.qcResult?.scrapQty || 0;
                     const notes = item.qcResult?.damageNotes || "-";
+                    
+                    // KALKULASI SISA STOK
+                    const sisa = item.qtyOrder - (sold + scrap);
                     
                     let resStatus = "-";
                     if (item.qcResult?.resolution === "DIJUAL_KEMBALI") resStatus = "Full Jual";
@@ -206,6 +210,7 @@ export default async function ReportPage(props: ReportPageProps) {
                           <>
                             <td className="px-4 py-2 text-blue-600 font-bold">{sold}</td>
                             <td className="px-4 py-2 text-gray-600 font-bold">{scrap}</td>
+                            <td className="px-4 py-2 text-orange-600 font-bold">{sisa}</td> {/* TAMPILKAN SISA */}
                             <td className="px-4 py-2 text-xs font-semibold">{resStatus}</td>
                           </>
                         )}
