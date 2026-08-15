@@ -80,6 +80,11 @@ export default async function DashboardPage(props: PageProps) {
           </div>
           
           <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+            <Link href="/report" className="w-full sm:w-auto">
+              <Button variant="secondary" className="w-full bg-purple-600 text-white hover:bg-purple-700 focus:ring-purple-500 border-none">
+                📊 Laporan Harian
+              </Button>
+            </Link>
             <Link href="/tarik-so" className="w-full sm:w-auto">
               <Button variant="secondary" className="w-full bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 border-none">
                 🔍 Tarik Data SO

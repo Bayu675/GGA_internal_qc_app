@@ -139,7 +139,7 @@ export const EditForm: React.FC<EditFormProps> = ({ item }) => {
             <option value="PENDING">Belum Dicek (PENDING)</option>
             <option value="GOOD">✅ GOOD (Bagus)</option>
             <option value="PARTIAL_GOOD">⚠️ PARTIAL GOOD (Bagus Sebagian)</option>
-            <option value="BAD">❌ BAD (Rusak Parah)</option>
+            <option value="BAD">❌ BAD (Rusak)</option>
           </select>
           {/* Input Qty Khusus PARTIAL_GOOD */}
           {status === "PARTIAL_GOOD" && (
