@@ -37,6 +37,10 @@ export async function GET(req: NextRequest) {
       const dateStr = item.qcResult 
         ? new Date(item.qcResult.processedAt).toISOString().split('T')[0] 
         : '-';
+     // TANGGAL KELUAR / EKSEKUSI
+      const resolvedDateStr = item.qcResult?.resolvedAt
+        ? new Date(item.qcResult.resolvedAt).toISOString().split('T')[0]
+        : '-';
 
       // Kalkulasi Stok
       const soldQty = item.qcResult?.soldQty || 0;
@@ -57,7 +61,8 @@ export async function GET(req: NextRequest) {
 
       return {
         "NO": index + 1,
-        "Tanggal Terima": dateStr,
+        "Tanggal Terima (QC)": dateStr,
+        "Tanggal Keluar (Eksekusi)": resolvedDateStr,
         "Sales Order": item.soNumber,
         "Customer": item.customerName,
         "Kode Barang": item.itemCode,
