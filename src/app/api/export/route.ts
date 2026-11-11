@@ -26,7 +26,7 @@ export async function GET(req: NextRequest) {
         ...(customerArray.length > 0 ? { customerName: { in: customerArray } } : {})
       },
       include: { qcResult: true },
-      orderBy: { qcResult: { processedAt: 'desc' } }, 
+      orderBy: { createdAt: 'asc' }, 
     });
 
     if (items.length === 0) {
