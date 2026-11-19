@@ -20,6 +20,7 @@ export const QCForm: React.FC<QCFormProps> = ({ item }) => {
 
   // Form State
   const [status, setStatus] = useState<"GOOD" | "BAD" | "PARTIAL_GOOD" | "">("");
+  const [packingStatus, setPackingStatus] = useState<string>("");
   const [generalPhoto, setGeneralPhoto] = useState<string>("");
   const [damagePhotos, setDamagePhotos] = useState<string[]>([]);
   const [damageNotes, setDamageNotes] = useState<string>("");
@@ -40,6 +41,7 @@ export const QCForm: React.FC<QCFormProps> = ({ item }) => {
 
     // Validation
     if (!status) return setError("Pilih status barang bro!");
+    if (!packingStatus) return setError("Pilih status packing barang bro!");
     if (!generalPhoto) return setError("Foto fisik wajib ada!");
     if (status !== "GOOD" && damagePhotos.length === 0) return setError("Minimal 1 foto bukti rusak wajib disertakan!");
     if (status !== "GOOD" && !damageNotes) return setError("Tulis keterangan minusnya bro!");
@@ -62,6 +64,7 @@ export const QCForm: React.FC<QCFormProps> = ({ item }) => {
           damageNotes: status !== "GOOD" ? damageNotes : undefined,
           goodQty: finalGoodQty,
           badQty: finalBadQty,
+          packingStatus,
         });
 
         if (res.success) {
@@ -130,6 +133,19 @@ export const QCForm: React.FC<QCFormProps> = ({ item }) => {
             </div>
           </div>
         )}
+      </div>
+            {/* 3. Status Packing */}
+      <div className="flex flex-col gap-2">
+        <label className="text-sm font-semibold text-gray-700">3. Kondisi Packing</label>
+        <select 
+          value={packingStatus} 
+          onChange={(e) => setPackingStatus(e.target.value)}
+          className="border border-gray-300 rounded-md px-3 py-3 w-full bg-white text-gray-800 focus:ring-green-500 font-medium"
+        >
+          <option value="" disabled>-- Pilih Status Packing --</option>
+          <option value="Ada Packing">📦 Ada Packing</option>
+          <option value="Tanpa Packing">❌ Tanpa Packing</option>
+        </select>
       </div>
 
       {/* 3. Conditional: Damage Photo & Notes */}

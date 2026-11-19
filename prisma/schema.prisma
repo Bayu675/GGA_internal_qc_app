@@ -39,4 +39,5 @@ model QCResult {
   soldQty         Int?
   scrapQty        Int?
   resolvedAt      DateTime?
+  packingStatus   String?
 }

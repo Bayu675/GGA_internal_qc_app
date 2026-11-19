@@ -64,6 +64,7 @@ interface QCSubmitPayload {
   damageNotes?: string;
   goodQty?: number;
   badQty?: number;
+  packingStatus?: string;
 }
 
 // Helper to save base64 image to local filesystem
@@ -121,6 +122,7 @@ export async function submitQCAction(payload: QCSubmitPayload) {
           damageNotes: payload.status !== "GOOD" ? payload.damageNotes : null,
           goodQty: payload.goodQty,
           badQty: payload.badQty,
+          packingStatus: payload.packingStatus,
         },
       }),
       prisma.returnItem.update({
@@ -155,6 +157,7 @@ export interface EditItemPayload {
   damageNotes: string;
   goodQty?: number;
   badQty?: number;
+  packingStatus?: string;
 }
 
 export async function editItemAction(payload: EditItemPayload) {
@@ -231,7 +234,8 @@ export async function editItemAction(payload: EditItemPayload) {
           damagePhotoUrl, 
           damageNotes,
           goodQty: payload.goodQty,
-          badQty: payload.badQty
+          badQty: payload.badQty,
+          packingStatus: payload.packingStatus,
         },
         create: { 
           returnItemId: payload.id, 
@@ -240,7 +244,8 @@ export async function editItemAction(payload: EditItemPayload) {
           damagePhotoUrl, 
           damageNotes,
           goodQty: payload.goodQty,
-          badQty: payload.badQty
+          badQty: payload.badQty,
+          packingStatus: payload.packingStatus
         }
       });
     }

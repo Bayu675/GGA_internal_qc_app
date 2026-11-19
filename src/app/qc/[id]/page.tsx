@@ -93,6 +93,11 @@ export default async function QCDetailPage(props: QCPageProps) {
                   ↳ {item.qcResult.goodQty || 0} pcs Good, {item.qcResult.badQty || 0} pcs Bad
                 </p>
               )}
+              {item.qcResult.packingStatus && (
+                <p className="mt-1">
+                  <strong>Status Packing:</strong> <span className="font-semibold">{item.qcResult.packingStatus}</span>
+                </p>
+              )}
               {item.qcResult.damageNotes && (
                 <p className="mt-2 text-red-600"><strong>Catatan Minus:</strong> {item.qcResult.damageNotes}</p>
                 )}

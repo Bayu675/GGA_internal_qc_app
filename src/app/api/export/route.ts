@@ -74,6 +74,7 @@ export async function GET(req: NextRequest) {
         "Qty Scrap": scrapQty,
         "Sisa Stok": sisaStok,
         "Status QC": item.qcStatus,
+        "Status Packing": item.qcResult?.packingStatus || "",
         "Tindak Lanjut": resolutionText,
         "Notes Minus": item.qcResult?.damageNotes || "-",
       };

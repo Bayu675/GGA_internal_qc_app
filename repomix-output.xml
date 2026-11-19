@@ -44,13 +44,13 @@ The content is organized as follows:
 prisma/
   schema.prisma
 public/
-  js/
-    JsBarcode.all.min.js
   beep.mp3
 src/
   app/
     api/
       export/
+        route.ts
+      fix-data/
         route.ts
       import/
         route.ts
@@ -67,6 +67,9 @@ src/
       [id]/
         page.tsx
         ResolutionButtons.tsx
+    report/
+      page.tsx
+      ReportFilter.tsx
     tarik-so/
       actions.ts
       page.tsx
@@ -107,9 +110,89 @@ tsconfig.json
 <files>
 This section contains the contents of the repository's files.
 
-<file path="public/js/JsBarcode.all.min.js">
-/*! JsBarcode v3.11.5 | (c) Johan Lindell | MIT license */
-!function(t){var e={};function n(r){if(e[r])return e[r].exports;var o=e[r]={i:r,l:!1,exports:{}};return t[r].call(o.exports,o,o.exports,n),o.l=!0,o.exports}n.m=t,n.c=e,n.d=function(t,e,r){n.o(t,e)||Object.defineProperty(t,e,{enumerable:!0,get:r})},n.r=function(t){"undefined"!=typeof Symbol&&Symbol.toStringTag&&Object.defineProperty(t,Symbol.toStringTag,{value:"Module"}),Object.defineProperty(t,"__esModule",{value:!0})},n.t=function(t,e){if(1&e&&(t=n(t)),8&e)return t;if(4&e&&"object"==typeof t&&t&&t.__esModule)return t;var r=Object.create(null);if(n.r(r),Object.defineProperty(r,"default",{enumerable:!0,value:t}),2&e&&"string"!=typeof t)for(var o in t)n.d(r,o,function(e){return t[e]}.bind(null,o));return r},n.n=function(t){var e=t&&t.__esModule?function(){return t.default}:function(){return t};return n.d(e,"a",e),e},n.o=function(t,e){return Object.prototype.hasOwnProperty.call(t,e)},n.p="",n(n.s=15)}([function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0});e.default=function t(e,n){!function(t,e){if(!(t instanceof e))throw new TypeError("Cannot call a class as a function")}(this,t),this.data=e,this.text=n.text||e,this.options=n}},function(t,e,n){"use strict";var r;function o(t,e,n){return e in t?Object.defineProperty(t,e,{value:n,enumerable:!0,configurable:!0,writable:!0}):t[e]=n,t}Object.defineProperty(e,"__esModule",{value:!0});var i=e.SET_A=0,a=e.SET_B=1,u=e.SET_C=2,f=(e.SHIFT=98,e.START_A=103),c=e.START_B=104,s=e.START_C=105;e.MODULO=103,e.STOP=106,e.FNC1=207,e.SET_BY_CODE=(o(r={},f,i),o(r,c,a),o(r,s,u),r),e.SWAP={101:i,100:a,99:u},e.A_START_CHAR=String.fromCharCode(208),e.B_START_CHAR=String.fromCharCode(209),e.C_START_CHAR=String.fromCharCode(210),e.A_CHARS="[\0-_È-Ï]",e.B_CHARS="[ -È-Ï]",e.C_CHARS="(Ï*[0-9]{2}Ï*)",e.BARS=[11011001100,11001101100,11001100110,10010011e3,10010001100,10001001100,10011001e3,10011000100,10001100100,11001001e3,11001000100,11000100100,10110011100,10011011100,10011001110,10111001100,10011101100,10011100110,11001110010,11001011100,11001001110,11011100100,11001110100,11101101110,11101001100,11100101100,11100100110,11101100100,11100110100,11100110010,11011011e3,11011000110,11000110110,10100011e3,10001011e3,10001000110,10110001e3,10001101e3,10001100010,11010001e3,11000101e3,11000100010,10110111e3,10110001110,10001101110,10111011e3,10111000110,10001110110,11101110110,11010001110,11000101110,11011101e3,11011100010,11011101110,11101011e3,11101000110,11100010110,11101101e3,11101100010,11100011010,11101111010,11001000010,11110001010,1010011e4,10100001100,1001011e4,10010000110,10000101100,10000100110,1011001e4,10110000100,1001101e4,10011000010,10000110100,10000110010,11000010010,1100101e4,11110111010,11000010100,10001111010,10100111100,10010111100,10010011110,10111100100,10011110100,10011110010,11110100100,11110010100,11110010010,11011011110,11011110110,11110110110,10101111e3,10100011110,10001011110,10111101e3,10111100010,11110101e3,11110100010,10111011110,10111101110,11101011110,11110101110,11010000100,1101001e4,11010011100,1100011101011]},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0});e.SIDE_BIN="101",e.MIDDLE_BIN="01010",e.BINARIES={L:["0001101","0011001","0010011","0111101","0100011","0110001","0101111","0111011","0110111","0001011"],G:["0100111","0110011","0011011","0100001","0011101","0111001","0000101","0010001","0001001","0010111"],R:["1110010","1100110","1101100","1000010","1011100","1001110","1010000","1000100","1001000","1110100"],O:["0001101","0011001","0010011","0111101","0100011","0110001","0101111","0111011","0110111","0001011"],E:["0100111","0110011","0011011","0100001","0011101","0111001","0000101","0010001","0001001","0010111"]},e.EAN2_STRUCTURE=["LL","LG","GL","GG"],e.EAN5_STRUCTURE=["GGLLL","GLGLL","GLLGL","GLLLG","LGGLL","LLGGL","LLLGG","LGLGL","LGLLG","LLGLG"],e.EAN13_STRUCTURE=["LLLLLL","LLGLGG","LLGGLG","LLGGGL","LGLLGG","LGGLLG","LGGGLL","LGLGLG","LGLGGL","LGGLGL"]},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0});var r=n(2);e.default=function(t,e,n){var o=t.split("").map((function(t,n){return r.BINARIES[e[n]]})).map((function(e,n){return e?e[t[n]]:""}));if(n){var i=t.length-1;o=o.map((function(t,e){return e<i?t+n:t}))}return o.join("")}},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0});var r,o=function(){function t(t,e){for(var n=0;n<e.length;n++){var r=e[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(t,r.key,r)}}return function(e,n,r){return n&&t(e.prototype,n),r&&t(e,r),e}}(),i=n(0);var a=function(t){function e(t,n){return function(t,e){if(!(t instanceof e))throw new TypeError("Cannot call a class as a function")}(this,e),function(t,e){if(!t)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return!e||"object"!=typeof e&&"function"!=typeof e?t:e}(this,(e.__proto__||Object.getPrototypeOf(e)).call(this,t,n))}return function(t,e){if("function"!=typeof e&&null!==e)throw new TypeError("Super expression must either be null or a function, not "+typeof e);t.prototype=Object.create(e&&e.prototype,{constructor:{value:t,enumerable:!1,writable:!0,configurable:!0}}),e&&(Object.setPrototypeOf?Object.setPrototypeOf(t,e):t.__proto__=e)}(e,t),o(e,[{key:"encode",value:function(){for(var t="110",e=0;e<this.data.length;e++){var n=parseInt(this.data[e]).toString(2);n=u(n,4-n.length);for(var r=0;r<n.length;r++)t+="0"==n[r]?"100":"110"}return{data:t+="1001",text:this.text}}},{key:"valid",value:function(){return-1!==this.data.search(/^[0-9]+$/)}}]),e}(((r=i)&&r.__esModule?r:{default:r}).default);function u(t,e){for(var n=0;n<e;n++)t="0"+t;return t}e.default=a},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0});var r,o=function(){function t(t,e){for(var n=0;n<e.length;n++){var r=e[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(t,r.key,r)}}return function(e,n,r){return n&&t(e.prototype,n),r&&t(e,r),e}}(),i=n(0),a=(r=i)&&r.__esModule?r:{default:r},u=n(1);var f=function(t){function e(t,n){!function(t,e){if(!(t instanceof e))throw new TypeError("Cannot call a class as a function")}(this,e);var r=function(t,e){if(!t)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return!e||"object"!=typeof e&&"function"!=typeof e?t:e}(this,(e.__proto__||Object.getPrototypeOf(e)).call(this,t.substring(1),n));return r.bytes=t.split("").map((function(t){return t.charCodeAt(0)})),r}return function(t,e){if("function"!=typeof e&&null!==e)throw new TypeError("Super expression must either be null or a function, not "+typeof e);t.prototype=Object.create(e&&e.prototype,{constructor:{value:t,enumerable:!1,writable:!0,configurable:!0}}),e&&(Object.setPrototypeOf?Object.setPrototypeOf(t,e):t.__proto__=e)}(e,t),o(e,[{key:"valid",value:function(){return/^[\x00-\x7F\xC8-\xD3]+$/.test(this.data)}},{key:"encode",value:function(){var t=this.bytes,n=t.shift()-105,r=u.SET_BY_CODE[n];if(void 0===r)throw new RangeError("The encoding does not start with a start character.");!0===this.shouldEncodeAsEan128()&&t.unshift(u.FNC1);var o=e.next(t,1,r);return{text:this.text===this.data?this.text.replace(/[^\x20-\x7E]/g,""):this.text,data:e.getBar(n)+o.result+e.getBar((o.checksum+n)%u.MODULO)+e.getBar(u.STOP)}}},{key:"shouldEncodeAsEan128",value:function(){var t=this.options.ean128||!1;return"string"==typeof t&&(t="true"===t.toLowerCase()),t}}],[{key:"getBar",value:function(t){return u.BARS[t]?u.BARS[t].toString():""}},{key:"correctIndex",value:function(t,e){if(e===u.SET_A){var n=t.shift();return n<32?n+64:n-32}return e===u.SET_B?t.shift()-32:10*(t.shift()-48)+t.shift()-48}},{key:"next",value:function(t,n,r){if(!t.length)return{result:"",checksum:0};var o=void 0,i=void 0;if(t[0]>=200){i=t.shift()-105;var a=u.SWAP[i];void 0!==a?o=e.next(t,n+1,a):(r!==u.SET_A&&r!==u.SET_B||i!==u.SHIFT||(t[0]=r===u.SET_A?t[0]>95?t[0]-96:t[0]:t[0]<32?t[0]+96:t[0]),o=e.next(t,n+1,r))}else i=e.correctIndex(t,r),o=e.next(t,n+1,r);var f=i*n;return{result:e.getBar(i)+o.result,checksum:f+o.checksum}}}]),e}(a.default);e.default=f},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0}),e.mod10=function(t){for(var e=0,n=0;n<t.length;n++){var r=parseInt(t[n]);(n+t.length)%2==0?e+=r:e+=2*r%10+Math.floor(2*r/10)}return(10-e%10)%10},e.mod11=function(t){for(var e=0,n=[2,3,4,5,6,7],r=0;r<t.length;r++){var o=parseInt(t[t.length-1-r]);e+=n[r%n.length]*o}return(11-e%11)%11}},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0});var r=Object.assign||function(t){for(var e=1;e<arguments.length;e++){var n=arguments[e];for(var r in n)Object.prototype.hasOwnProperty.call(n,r)&&(t[r]=n[r])}return t};e.default=function(t,e){return r({},t,e)}},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0});var r=function(){function t(t,e){for(var n=0;n<e.length;n++){var r=e[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(t,r.key,r)}}return function(e,n,r){return n&&t(e.prototype,n),r&&t(e,r),e}}(),o=n(2),i=a(n(3));function a(t){return t&&t.__esModule?t:{default:t}}var u=function(t){function e(t,n){!function(t,e){if(!(t instanceof e))throw new TypeError("Cannot call a class as a function")}(this,e);var r=function(t,e){if(!t)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return!e||"object"!=typeof e&&"function"!=typeof e?t:e}(this,(e.__proto__||Object.getPrototypeOf(e)).call(this,t,n));return r.fontSize=!n.flat&&n.fontSize>10*n.width?10*n.width:n.fontSize,r.guardHeight=n.height+r.fontSize/2+n.textMargin,r}return function(t,e){if("function"!=typeof e&&null!==e)throw new TypeError("Super expression must either be null or a function, not "+typeof e);t.prototype=Object.create(e&&e.prototype,{constructor:{value:t,enumerable:!1,writable:!0,configurable:!0}}),e&&(Object.setPrototypeOf?Object.setPrototypeOf(t,e):t.__proto__=e)}(e,t),r(e,[{key:"encode",value:function(){return this.options.flat?this.encodeFlat():this.encodeGuarded()}},{key:"leftText",value:function(t,e){return this.text.substr(t,e)}},{key:"leftEncode",value:function(t,e){return(0,i.default)(t,e)}},{key:"rightText",value:function(t,e){return this.text.substr(t,e)}},{key:"rightEncode",value:function(t,e){return(0,i.default)(t,e)}},{key:"encodeGuarded",value:function(){var t={fontSize:this.fontSize},e={height:this.guardHeight};return[{data:o.SIDE_BIN,options:e},{data:this.leftEncode(),text:this.leftText(),options:t},{data:o.MIDDLE_BIN,options:e},{data:this.rightEncode(),text:this.rightText(),options:t},{data:o.SIDE_BIN,options:e}]}},{key:"encodeFlat",value:function(){return{data:[o.SIDE_BIN,this.leftEncode(),o.MIDDLE_BIN,this.rightEncode(),o.SIDE_BIN].join(""),text:this.text}}}]),e}(a(n(0)).default);e.default=u},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0});var r=function(){function t(t,e){for(var n=0;n<e.length;n++){var r=e[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(t,r.key,r)}}return function(e,n,r){return n&&t(e.prototype,n),r&&t(e,r),e}}();e.checksum=u;var o=i(n(3));function i(t){return t&&t.__esModule?t:{default:t}}var a=function(t){function e(t,n){!function(t,e){if(!(t instanceof e))throw new TypeError("Cannot call a class as a function")}(this,e),-1!==t.search(/^[0-9]{11}$/)&&(t+=u(t));var r=function(t,e){if(!t)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return!e||"object"!=typeof e&&"function"!=typeof e?t:e}(this,(e.__proto__||Object.getPrototypeOf(e)).call(this,t,n));return r.displayValue=n.displayValue,n.fontSize>10*n.width?r.fontSize=10*n.width:r.fontSize=n.fontSize,r.guardHeight=n.height+r.fontSize/2+n.textMargin,r}return function(t,e){if("function"!=typeof e&&null!==e)throw new TypeError("Super expression must either be null or a function, not "+typeof e);t.prototype=Object.create(e&&e.prototype,{constructor:{value:t,enumerable:!1,writable:!0,configurable:!0}}),e&&(Object.setPrototypeOf?Object.setPrototypeOf(t,e):t.__proto__=e)}(e,t),r(e,[{key:"valid",value:function(){return-1!==this.data.search(/^[0-9]{12}$/)&&this.data[11]==u(this.data)}},{key:"encode",value:function(){return this.options.flat?this.flatEncoding():this.guardedEncoding()}},{key:"flatEncoding",value:function(){var t="";return t+="101",t+=(0,o.default)(this.data.substr(0,6),"LLLLLL"),t+="01010",t+=(0,o.default)(this.data.substr(6,6),"RRRRRR"),{data:t+="101",text:this.text}}},{key:"guardedEncoding",value:function(){var t=[];return this.displayValue&&t.push({data:"00000000",text:this.text.substr(0,1),options:{textAlign:"left",fontSize:this.fontSize}}),t.push({data:"101"+(0,o.default)(this.data[0],"L"),options:{height:this.guardHeight}}),t.push({data:(0,o.default)(this.data.substr(1,5),"LLLLL"),text:this.text.substr(1,5),options:{fontSize:this.fontSize}}),t.push({data:"01010",options:{height:this.guardHeight}}),t.push({data:(0,o.default)(this.data.substr(6,5),"RRRRR"),text:this.text.substr(6,5),options:{fontSize:this.fontSize}}),t.push({data:(0,o.default)(this.data[11],"R")+"101",options:{height:this.guardHeight}}),this.displayValue&&t.push({data:"00000000",text:this.text.substr(11,1),options:{textAlign:"right",fontSize:this.fontSize}}),t}}]),e}(i(n(0)).default);function u(t){var e,n=0;for(e=1;e<11;e+=2)n+=parseInt(t[e]);for(e=0;e<11;e+=2)n+=3*parseInt(t[e]);return(10-n%10)%10}e.default=a},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0});var r,o=function(){function t(t,e){for(var n=0;n<e.length;n++){var r=e[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(t,r.key,r)}}return function(e,n,r){return n&&t(e.prototype,n),r&&t(e,r),e}}(),i=n(31),a=n(0);function u(t,e){if(!(t instanceof e))throw new TypeError("Cannot call a class as a function")}function f(t,e){if(!t)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return!e||"object"!=typeof e&&"function"!=typeof e?t:e}var c=function(t){function e(){return u(this,e),f(this,(e.__proto__||Object.getPrototypeOf(e)).apply(this,arguments))}return function(t,e){if("function"!=typeof e&&null!==e)throw new TypeError("Super expression must either be null or a function, not "+typeof e);t.prototype=Object.create(e&&e.prototype,{constructor:{value:t,enumerable:!1,writable:!0,configurable:!0}}),e&&(Object.setPrototypeOf?Object.setPrototypeOf(t,e):t.__proto__=e)}(e,t),o(e,[{key:"valid",value:function(){return-1!==this.data.search(/^([0-9]{2})+$/)}},{key:"encode",value:function(){var t=this,e=this.data.match(/.{2}/g).map((function(e){return t.encodePair(e)})).join("");return{data:i.START_BIN+e+i.END_BIN,text:this.text}}},{key:"encodePair",value:function(t){var e=i.BINARIES[t[1]];return i.BINARIES[t[0]].split("").map((function(t,n){return("1"===t?"111":"1")+("1"===e[n]?"000":"0")})).join("")}}]),e}(((r=a)&&r.__esModule?r:{default:r}).default);e.default=c},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0}),e.default=function(t){var e=["width","height","textMargin","fontSize","margin","marginTop","marginBottom","marginLeft","marginRight"];for(var n in e)e.hasOwnProperty(n)&&(n=e[n],"string"==typeof t[n]&&(t[n]=parseInt(t[n],10)));"string"==typeof t.displayValue&&(t.displayValue="false"!=t.displayValue);return t}},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0});var r={width:2,height:100,format:"auto",displayValue:!0,fontOptions:"",font:"monospace",text:void 0,textAlign:"center",textPosition:"bottom",textMargin:2,fontSize:20,background:"#ffffff",lineColor:"#000000",margin:10,marginTop:void 0,marginBottom:void 0,marginLeft:void 0,marginRight:void 0,valid:function(){}};e.default=r},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0}),e.getTotalWidthOfEncodings=e.calculateEncodingAttributes=e.getBarcodePadding=e.getEncodingHeight=e.getMaximumHeightOfEncodings=void 0;var r,o=n(7),i=(r=o)&&r.__esModule?r:{default:r};function a(t,e){return e.height+(e.displayValue&&t.text.length>0?e.fontSize+e.textMargin:0)+e.marginTop+e.marginBottom}function u(t,e,n){if(n.displayValue&&e<t){if("center"==n.textAlign)return Math.floor((t-e)/2);if("left"==n.textAlign)return 0;if("right"==n.textAlign)return Math.floor(t-e)}return 0}function f(t,e,n){var r;if(n)r=n;else{if("undefined"==typeof document)return 0;r=document.createElement("canvas").getContext("2d")}r.font=e.fontOptions+" "+e.fontSize+"px "+e.font;var o=r.measureText(t);return o?o.width:0}e.getMaximumHeightOfEncodings=function(t){for(var e=0,n=0;n<t.length;n++)t[n].height>e&&(e=t[n].height);return e},e.getEncodingHeight=a,e.getBarcodePadding=u,e.calculateEncodingAttributes=function(t,e,n){for(var r=0;r<t.length;r++){var o,c=t[r],s=(0,i.default)(e,c.options);o=s.displayValue?f(c.text,s,n):0;var l=c.data.length*s.width;c.width=Math.ceil(Math.max(o,l)),c.height=a(c,s),c.barcodePadding=u(o,l,s)}},e.getTotalWidthOfEncodings=function(t){for(var e=0,n=0;n<t.length;n++)e+=t[n].width;return e}},function(t,e,n){"use strict";function r(t,e){if(!(t instanceof e))throw new TypeError("Cannot call a class as a function")}function o(t,e){if(!t)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return!e||"object"!=typeof e&&"function"!=typeof e?t:e}function i(t,e){if("function"!=typeof e&&null!==e)throw new TypeError("Super expression must either be null or a function, not "+typeof e);t.prototype=Object.create(e&&e.prototype,{constructor:{value:t,enumerable:!1,writable:!0,configurable:!0}}),e&&(Object.setPrototypeOf?Object.setPrototypeOf(t,e):t.__proto__=e)}Object.defineProperty(e,"__esModule",{value:!0});var a=function(t){function e(t,n){r(this,e);var i=o(this,(e.__proto__||Object.getPrototypeOf(e)).call(this));return i.name="InvalidInputException",i.symbology=t,i.input=n,i.message='"'+i.input+'" is not a valid input for '+i.symbology,i}return i(e,Error),e}(),u=function(t){function e(){r(this,e);var t=o(this,(e.__proto__||Object.getPrototypeOf(e)).call(this));return t.name="InvalidElementException",t.message="Not supported type to render on",t}return i(e,Error),e}(),f=function(t){function e(){r(this,e);var t=o(this,(e.__proto__||Object.getPrototypeOf(e)).call(this));return t.name="NoElementException",t.message="No element to render on.",t}return i(e,Error),e}();e.InvalidInputException=a,e.InvalidElementException=u,e.NoElementException=f},function(t,e,n){"use strict";var r=p(n(16)),o=p(n(7)),i=p(n(41)),a=p(n(42)),u=p(n(43)),f=p(n(11)),c=p(n(49)),s=n(14),l=p(n(12));function p(t){return t&&t.__esModule?t:{default:t}}var d=function(){},h=function(t,e,n){var r=new d;if(void 0===t)throw Error("No element to render on was provided.");return r._renderProperties=(0,u.default)(t),r._encodings=[],r._options=l.default,r._errorHandler=new c.default(r),void 0!==e&&((n=n||{}).format||(n.format=_()),r.options(n)[n.format](e,n).render()),r};for(var y in h.getModule=function(t){return r.default[t]},r.default)r.default.hasOwnProperty(y)&&b(r.default,y);function b(t,e){d.prototype[e]=d.prototype[e.toUpperCase()]=d.prototype[e.toLowerCase()]=function(n,r){var i=this;return i._errorHandler.wrapBarcodeCall((function(){r.text=void 0===r.text?void 0:""+r.text;var a=(0,o.default)(i._options,r);a=(0,f.default)(a);var u=t[e],c=v(n,u,a);return i._encodings.push(c),i}))}}function v(t,e,n){var r=new e(t=""+t,n);if(!r.valid())throw new s.InvalidInputException(r.constructor.name,t);var a=r.encode();a=(0,i.default)(a);for(var u=0;u<a.length;u++)a[u].options=(0,o.default)(n,a[u].options);return a}function _(){return r.default.CODE128?"CODE128":Object.keys(r.default)[0]}function g(t,e,n){e=(0,i.default)(e);for(var r=0;r<e.length;r++)e[r].options=(0,o.default)(n,e[r].options),(0,a.default)(e[r].options);(0,a.default)(n),new(0,t.renderer)(t.element,e,n).render(),t.afterRender&&t.afterRender()}d.prototype.options=function(t){return this._options=(0,o.default)(this._options,t),this},d.prototype.blank=function(t){var e=new Array(t+1).join("0");return this._encodings.push({data:e}),this},d.prototype.init=function(){var t;if(this._renderProperties)for(var e in Array.isArray(this._renderProperties)||(this._renderProperties=[this._renderProperties]),this._renderProperties){t=this._renderProperties[e];var n=(0,o.default)(this._options,t.options);"auto"==n.format&&(n.format=_()),this._errorHandler.wrapBarcodeCall((function(){var e=v(n.value,r.default[n.format.toUpperCase()],n);g(t,e,n)}))}},d.prototype.render=function(){if(!this._renderProperties)throw new s.NoElementException;if(Array.isArray(this._renderProperties))for(var t=0;t<this._renderProperties.length;t++)g(this._renderProperties[t],this._encodings,this._options);else g(this._renderProperties,this._encodings,this._options);return this},d.prototype._defaults=l.default,"undefined"!=typeof window&&(window.JsBarcode=h),"undefined"!=typeof jQuery&&(jQuery.fn.JsBarcode=function(t,e){var n=[];return jQuery(this).each((function(){n.push(this)})),h(n,t,e)}),t.exports=h},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0});var r=n(17),o=n(18),i=n(24),a=n(30),u=n(33),f=n(38),c=n(39),s=n(40);e.default={CODE39:r.CODE39,CODE128:o.CODE128,CODE128A:o.CODE128A,CODE128B:o.CODE128B,CODE128C:o.CODE128C,EAN13:i.EAN13,EAN8:i.EAN8,EAN5:i.EAN5,EAN2:i.EAN2,UPC:i.UPC,UPCE:i.UPCE,ITF14:a.ITF14,ITF:a.ITF,MSI:u.MSI,MSI10:u.MSI10,MSI11:u.MSI11,MSI1010:u.MSI1010,MSI1110:u.MSI1110,pharmacode:f.pharmacode,codabar:c.codabar,GenericBarcode:s.GenericBarcode}},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0}),e.CODE39=void 0;var r,o=function(){function t(t,e){for(var n=0;n<e.length;n++){var r=e[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(t,r.key,r)}}return function(e,n,r){return n&&t(e.prototype,n),r&&t(e,r),e}}(),i=n(0);var a=function(t){function e(t,n){return function(t,e){if(!(t instanceof e))throw new TypeError("Cannot call a class as a function")}(this,e),t=t.toUpperCase(),n.mod43&&(t+=function(t){return u[t]}(function(t){for(var e=0,n=0;n<t.length;n++)e+=s(t[n]);return e%=43}(t))),function(t,e){if(!t)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return!e||"object"!=typeof e&&"function"!=typeof e?t:e}(this,(e.__proto__||Object.getPrototypeOf(e)).call(this,t,n))}return function(t,e){if("function"!=typeof e&&null!==e)throw new TypeError("Super expression must either be null or a function, not "+typeof e);t.prototype=Object.create(e&&e.prototype,{constructor:{value:t,enumerable:!1,writable:!0,configurable:!0}}),e&&(Object.setPrototypeOf?Object.setPrototypeOf(t,e):t.__proto__=e)}(e,t),o(e,[{key:"encode",value:function(){for(var t=c("*"),e=0;e<this.data.length;e++)t+=c(this.data[e])+"0";return{data:t+=c("*"),text:this.text}}},{key:"valid",value:function(){return-1!==this.data.search(/^[0-9A-Z\-\.\ \$\/\+\%]+$/)}}]),e}(((r=i)&&r.__esModule?r:{default:r}).default),u=["0","1","2","3","4","5","6","7","8","9","A","B","C","D","E","F","G","H","I","J","K","L","M","N","O","P","Q","R","S","T","U","V","W","X","Y","Z","-","."," ","$","/","+","%","*"],f=[20957,29783,23639,30485,20951,29813,23669,20855,29789,23645,29975,23831,30533,22295,30149,24005,21623,29981,23837,22301,30023,23879,30545,22343,30161,24017,21959,30065,23921,22385,29015,18263,29141,17879,29045,18293,17783,29021,18269,17477,17489,17681,20753,35770];function c(t){return function(t){return f[t].toString(2)}(s(t))}function s(t){return u.indexOf(t)}e.CODE39=a},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0}),e.CODE128C=e.CODE128B=e.CODE128A=e.CODE128=void 0;var r=u(n(19)),o=u(n(21)),i=u(n(22)),a=u(n(23));function u(t){return t&&t.__esModule?t:{default:t}}e.CODE128=r.default,e.CODE128A=o.default,e.CODE128B=i.default,e.CODE128C=a.default},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0});var r=i(n(5)),o=i(n(20));function i(t){return t&&t.__esModule?t:{default:t}}function a(t,e){if(!t)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return!e||"object"!=typeof e&&"function"!=typeof e?t:e}var u=function(t){function e(t,n){if(function(t,e){if(!(t instanceof e))throw new TypeError("Cannot call a class as a function")}(this,e),/^[\x00-\x7F\xC8-\xD3]+$/.test(t))var r=a(this,(e.__proto__||Object.getPrototypeOf(e)).call(this,(0,o.default)(t),n));else r=a(this,(e.__proto__||Object.getPrototypeOf(e)).call(this,t,n));return a(r)}return function(t,e){if("function"!=typeof e&&null!==e)throw new TypeError("Super expression must either be null or a function, not "+typeof e);t.prototype=Object.create(e&&e.prototype,{constructor:{value:t,enumerable:!1,writable:!0,configurable:!0}}),e&&(Object.setPrototypeOf?Object.setPrototypeOf(t,e):t.__proto__=e)}(e,t),e}(r.default);e.default=u},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0});var r=n(1),o=function(t){return t.match(new RegExp("^"+r.A_CHARS+"*"))[0].length},i=function(t){return t.match(new RegExp("^"+r.B_CHARS+"*"))[0].length},a=function(t){return t.match(new RegExp("^"+r.C_CHARS+"*"))[0]};function u(t,e){var n=e?r.A_CHARS:r.B_CHARS,o=t.match(new RegExp("^("+n+"+?)(([0-9]{2}){2,})([^0-9]|$)"));if(o)return o[1]+String.fromCharCode(204)+f(t.substring(o[1].length));var i=t.match(new RegExp("^"+n+"+"))[0];return i.length===t.length?t:i+String.fromCharCode(e?205:206)+u(t.substring(i.length),!e)}function f(t){var e=a(t),n=e.length;if(n===t.length)return t;t=t.substring(n);var r=o(t)>=i(t);return e+String.fromCharCode(r?206:205)+u(t,r)}e.default=function(t){var e=void 0;if(a(t).length>=2)e=r.C_START_CHAR+f(t);else{var n=o(t)>i(t);e=(n?r.A_START_CHAR:r.B_START_CHAR)+u(t,n)}return e.replace(/[\xCD\xCE]([^])[\xCD\xCE]/,(function(t,e){return String.fromCharCode(203)+e}))}},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0});var r,o=function(){function t(t,e){for(var n=0;n<e.length;n++){var r=e[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(t,r.key,r)}}return function(e,n,r){return n&&t(e.prototype,n),r&&t(e,r),e}}(),i=n(5),a=(r=i)&&r.__esModule?r:{default:r},u=n(1);var f=function(t){function e(t,n){return function(t,e){if(!(t instanceof e))throw new TypeError("Cannot call a class as a function")}(this,e),function(t,e){if(!t)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return!e||"object"!=typeof e&&"function"!=typeof e?t:e}(this,(e.__proto__||Object.getPrototypeOf(e)).call(this,u.A_START_CHAR+t,n))}return function(t,e){if("function"!=typeof e&&null!==e)throw new TypeError("Super expression must either be null or a function, not "+typeof e);t.prototype=Object.create(e&&e.prototype,{constructor:{value:t,enumerable:!1,writable:!0,configurable:!0}}),e&&(Object.setPrototypeOf?Object.setPrototypeOf(t,e):t.__proto__=e)}(e,t),o(e,[{key:"valid",value:function(){return new RegExp("^"+u.A_CHARS+"+$").test(this.data)}}]),e}(a.default);e.default=f},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0});var r,o=function(){function t(t,e){for(var n=0;n<e.length;n++){var r=e[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(t,r.key,r)}}return function(e,n,r){return n&&t(e.prototype,n),r&&t(e,r),e}}(),i=n(5),a=(r=i)&&r.__esModule?r:{default:r},u=n(1);var f=function(t){function e(t,n){return function(t,e){if(!(t instanceof e))throw new TypeError("Cannot call a class as a function")}(this,e),function(t,e){if(!t)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return!e||"object"!=typeof e&&"function"!=typeof e?t:e}(this,(e.__proto__||Object.getPrototypeOf(e)).call(this,u.B_START_CHAR+t,n))}return function(t,e){if("function"!=typeof e&&null!==e)throw new TypeError("Super expression must either be null or a function, not "+typeof e);t.prototype=Object.create(e&&e.prototype,{constructor:{value:t,enumerable:!1,writable:!0,configurable:!0}}),e&&(Object.setPrototypeOf?Object.setPrototypeOf(t,e):t.__proto__=e)}(e,t),o(e,[{key:"valid",value:function(){return new RegExp("^"+u.B_CHARS+"+$").test(this.data)}}]),e}(a.default);e.default=f},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0});var r,o=function(){function t(t,e){for(var n=0;n<e.length;n++){var r=e[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(t,r.key,r)}}return function(e,n,r){return n&&t(e.prototype,n),r&&t(e,r),e}}(),i=n(5),a=(r=i)&&r.__esModule?r:{default:r},u=n(1);var f=function(t){function e(t,n){return function(t,e){if(!(t instanceof e))throw new TypeError("Cannot call a class as a function")}(this,e),function(t,e){if(!t)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return!e||"object"!=typeof e&&"function"!=typeof e?t:e}(this,(e.__proto__||Object.getPrototypeOf(e)).call(this,u.C_START_CHAR+t,n))}return function(t,e){if("function"!=typeof e&&null!==e)throw new TypeError("Super expression must either be null or a function, not "+typeof e);t.prototype=Object.create(e&&e.prototype,{constructor:{value:t,enumerable:!1,writable:!0,configurable:!0}}),e&&(Object.setPrototypeOf?Object.setPrototypeOf(t,e):t.__proto__=e)}(e,t),o(e,[{key:"valid",value:function(){return new RegExp("^"+u.C_CHARS+"+$").test(this.data)}}]),e}(a.default);e.default=f},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0}),e.UPCE=e.UPC=e.EAN2=e.EAN5=e.EAN8=e.EAN13=void 0;var r=c(n(25)),o=c(n(26)),i=c(n(27)),a=c(n(28)),u=c(n(9)),f=c(n(29));function c(t){return t&&t.__esModule?t:{default:t}}e.EAN13=r.default,e.EAN8=o.default,e.EAN5=i.default,e.EAN2=a.default,e.UPC=u.default,e.UPCE=f.default},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0});var r,o=function(){function t(t,e){for(var n=0;n<e.length;n++){var r=e[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(t,r.key,r)}}return function(e,n,r){return n&&t(e.prototype,n),r&&t(e,r),e}}(),i=function t(e,n,r){null===e&&(e=Function.prototype);var o=Object.getOwnPropertyDescriptor(e,n);if(void 0===o){var i=Object.getPrototypeOf(e);return null===i?void 0:t(i,n,r)}if("value"in o)return o.value;var a=o.get;return void 0!==a?a.call(r):void 0},a=n(2),u=n(8),f=(r=u)&&r.__esModule?r:{default:r};var c=function(t){return(10-t.substr(0,12).split("").map((function(t){return+t})).reduce((function(t,e,n){return n%2?t+3*e:t+e}),0)%10)%10},s=function(t){function e(t,n){!function(t,e){if(!(t instanceof e))throw new TypeError("Cannot call a class as a function")}(this,e),-1!==t.search(/^[0-9]{12}$/)&&(t+=c(t));var r=function(t,e){if(!t)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return!e||"object"!=typeof e&&"function"!=typeof e?t:e}(this,(e.__proto__||Object.getPrototypeOf(e)).call(this,t,n));return r.lastChar=n.lastChar,r}return function(t,e){if("function"!=typeof e&&null!==e)throw new TypeError("Super expression must either be null or a function, not "+typeof e);t.prototype=Object.create(e&&e.prototype,{constructor:{value:t,enumerable:!1,writable:!0,configurable:!0}}),e&&(Object.setPrototypeOf?Object.setPrototypeOf(t,e):t.__proto__=e)}(e,t),o(e,[{key:"valid",value:function(){return-1!==this.data.search(/^[0-9]{13}$/)&&+this.data[12]===c(this.data)}},{key:"leftText",value:function(){return i(e.prototype.__proto__||Object.getPrototypeOf(e.prototype),"leftText",this).call(this,1,6)}},{key:"leftEncode",value:function(){var t=this.data.substr(1,6),n=a.EAN13_STRUCTURE[this.data[0]];return i(e.prototype.__proto__||Object.getPrototypeOf(e.prototype),"leftEncode",this).call(this,t,n)}},{key:"rightText",value:function(){return i(e.prototype.__proto__||Object.getPrototypeOf(e.prototype),"rightText",this).call(this,7,6)}},{key:"rightEncode",value:function(){var t=this.data.substr(7,6);return i(e.prototype.__proto__||Object.getPrototypeOf(e.prototype),"rightEncode",this).call(this,t,"RRRRRR")}},{key:"encodeGuarded",value:function(){var t=i(e.prototype.__proto__||Object.getPrototypeOf(e.prototype),"encodeGuarded",this).call(this);return this.options.displayValue&&(t.unshift({data:"000000000000",text:this.text.substr(0,1),options:{textAlign:"left",fontSize:this.fontSize}}),this.options.lastChar&&(t.push({data:"00"}),t.push({data:"00000",text:this.options.lastChar,options:{fontSize:this.fontSize}}))),t}}]),e}(f.default);e.default=s},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0});var r,o=function(){function t(t,e){for(var n=0;n<e.length;n++){var r=e[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(t,r.key,r)}}return function(e,n,r){return n&&t(e.prototype,n),r&&t(e,r),e}}(),i=function t(e,n,r){null===e&&(e=Function.prototype);var o=Object.getOwnPropertyDescriptor(e,n);if(void 0===o){var i=Object.getPrototypeOf(e);return null===i?void 0:t(i,n,r)}if("value"in o)return o.value;var a=o.get;return void 0!==a?a.call(r):void 0},a=n(8),u=(r=a)&&r.__esModule?r:{default:r};var f=function(t){return(10-t.substr(0,7).split("").map((function(t){return+t})).reduce((function(t,e,n){return n%2?t+e:t+3*e}),0)%10)%10},c=function(t){function e(t,n){return function(t,e){if(!(t instanceof e))throw new TypeError("Cannot call a class as a function")}(this,e),-1!==t.search(/^[0-9]{7}$/)&&(t+=f(t)),function(t,e){if(!t)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return!e||"object"!=typeof e&&"function"!=typeof e?t:e}(this,(e.__proto__||Object.getPrototypeOf(e)).call(this,t,n))}return function(t,e){if("function"!=typeof e&&null!==e)throw new TypeError("Super expression must either be null or a function, not "+typeof e);t.prototype=Object.create(e&&e.prototype,{constructor:{value:t,enumerable:!1,writable:!0,configurable:!0}}),e&&(Object.setPrototypeOf?Object.setPrototypeOf(t,e):t.__proto__=e)}(e,t),o(e,[{key:"valid",value:function(){return-1!==this.data.search(/^[0-9]{8}$/)&&+this.data[7]===f(this.data)}},{key:"leftText",value:function(){return i(e.prototype.__proto__||Object.getPrototypeOf(e.prototype),"leftText",this).call(this,0,4)}},{key:"leftEncode",value:function(){var t=this.data.substr(0,4);return i(e.prototype.__proto__||Object.getPrototypeOf(e.prototype),"leftEncode",this).call(this,t,"LLLL")}},{key:"rightText",value:function(){return i(e.prototype.__proto__||Object.getPrototypeOf(e.prototype),"rightText",this).call(this,4,4)}},{key:"rightEncode",value:function(){var t=this.data.substr(4,4);return i(e.prototype.__proto__||Object.getPrototypeOf(e.prototype),"rightEncode",this).call(this,t,"RRRR")}}]),e}(u.default);e.default=c},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0});var r=function(){function t(t,e){for(var n=0;n<e.length;n++){var r=e[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(t,r.key,r)}}return function(e,n,r){return n&&t(e.prototype,n),r&&t(e,r),e}}(),o=n(2),i=u(n(3)),a=u(n(0));function u(t){return t&&t.__esModule?t:{default:t}}var f=function(t){function e(t,n){return function(t,e){if(!(t instanceof e))throw new TypeError("Cannot call a class as a function")}(this,e),function(t,e){if(!t)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return!e||"object"!=typeof e&&"function"!=typeof e?t:e}(this,(e.__proto__||Object.getPrototypeOf(e)).call(this,t,n))}return function(t,e){if("function"!=typeof e&&null!==e)throw new TypeError("Super expression must either be null or a function, not "+typeof e);t.prototype=Object.create(e&&e.prototype,{constructor:{value:t,enumerable:!1,writable:!0,configurable:!0}}),e&&(Object.setPrototypeOf?Object.setPrototypeOf(t,e):t.__proto__=e)}(e,t),r(e,[{key:"valid",value:function(){return-1!==this.data.search(/^[0-9]{5}$/)}},{key:"encode",value:function(){var t,e=o.EAN5_STRUCTURE[(t=this.data,t.split("").map((function(t){return+t})).reduce((function(t,e,n){return n%2?t+9*e:t+3*e}),0)%10)];return{data:"1011"+(0,i.default)(this.data,e,"01"),text:this.text}}}]),e}(a.default);e.default=f},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0});var r=function(){function t(t,e){for(var n=0;n<e.length;n++){var r=e[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(t,r.key,r)}}return function(e,n,r){return n&&t(e.prototype,n),r&&t(e,r),e}}(),o=n(2),i=a(n(3));function a(t){return t&&t.__esModule?t:{default:t}}var u=function(t){function e(t,n){return function(t,e){if(!(t instanceof e))throw new TypeError("Cannot call a class as a function")}(this,e),function(t,e){if(!t)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return!e||"object"!=typeof e&&"function"!=typeof e?t:e}(this,(e.__proto__||Object.getPrototypeOf(e)).call(this,t,n))}return function(t,e){if("function"!=typeof e&&null!==e)throw new TypeError("Super expression must either be null or a function, not "+typeof e);t.prototype=Object.create(e&&e.prototype,{constructor:{value:t,enumerable:!1,writable:!0,configurable:!0}}),e&&(Object.setPrototypeOf?Object.setPrototypeOf(t,e):t.__proto__=e)}(e,t),r(e,[{key:"valid",value:function(){return-1!==this.data.search(/^[0-9]{2}$/)}},{key:"encode",value:function(){var t=o.EAN2_STRUCTURE[parseInt(this.data)%4];return{data:"1011"+(0,i.default)(this.data,t,"01"),text:this.text}}}]),e}(a(n(0)).default);e.default=u},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0});var r=function(){function t(t,e){for(var n=0;n<e.length;n++){var r=e[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(t,r.key,r)}}return function(e,n,r){return n&&t(e.prototype,n),r&&t(e,r),e}}(),o=u(n(3)),i=u(n(0)),a=n(9);function u(t){return t&&t.__esModule?t:{default:t}}function f(t,e){if(!t)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return!e||"object"!=typeof e&&"function"!=typeof e?t:e}var c=["XX00000XXX","XX10000XXX","XX20000XXX","XXX00000XX","XXXX00000X","XXXXX00005","XXXXX00006","XXXXX00007","XXXXX00008","XXXXX00009"],s=[["EEEOOO","OOOEEE"],["EEOEOO","OOEOEE"],["EEOOEO","OOEEOE"],["EEOOOE","OOEEEO"],["EOEEOO","OEOOEE"],["EOOEEO","OEEOOE"],["EOOOEE","OEEEOO"],["EOEOEO","OEOEOE"],["EOEOOE","OEOEEO"],["EOOEOE","OEEOEO"]],l=function(t){function e(t,n){!function(t,e){if(!(t instanceof e))throw new TypeError("Cannot call a class as a function")}(this,e);var r=f(this,(e.__proto__||Object.getPrototypeOf(e)).call(this,t,n));if(r.isValid=!1,-1!==t.search(/^[0-9]{6}$/))r.middleDigits=t,r.upcA=p(t,"0"),r.text=n.text||""+r.upcA[0]+t+r.upcA[r.upcA.length-1],r.isValid=!0;else{if(-1===t.search(/^[01][0-9]{7}$/))return f(r);if(r.middleDigits=t.substring(1,t.length-1),r.upcA=p(r.middleDigits,t[0]),r.upcA[r.upcA.length-1]!==t[t.length-1])return f(r);r.isValid=!0}return r.displayValue=n.displayValue,n.fontSize>10*n.width?r.fontSize=10*n.width:r.fontSize=n.fontSize,r.guardHeight=n.height+r.fontSize/2+n.textMargin,r}return function(t,e){if("function"!=typeof e&&null!==e)throw new TypeError("Super expression must either be null or a function, not "+typeof e);t.prototype=Object.create(e&&e.prototype,{constructor:{value:t,enumerable:!1,writable:!0,configurable:!0}}),e&&(Object.setPrototypeOf?Object.setPrototypeOf(t,e):t.__proto__=e)}(e,t),r(e,[{key:"valid",value:function(){return this.isValid}},{key:"encode",value:function(){return this.options.flat?this.flatEncoding():this.guardedEncoding()}},{key:"flatEncoding",value:function(){var t="";return t+="101",t+=this.encodeMiddleDigits(),{data:t+="010101",text:this.text}}},{key:"guardedEncoding",value:function(){var t=[];return this.displayValue&&t.push({data:"00000000",text:this.text[0],options:{textAlign:"left",fontSize:this.fontSize}}),t.push({data:"101",options:{height:this.guardHeight}}),t.push({data:this.encodeMiddleDigits(),text:this.text.substring(1,7),options:{fontSize:this.fontSize}}),t.push({data:"010101",options:{height:this.guardHeight}}),this.displayValue&&t.push({data:"00000000",text:this.text[7],options:{textAlign:"right",fontSize:this.fontSize}}),t}},{key:"encodeMiddleDigits",value:function(){var t=this.upcA[0],e=this.upcA[this.upcA.length-1],n=s[parseInt(e)][parseInt(t)];return(0,o.default)(this.middleDigits,n)}}]),e}(i.default);function p(t,e){for(var n=parseInt(t[t.length-1]),r=c[n],o="",i=0,u=0;u<r.length;u++){var f=r[u];o+="X"===f?t[i++]:f}return""+(o=""+e+o)+(0,a.checksum)(o)}e.default=l},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0}),e.ITF14=e.ITF=void 0;var r=i(n(10)),o=i(n(32));function i(t){return t&&t.__esModule?t:{default:t}}e.ITF=r.default,e.ITF14=o.default},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0});e.START_BIN="1010",e.END_BIN="11101",e.BINARIES=["00110","10001","01001","11000","00101","10100","01100","00011","10010","01010"]},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0});var r,o=function(){function t(t,e){for(var n=0;n<e.length;n++){var r=e[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(t,r.key,r)}}return function(e,n,r){return n&&t(e.prototype,n),r&&t(e,r),e}}(),i=n(10),a=(r=i)&&r.__esModule?r:{default:r};var u=function(t){var e=t.substr(0,13).split("").map((function(t){return parseInt(t,10)})).reduce((function(t,e,n){return t+e*(3-n%2*2)}),0);return 10*Math.ceil(e/10)-e},f=function(t){function e(t,n){return function(t,e){if(!(t instanceof e))throw new TypeError("Cannot call a class as a function")}(this,e),-1!==t.search(/^[0-9]{13}$/)&&(t+=u(t)),function(t,e){if(!t)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return!e||"object"!=typeof e&&"function"!=typeof e?t:e}(this,(e.__proto__||Object.getPrototypeOf(e)).call(this,t,n))}return function(t,e){if("function"!=typeof e&&null!==e)throw new TypeError("Super expression must either be null or a function, not "+typeof e);t.prototype=Object.create(e&&e.prototype,{constructor:{value:t,enumerable:!1,writable:!0,configurable:!0}}),e&&(Object.setPrototypeOf?Object.setPrototypeOf(t,e):t.__proto__=e)}(e,t),o(e,[{key:"valid",value:function(){return-1!==this.data.search(/^[0-9]{14}$/)&&+this.data[13]===u(this.data)}}]),e}(a.default);e.default=f},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0}),e.MSI1110=e.MSI1010=e.MSI11=e.MSI10=e.MSI=void 0;var r=f(n(4)),o=f(n(34)),i=f(n(35)),a=f(n(36)),u=f(n(37));function f(t){return t&&t.__esModule?t:{default:t}}e.MSI=r.default,e.MSI10=o.default,e.MSI11=i.default,e.MSI1010=a.default,e.MSI1110=u.default},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0});var r,o=n(4),i=(r=o)&&r.__esModule?r:{default:r},a=n(6);var u=function(t){function e(t,n){return function(t,e){if(!(t instanceof e))throw new TypeError("Cannot call a class as a function")}(this,e),function(t,e){if(!t)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return!e||"object"!=typeof e&&"function"!=typeof e?t:e}(this,(e.__proto__||Object.getPrototypeOf(e)).call(this,t+(0,a.mod10)(t),n))}return function(t,e){if("function"!=typeof e&&null!==e)throw new TypeError("Super expression must either be null or a function, not "+typeof e);t.prototype=Object.create(e&&e.prototype,{constructor:{value:t,enumerable:!1,writable:!0,configurable:!0}}),e&&(Object.setPrototypeOf?Object.setPrototypeOf(t,e):t.__proto__=e)}(e,t),e}(i.default);e.default=u},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0});var r,o=n(4),i=(r=o)&&r.__esModule?r:{default:r},a=n(6);var u=function(t){function e(t,n){return function(t,e){if(!(t instanceof e))throw new TypeError("Cannot call a class as a function")}(this,e),function(t,e){if(!t)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return!e||"object"!=typeof e&&"function"!=typeof e?t:e}(this,(e.__proto__||Object.getPrototypeOf(e)).call(this,t+(0,a.mod11)(t),n))}return function(t,e){if("function"!=typeof e&&null!==e)throw new TypeError("Super expression must either be null or a function, not "+typeof e);t.prototype=Object.create(e&&e.prototype,{constructor:{value:t,enumerable:!1,writable:!0,configurable:!0}}),e&&(Object.setPrototypeOf?Object.setPrototypeOf(t,e):t.__proto__=e)}(e,t),e}(i.default);e.default=u},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0});var r,o=n(4),i=(r=o)&&r.__esModule?r:{default:r},a=n(6);var u=function(t){function e(t,n){return function(t,e){if(!(t instanceof e))throw new TypeError("Cannot call a class as a function")}(this,e),t+=(0,a.mod10)(t),t+=(0,a.mod10)(t),function(t,e){if(!t)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return!e||"object"!=typeof e&&"function"!=typeof e?t:e}(this,(e.__proto__||Object.getPrototypeOf(e)).call(this,t,n))}return function(t,e){if("function"!=typeof e&&null!==e)throw new TypeError("Super expression must either be null or a function, not "+typeof e);t.prototype=Object.create(e&&e.prototype,{constructor:{value:t,enumerable:!1,writable:!0,configurable:!0}}),e&&(Object.setPrototypeOf?Object.setPrototypeOf(t,e):t.__proto__=e)}(e,t),e}(i.default);e.default=u},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0});var r,o=n(4),i=(r=o)&&r.__esModule?r:{default:r},a=n(6);var u=function(t){function e(t,n){return function(t,e){if(!(t instanceof e))throw new TypeError("Cannot call a class as a function")}(this,e),t+=(0,a.mod11)(t),t+=(0,a.mod10)(t),function(t,e){if(!t)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return!e||"object"!=typeof e&&"function"!=typeof e?t:e}(this,(e.__proto__||Object.getPrototypeOf(e)).call(this,t,n))}return function(t,e){if("function"!=typeof e&&null!==e)throw new TypeError("Super expression must either be null or a function, not "+typeof e);t.prototype=Object.create(e&&e.prototype,{constructor:{value:t,enumerable:!1,writable:!0,configurable:!0}}),e&&(Object.setPrototypeOf?Object.setPrototypeOf(t,e):t.__proto__=e)}(e,t),e}(i.default);e.default=u},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0}),e.pharmacode=void 0;var r,o=function(){function t(t,e){for(var n=0;n<e.length;n++){var r=e[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(t,r.key,r)}}return function(e,n,r){return n&&t(e.prototype,n),r&&t(e,r),e}}(),i=n(0);var a=function(t){function e(t,n){!function(t,e){if(!(t instanceof e))throw new TypeError("Cannot call a class as a function")}(this,e);var r=function(t,e){if(!t)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return!e||"object"!=typeof e&&"function"!=typeof e?t:e}(this,(e.__proto__||Object.getPrototypeOf(e)).call(this,t,n));return r.number=parseInt(t,10),r}return function(t,e){if("function"!=typeof e&&null!==e)throw new TypeError("Super expression must either be null or a function, not "+typeof e);t.prototype=Object.create(e&&e.prototype,{constructor:{value:t,enumerable:!1,writable:!0,configurable:!0}}),e&&(Object.setPrototypeOf?Object.setPrototypeOf(t,e):t.__proto__=e)}(e,t),o(e,[{key:"encode",value:function(){for(var t=this.number,e="";!isNaN(t)&&0!=t;)t%2==0?(e="11100"+e,t=(t-2)/2):(e="100"+e,t=(t-1)/2);return{data:e=e.slice(0,-2),text:this.text}}},{key:"valid",value:function(){return this.number>=3&&this.number<=131070}}]),e}(((r=i)&&r.__esModule?r:{default:r}).default);e.pharmacode=a},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0}),e.codabar=void 0;var r,o=function(){function t(t,e){for(var n=0;n<e.length;n++){var r=e[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(t,r.key,r)}}return function(e,n,r){return n&&t(e.prototype,n),r&&t(e,r),e}}(),i=n(0);var a=function(t){function e(t,n){!function(t,e){if(!(t instanceof e))throw new TypeError("Cannot call a class as a function")}(this,e),0===t.search(/^[0-9\-\$\:\.\+\/]+$/)&&(t="A"+t+"A");var r=function(t,e){if(!t)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return!e||"object"!=typeof e&&"function"!=typeof e?t:e}(this,(e.__proto__||Object.getPrototypeOf(e)).call(this,t.toUpperCase(),n));return r.text=r.options.text||r.text.replace(/[A-D]/g,""),r}return function(t,e){if("function"!=typeof e&&null!==e)throw new TypeError("Super expression must either be null or a function, not "+typeof e);t.prototype=Object.create(e&&e.prototype,{constructor:{value:t,enumerable:!1,writable:!0,configurable:!0}}),e&&(Object.setPrototypeOf?Object.setPrototypeOf(t,e):t.__proto__=e)}(e,t),o(e,[{key:"valid",value:function(){return-1!==this.data.search(/^[A-D][0-9\-\$\:\.\+\/]+[A-D]$/)}},{key:"encode",value:function(){for(var t=[],e=this.getEncodings(),n=0;n<this.data.length;n++)t.push(e[this.data.charAt(n)]),n!==this.data.length-1&&t.push("0");return{text:this.text,data:t.join("")}}},{key:"getEncodings",value:function(){return{0:"101010011",1:"101011001",2:"101001011",3:"110010101",4:"101101001",5:"110101001",6:"100101011",7:"100101101",8:"100110101",9:"110100101","-":"101001101",$:"101100101",":":"1101011011","/":"1101101011",".":"1101101101","+":"1011011011",A:"1011001001",B:"1001001011",C:"1010010011",D:"1010011001"}}}]),e}(((r=i)&&r.__esModule?r:{default:r}).default);e.codabar=a},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0}),e.GenericBarcode=void 0;var r,o=function(){function t(t,e){for(var n=0;n<e.length;n++){var r=e[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(t,r.key,r)}}return function(e,n,r){return n&&t(e.prototype,n),r&&t(e,r),e}}(),i=n(0);var a=function(t){function e(t,n){return function(t,e){if(!(t instanceof e))throw new TypeError("Cannot call a class as a function")}(this,e),function(t,e){if(!t)throw new ReferenceError("this hasn't been initialised - super() hasn't been called");return!e||"object"!=typeof e&&"function"!=typeof e?t:e}(this,(e.__proto__||Object.getPrototypeOf(e)).call(this,t,n))}return function(t,e){if("function"!=typeof e&&null!==e)throw new TypeError("Super expression must either be null or a function, not "+typeof e);t.prototype=Object.create(e&&e.prototype,{constructor:{value:t,enumerable:!1,writable:!0,configurable:!0}}),e&&(Object.setPrototypeOf?Object.setPrototypeOf(t,e):t.__proto__=e)}(e,t),o(e,[{key:"encode",value:function(){return{data:"10101010101010101010101010101010101010101",text:this.text}}},{key:"valid",value:function(){return!0}}]),e}(((r=i)&&r.__esModule?r:{default:r}).default);e.GenericBarcode=a},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0}),e.default=function(t){var e=[];return function t(n){if(Array.isArray(n))for(var r=0;r<n.length;r++)t(n[r]);else n.text=n.text||"",n.data=n.data||"",e.push(n)}(t),e}},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0}),e.default=function(t){return t.marginTop=t.marginTop||t.margin,t.marginBottom=t.marginBottom||t.margin,t.marginRight=t.marginRight||t.margin,t.marginLeft=t.marginLeft||t.margin,t}},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0});var r="function"==typeof Symbol&&"symbol"==typeof Symbol.iterator?function(t){return typeof t}:function(t){return t&&"function"==typeof Symbol&&t.constructor===Symbol&&t!==Symbol.prototype?"symbol":typeof t},o=u(n(44)),i=u(n(45)),a=n(14);function u(t){return t&&t.__esModule?t:{default:t}}function f(t){if("string"==typeof t)return function(t){var e=document.querySelectorAll(t);if(0===e.length)return;for(var n=[],r=0;r<e.length;r++)n.push(f(e[r]));return n}(t);if(Array.isArray(t)){for(var e=[],n=0;n<t.length;n++)e.push(f(t[n]));return e}if("undefined"!=typeof HTMLCanvasElement&&t instanceof HTMLImageElement)return u=t,{element:c=document.createElement("canvas"),options:(0,o.default)(u),renderer:i.default.CanvasRenderer,afterRender:function(){u.setAttribute("src",c.toDataURL())}};if(t&&t.nodeName&&"svg"===t.nodeName.toLowerCase()||"undefined"!=typeof SVGElement&&t instanceof SVGElement)return{element:t,options:(0,o.default)(t),renderer:i.default.SVGRenderer};if("undefined"!=typeof HTMLCanvasElement&&t instanceof HTMLCanvasElement)return{element:t,options:(0,o.default)(t),renderer:i.default.CanvasRenderer};if(t&&t.getContext)return{element:t,renderer:i.default.CanvasRenderer};if(t&&"object"===(void 0===t?"undefined":r(t))&&!t.nodeName)return{element:t,renderer:i.default.ObjectRenderer};throw new a.InvalidElementException;var u,c}e.default=f},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0});var r=i(n(11)),o=i(n(12));function i(t){return t&&t.__esModule?t:{default:t}}e.default=function(t){var e={};for(var n in o.default)o.default.hasOwnProperty(n)&&(t.hasAttribute("jsbarcode-"+n.toLowerCase())&&(e[n]=t.getAttribute("jsbarcode-"+n.toLowerCase())),t.hasAttribute("data-"+n.toLowerCase())&&(e[n]=t.getAttribute("data-"+n.toLowerCase())));return e.value=t.getAttribute("jsbarcode-value")||t.getAttribute("data-value"),e=(0,r.default)(e)}},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0});var r=a(n(46)),o=a(n(47)),i=a(n(48));function a(t){return t&&t.__esModule?t:{default:t}}e.default={CanvasRenderer:r.default,SVGRenderer:o.default,ObjectRenderer:i.default}},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0});var r,o=function(){function t(t,e){for(var n=0;n<e.length;n++){var r=e[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(t,r.key,r)}}return function(e,n,r){return n&&t(e.prototype,n),r&&t(e,r),e}}(),i=n(7),a=(r=i)&&r.__esModule?r:{default:r},u=n(13);var f=function(){function t(e,n,r){!function(t,e){if(!(t instanceof e))throw new TypeError("Cannot call a class as a function")}(this,t),this.canvas=e,this.encodings=n,this.options=r}return o(t,[{key:"render",value:function(){if(!this.canvas.getContext)throw new Error("The browser does not support canvas.");this.prepareCanvas();for(var t=0;t<this.encodings.length;t++){var e=(0,a.default)(this.options,this.encodings[t].options);this.drawCanvasBarcode(e,this.encodings[t]),this.drawCanvasText(e,this.encodings[t]),this.moveCanvasDrawing(this.encodings[t])}this.restoreCanvas()}},{key:"prepareCanvas",value:function(){var t=this.canvas.getContext("2d");t.save(),(0,u.calculateEncodingAttributes)(this.encodings,this.options,t);var e=(0,u.getTotalWidthOfEncodings)(this.encodings),n=(0,u.getMaximumHeightOfEncodings)(this.encodings);this.canvas.width=e+this.options.marginLeft+this.options.marginRight,this.canvas.height=n,t.clearRect(0,0,this.canvas.width,this.canvas.height),this.options.background&&(t.fillStyle=this.options.background,t.fillRect(0,0,this.canvas.width,this.canvas.height)),t.translate(this.options.marginLeft,0)}},{key:"drawCanvasBarcode",value:function(t,e){var n,r=this.canvas.getContext("2d"),o=e.data;n="top"==t.textPosition?t.marginTop+t.fontSize+t.textMargin:t.marginTop,r.fillStyle=t.lineColor;for(var i=0;i<o.length;i++){var a=i*t.width+e.barcodePadding;"1"===o[i]?r.fillRect(a,n,t.width,t.height):o[i]&&r.fillRect(a,n,t.width,t.height*o[i])}}},{key:"drawCanvasText",value:function(t,e){var n,r,o=this.canvas.getContext("2d"),i=t.fontOptions+" "+t.fontSize+"px "+t.font;t.displayValue&&(r="top"==t.textPosition?t.marginTop+t.fontSize-t.textMargin:t.height+t.textMargin+t.marginTop+t.fontSize,o.font=i,"left"==t.textAlign||e.barcodePadding>0?(n=0,o.textAlign="left"):"right"==t.textAlign?(n=e.width-1,o.textAlign="right"):(n=e.width/2,o.textAlign="center"),o.fillText(e.text,n,r))}},{key:"moveCanvasDrawing",value:function(t){this.canvas.getContext("2d").translate(t.width,0)}},{key:"restoreCanvas",value:function(){this.canvas.getContext("2d").restore()}}]),t}();e.default=f},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0});var r,o=function(){function t(t,e){for(var n=0;n<e.length;n++){var r=e[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(t,r.key,r)}}return function(e,n,r){return n&&t(e.prototype,n),r&&t(e,r),e}}(),i=n(7),a=(r=i)&&r.__esModule?r:{default:r},u=n(13);var f="http://www.w3.org/2000/svg",c=function(){function t(e,n,r){!function(t,e){if(!(t instanceof e))throw new TypeError("Cannot call a class as a function")}(this,t),this.svg=e,this.encodings=n,this.options=r,this.document=r.xmlDocument||document}return o(t,[{key:"render",value:function(){var t=this.options.marginLeft;this.prepareSVG();for(var e=0;e<this.encodings.length;e++){var n=this.encodings[e],r=(0,a.default)(this.options,n.options),o=this.createGroup(t,r.marginTop,this.svg);this.setGroupOptions(o,r),this.drawSvgBarcode(o,r,n),this.drawSVGText(o,r,n),t+=n.width}}},{key:"prepareSVG",value:function(){for(;this.svg.firstChild;)this.svg.removeChild(this.svg.firstChild);(0,u.calculateEncodingAttributes)(this.encodings,this.options);var t=(0,u.getTotalWidthOfEncodings)(this.encodings),e=(0,u.getMaximumHeightOfEncodings)(this.encodings),n=t+this.options.marginLeft+this.options.marginRight;this.setSvgAttributes(n,e),this.options.background&&this.drawRect(0,0,n,e,this.svg).setAttribute("style","fill:"+this.options.background+";")}},{key:"drawSvgBarcode",value:function(t,e,n){var r,o=n.data;r="top"==e.textPosition?e.fontSize+e.textMargin:0;for(var i=0,a=0,u=0;u<o.length;u++)a=u*e.width+n.barcodePadding,"1"===o[u]?i++:i>0&&(this.drawRect(a-e.width*i,r,e.width*i,e.height,t),i=0);i>0&&this.drawRect(a-e.width*(i-1),r,e.width*i,e.height,t)}},{key:"drawSVGText",value:function(t,e,n){var r,o,i=this.document.createElementNS(f,"text");e.displayValue&&(i.setAttribute("style","font:"+e.fontOptions+" "+e.fontSize+"px "+e.font),o="top"==e.textPosition?e.fontSize-e.textMargin:e.height+e.textMargin+e.fontSize,"left"==e.textAlign||n.barcodePadding>0?(r=0,i.setAttribute("text-anchor","start")):"right"==e.textAlign?(r=n.width-1,i.setAttribute("text-anchor","end")):(r=n.width/2,i.setAttribute("text-anchor","middle")),i.setAttribute("x",r),i.setAttribute("y",o),i.appendChild(this.document.createTextNode(n.text)),t.appendChild(i))}},{key:"setSvgAttributes",value:function(t,e){var n=this.svg;n.setAttribute("width",t+"px"),n.setAttribute("height",e+"px"),n.setAttribute("x","0px"),n.setAttribute("y","0px"),n.setAttribute("viewBox","0 0 "+t+" "+e),n.setAttribute("xmlns",f),n.setAttribute("version","1.1"),n.setAttribute("style","transform: translate(0,0)")}},{key:"createGroup",value:function(t,e,n){var r=this.document.createElementNS(f,"g");return r.setAttribute("transform","translate("+t+", "+e+")"),n.appendChild(r),r}},{key:"setGroupOptions",value:function(t,e){t.setAttribute("style","fill:"+e.lineColor+";")}},{key:"drawRect",value:function(t,e,n,r,o){var i=this.document.createElementNS(f,"rect");return i.setAttribute("x",t),i.setAttribute("y",e),i.setAttribute("width",n),i.setAttribute("height",r),o.appendChild(i),i}}]),t}();e.default=c},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0});var r=function(){function t(t,e){for(var n=0;n<e.length;n++){var r=e[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(t,r.key,r)}}return function(e,n,r){return n&&t(e.prototype,n),r&&t(e,r),e}}();var o=function(){function t(e,n,r){!function(t,e){if(!(t instanceof e))throw new TypeError("Cannot call a class as a function")}(this,t),this.object=e,this.encodings=n,this.options=r}return r(t,[{key:"render",value:function(){this.object.encodings=this.encodings}}]),t}();e.default=o},function(t,e,n){"use strict";Object.defineProperty(e,"__esModule",{value:!0});var r=function(){function t(t,e){for(var n=0;n<e.length;n++){var r=e[n];r.enumerable=r.enumerable||!1,r.configurable=!0,"value"in r&&(r.writable=!0),Object.defineProperty(t,r.key,r)}}return function(e,n,r){return n&&t(e.prototype,n),r&&t(e,r),e}}();var o=function(){function t(e){!function(t,e){if(!(t instanceof e))throw new TypeError("Cannot call a class as a function")}(this,t),this.api=e}return r(t,[{key:"handleCatch",value:function(t){if("InvalidInputException"!==t.name)throw t;if(this.api._options.valid===this.api._defaults.valid)throw t.message;this.api._options.valid(!1),this.api.render=function(){}}},{key:"wrapBarcodeCall",value:function(t){try{var e=t.apply(void 0,arguments);return this.api._options.valid(!0),e}catch(t){return this.handleCatch(t),this.api}}}]),t}();e.default=o}]);
+<file path="src/app/api/fix-data/route.ts">
+// src/app/api/fix-data/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+
+export async function GET(req: NextRequest) {
+  try {
+    const searchParams = req.nextUrl.searchParams;
+    const confirm = searchParams.get('confirm');
+
+    // 1. Cari semua data yang statusnya sudah dieksekusi
+    const allResolvedData = await prisma.qCResult.findMany({
+      where: {
+        resolution: {
+          in: ['DIJUAL_KEMBALI', 'SCRAP']
+        }
+      },
+      include: { returnItem: true }
+    });
+
+    // 2. Filter pakai JavaScript (Biar TypeScript gak rewel soal null dan 0)
+    const legacyData = allResolvedData.filter(qc => 
+      (!qc.soldQty || qc.soldQty === 0) && 
+      (!qc.scrapQty || qc.scrapQty === 0)
+    );
+
+    // ==========================================
+    // MODE 1: PREVIEW (Jika URL tanpa ?confirm=true)
+    // ==========================================
+    if (confirm !== 'true') {
+      const previewData = legacyData.map(qc => ({
+        soNumber: qc.returnItem.soNumber,
+        customer: qc.returnItem.customerName,
+        barang: qc.returnItem.itemName,
+        qtyOrder: qc.returnItem.qtyOrder,
+        statusSaatIni: qc.resolution,
+        perbaikanNanti: qc.resolution === 'DIJUAL_KEMBALI' 
+          ? `Akan diubah -> Terjual: ${qc.returnItem.qtyOrder}, Scrap: 0`
+          : `Akan diubah -> Terjual: 0, Scrap: ${qc.returnItem.qtyOrder}`
+      }));
+
+      return NextResponse.json({
+        mode: "PREVIEW 👀",
+        pesan: "Ini hanya preview. Database BELUM diubah. Silakan cek datanya di bawah ini. Jika sudah oke, tambahkan ?confirm=true di akhir URL.",
+        totalDataBermasalah: legacyData.length,
+        dataYangAkanDiperbaiki: previewData
+      });
+    }
+
+    // ==========================================
+    // MODE 2: EKSEKUSI (Jika URL pakai ?confirm=true)
+    // ==========================================
+    let updatedCount = 0;
+
+    for (const qc of legacyData) {
+      const qtyOrder = qc.returnItem.qtyOrder;
+      
+      if (qc.resolution === 'DIJUAL_KEMBALI') {
+        await prisma.qCResult.update({
+          where: { id: qc.id },
+          data: { soldQty: qtyOrder, scrapQty: 0 }
+        });
+        updatedCount++;
+      } else if (qc.resolution === 'SCRAP') {
+        await prisma.qCResult.update({
+          where: { id: qc.id },
+          data: { soldQty: 0, scrapQty: qtyOrder }
+        });
+        updatedCount++;
+      }
+    }
+
+    return NextResponse.json({ 
+      mode: "EKSEKUSI 🚀",
+      success: true, 
+      pesan: `Mantap! Berhasil memperbaiki ${updatedCount} data lama secara permanen di database.` 
+    });
+
+  } catch (error: any) {
+    console.error(error);
+    return NextResponse.json({ success: false, error: error.message }, { status: 500 });
+  }
+}
 </file>
 
 <file path="src/app/api/import/route.ts">
@@ -565,6 +648,46 @@ export default async function EditPage(props: EditPageProps) {
 }
 </file>
 
+<file path="src/app/report/ReportFilter.tsx">
+// src/app/report/ReportFilter.tsx
+"use client";
+
+import React from "react";
+import { useRouter } from "next/navigation";
+import { Input } from "@/components/Input";
+
+export default function ReportFilter({ 
+  initialDate, 
+  currentType 
+}: { 
+  initialDate: string;
+  currentType: string;
+}) {
+  const router = useRouter();
+
+  const handleDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newDate = e.target.value;
+    if (newDate) {
+      router.push(`/report?date=${newDate}&type=${currentType}`);
+    }
+  };
+
+  return (
+    <div className="flex items-center gap-3 bg-white p-4 rounded-lg border border-gray-200 shadow-sm w-full md:w-auto">
+      <label className="text-sm font-bold text-gray-700 whitespace-nowrap">
+        📅 Pilih Tanggal:
+      </label>
+      <Input 
+        type="date" 
+        value={initialDate} 
+        onChange={handleDateChange} 
+        className="w-full md:w-48"
+      />
+    </div>
+  );
+}
+</file>
+
 <file path="src/app/tarik-so/actions.ts">
 // src/app/tarik-so/actions.ts
 "use server";
@@ -995,28 +1118,6 @@ const nextConfig: NextConfig = {
 export default nextConfig;
 </file>
 
-<file path="repomix.config.json">
-{
-  "output": {
-    "filePath": "repomix-output.xml",
-    "style": "xml"
-  },
-  "ignore": {
-    "useGitignore": true,
-    "customPatterns": [
-      "**/.git/**",
-      "*.db",
-      "prisma/*.db",
-      "public/uploads/**",
-      "public/*.svg",
-      "package-lock.json",
-      "README.md",
-      "dokumentasi.md"
-    ]
-  }
-}
-</file>
-
 <file path="tsconfig.json">
 {
   "compilerOptions": {
@@ -1059,98 +1160,6 @@ export default nextConfig;
   "exclude": [
     "node_modules"
   ]
-}
-</file>
-
-<file path="src/app/api/export/route.ts">
-// src/app/api/export/route.ts
-import { NextRequest, NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma';
-import { utils, write } from 'xlsx';
-
-export async function GET(req: NextRequest) {
-  try {
-    const searchParams = req.nextUrl.searchParams;
-    const startDate = searchParams.get('startDate');
-    const endDate = searchParams.get('endDate');
-    
-    // Tangkap daftar toko. Formatnya: "Toko A|Toko B|Toko C"
-    const customersParam = searchParams.get('customers');
-    const customerArray = customersParam ? customersParam.split('|').filter(Boolean) : [];
-
-    let dateFilter = undefined;
-    if (startDate && endDate) {
-      const end = new Date(endDate);
-      end.setDate(end.getDate() + 1); 
-      dateFilter = { gte: new Date(startDate), lt: end };
-    }
-
-    const items = await prisma.returnItem.findMany({
-      where: { 
-        qcStatus: { not: 'PENDING' },
-        ...(dateFilter ? { createdAt: dateFilter } : {}),
-        // Filter IN: Ambil data jika nama customer ada di dalam array
-        ...(customerArray.length > 0 ? { customerName: { in: customerArray } } : {})
-      },
-      include: { qcResult: true },
-      orderBy: { qcResult: { processedAt: 'desc' } }, 
-    });
-
-    if (items.length === 0) {
-      return new NextResponse("Belum ada data barang return yang sesuai dengan filter Anda.", { status: 400 });
-    }
-
-    const excelData = items.map((item, index) => {
-      const dateStr = item.qcResult 
-        ? new Date(item.qcResult.processedAt).toISOString().split('T')[0] 
-        : '-';
-
-      const resolutionText = item.qcResult?.resolution === 'DIJUAL_KEMBALI' 
-        ? 'Dijual Kembali' 
-        : item.qcResult?.resolution === 'SCRAP' 
-        ? 'Di-Scrap / Buang' 
-        : 'Belum Ada Keputusan';
-
-      return {
-        "NO": index + 1,
-        "Tanggal Terima": dateStr,
-        "Sales Order": item.soNumber,
-        "Customer": item.customerName,
-        "Kode Barang": item.itemCode,
-        "Nama Barang": item.itemName,
-        "L": item.width,
-        "T": item.height,
-        "Qty": item.qtyOrder,
-        "Status QC": item.qcStatus,
-        "Tindak Lanjut": resolutionText,
-        "Notes Minus": item.qcResult?.damageNotes || "-",
-      };
-    });
-
-    const worksheet = utils.json_to_sheet(excelData);
-    const workbook = utils.book_new();
-    utils.book_append_sheet(workbook, worksheet, "Data QC");
-
-    const excelBuffer = write(workbook, { type: 'buffer', bookType: 'xlsx' });
-
-    let fileName = "Export_QC";
-    if (customerArray.length === 1) fileName += `_${customerArray[0]}`;
-    else if (customerArray.length > 1) fileName += `_MultiToko`;
-    if (startDate && endDate) fileName += `_${startDate}_to_${endDate}`;
-    fileName += ".xlsx";
-
-    return new NextResponse(excelBuffer, {
-      status: 200,
-      headers: {
-        'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        'Content-Disposition': `attachment; filename="${fileName.replace(/\s+/g, '_')}"`,
-      },
-    });
-
-  } catch (error: unknown) {
-    console.error("Export Action Error:", error);
-    return new NextResponse("Internal Server Error saat export data", { status: 500 });
-  }
 }
 </file>
 
@@ -1389,156 +1398,236 @@ export default function ImportPage() {
 }
 </file>
 
-<file path="src/app/qc/[id]/ResolutionButtons.tsx">
-// src/app/qc/[id]/ResolutionButtons.tsx
-"use client";
-
-import React, { useState, useTransition } from "react";
+<file path="src/app/report/page.tsx">
+// src/app/report/page.tsx
+import { prisma } from "@/lib/prisma";
+import Link from "next/link";
 import { Button } from "@/components/Button";
-import { updateResolutionAction } from "@/app/actions";
-import { useUI } from "@/components/UIProvider";
+import ReportFilter from "./ReportFilter";
 
-export const ResolutionButtons = ({ 
-  returnItemId, 
-  currentResolution,
-  qtyOrder,
-  currentSoldQty,
-  currentScrapQty
-}: { 
-  returnItemId: string; 
-  currentResolution: string | null;
-  qtyOrder: number;
-  currentSoldQty: number | null;
-  currentScrapQty: number | null;
-}) => {
-  const [isPending, startTransition] = useTransition();
-  const [showPartialForm, setShowPartialForm] = useState(false);
-  const [soldQty, setSoldQty] = useState<number | "">("");
-  const [scrapQty, setScrapQty] = useState<number | "">("");
-  const { showToast, showConfirm } = useUI(); 
+interface ReportPageProps {
+  searchParams: Promise<{ [key: string]: string | undefined }>;
+}
 
-  const handleUpdate = (type: "DIJUAL_KEMBALI" | "SCRAP") => {
-    const confirmMsg = type === "DIJUAL_KEMBALI" 
-      ? "Yakin barang ini akan masuk stok DIJUAL KEMBALI?" 
-      : "Yakin barang ini akan di-SCRAP / DIBUANG?";
-      
-    showConfirm(confirmMsg, () => {
-      startTransition(async () => {
-        try {
-          const res = await updateResolutionAction(returnItemId, type);
-          if (res.success) {
-            showToast("Status berhasil diperbarui!", 'success');
-            setShowPartialForm(false);
-          } else {
-            showToast(res.error || "Gagal memperbarui status", 'error');
-          }
-        } catch (error: unknown) {
-          console.error(error);
-          showToast("Terjadi kesalahan jaringan, silakan coba lagi.", 'error');
+export default async function ReportPage(props: ReportPageProps) {
+  const searchParams = await props.searchParams;
+  
+  const today = new Date().toLocaleDateString('en-CA');
+  const selectedDateStr = searchParams?.date || today;
+  const reportType = searchParams?.type === 'pengeluaran' ? 'pengeluaran' : 'pemasukan';
+
+  const startDate = new Date(`${selectedDateStr}T00:00:00`);
+  const endDate = new Date(`${selectedDateStr}T23:59:59`);
+
+  // --- QUERY DATABASE BERDASARKAN TAB ---
+  let items: any[] = [];
+
+  if (reportType === 'pemasukan') {
+    // PEMASUKAN: Berdasarkan kapan barang selesai di-QC (processedAt)
+    items = await prisma.returnItem.findMany({
+      where: {
+        qcStatus: { not: "PENDING" },
+        qcResult: {
+          processedAt: { gte: startDate, lte: endDate }
         }
-      });
+      },
+      include: { qcResult: true },
+      orderBy: { qcResult: { processedAt: "desc" } },
     });
-  };
-
-  const handlePartialSubmit = () => {
-    const sQty = Number(soldQty) || 0;
-    const cQty = Number(scrapQty) || 0;
-
-    if (sQty === 0 && cQty === 0) {
-      return showToast("Silakan isi minimal salah satu Qty (Dijual atau Scrap)!", 'error');
-    }
-    
-    // Kalkulasi sisa barang berdasarkan data yang sudah ada di database
-    const existingSold = currentSoldQty || 0;
-    const existingScrap = currentScrapQty || 0;
-    const remainingQty = qtyOrder - (existingSold + existingScrap);
-
-    if (sQty + cQty > remainingQty) {
-      return showToast(`Gagal! Input kamu (${sQty + cQty}) melebihi sisa barang yang belum diresolusi (${remainingQty} pcs)!`, 'error');
-    }
-
-    showConfirm("Yakin simpan resolusi partial ini?", () => {
-      startTransition(async () => {
-        try {
-          const res = await updateResolutionAction(returnItemId, "PARTIAL_SOLD", sQty, cQty);
-          if (res.success) {
-            showToast("Resolusi partial berhasil disimpan!", 'success');
-            setShowPartialForm(false);
-          } else {
-            showToast(res.error || "Gagal memperbarui status", 'error');
-          }
-        } catch (error: unknown) {
-          console.error(error);
-          showToast("Terjadi kesalahan jaringan, silakan coba lagi.", 'error');
+  } else {
+    // PENGELUARAN: Berdasarkan kapan barang dieksekusi/diresolusi (resolvedAt)
+    items = await prisma.returnItem.findMany({
+      where: {
+        qcResult: {
+          resolvedAt: { gte: startDate, lte: endDate }
         }
-      });
+      },
+      include: { qcResult: true },
+      orderBy: { qcResult: { resolvedAt: "desc" } },
     });
-  };
+  }
+
+  // --- KALKULASI SUMMARY ---
+  let totalQtyOrder = 0;
+  let totalGood = 0;
+  let totalBad = 0;
+  let totalSold = 0;
+  let totalScrap = 0;
+
+  items.forEach(item => {
+    totalQtyOrder += item.qtyOrder;
+    if (item.qcResult) {
+      totalGood += item.qcResult.goodQty || 0;
+      totalBad += item.qcResult.badQty || 0;
+      totalSold += item.qcResult.soldQty || 0;
+      totalScrap += item.qcResult.scrapQty || 0;
+    }
+  });
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex flex-wrap gap-3">
-        <Button 
-          type="button"
-          variant="secondary"
-          onClick={() => { setShowPartialForm(false); handleUpdate("DIJUAL_KEMBALI"); }}
-          disabled={isPending || currentResolution === "DIJUAL_KEMBALI"}
-          className={`flex-1 flex justify-center items-center gap-2 py-3 ${
-            currentResolution === "DIJUAL_KEMBALI" 
-            ? "bg-blue-600 text-white cursor-default" 
-            : "bg-white text-blue-700 border-2 border-blue-600 hover:bg-blue-50"
-          }`}
-        >
-          {isPending ? "Proses..." : "♻️ Dijual Kembali"}
-        </Button>
-
-      <Button 
-          type="button" 
-          variant="secondary"
-          onClick={() => { setShowPartialForm(false); handleUpdate("SCRAP"); }}
-          disabled={isPending || currentResolution === "SCRAP"}
-          className={`flex-1 flex justify-center items-center gap-2 py-3 ${
-            currentResolution === "SCRAP" 
-            ? "bg-gray-600 text-white cursor-default" 
-            : "bg-white text-gray-700 border-2 border-gray-600 hover:bg-gray-50"
-          }`}
-        >
-          {isPending ? "Proses..." : "🗑️ Scrape / Buang"}
-        </Button>
+    <main className="min-h-screen bg-gray-50 p-4 md:p-8">
+      <div className="max-w-7xl mx-auto flex flex-col gap-6">
         
-        <Button 
-          type="button" 
-          variant="secondary"
-          onClick={() => setShowPartialForm(!showPartialForm)}
-          disabled={isPending}
-          className={`flex-1 flex justify-center items-center gap-2 py-3 ${(currentResolution === "PARTIAL_SOLD" || currentResolution === "PARTIAL_SCRAP") ? "bg-purple-600 text-white border-2 border-purple-600 hover:bg-purple-700" : "bg-white text-purple-700 border-2 border-purple-600 hover:bg-purple-50"}`}
-        >
-          ⚖️ Partial / Bagi
-        </Button>
-      </div>
-
-      {/* Form Input Manual untuk Partial Resolution */}
-      {showPartialForm && (
-        <div className="p-4 bg-purple-50 border border-purple-200 rounded-md flex flex-col gap-3 animate-fade-in">
-          <p className="text-sm font-semibold text-purple-800 mb-1">Tambah Resolusi Partial (Sisa Belum Diresolusi: {qtyOrder - ((currentSoldQty || 0) + (currentScrapQty || 0))} pcs)</p>
-          <div className="flex gap-4">
-            <div className="flex-1">
-              <label className="block text-xs font-medium text-gray-700 mb-1">Tambahan Qty Dijual</label>
-              <input type="number" min="0" value={soldQty} onChange={(e) => setSoldQty(e.target.value ? Number(e.target.value) : "")} className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-purple-500 focus:border-purple-500" placeholder="0" />
-            </div>
-            <div className="flex-1">
-              <label className="block text-xs font-medium text-gray-700 mb-1">Tambahan Qty Scrap</label>
-              <input type="number" min="0" value={scrapQty} onChange={(e) => setScrapQty(e.target.value ? Number(e.target.value) : "")} className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-purple-500 focus:border-purple-500" placeholder="0" />
-            </div>
+        {/* HEADER & FILTER */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-800">📊 Rekap Kerja Harian</h1>
+            <p className="text-sm text-gray-500 mt-1">Laporan terpisah untuk Pemasukan (QC) dan Pengeluaran (Eksekusi).</p>
           </div>
-          <Button variant="primary" onClick={handlePartialSubmit} disabled={isPending} className="mt-2 w-full bg-purple-600 hover:bg-purple-700 focus:ring-purple-500 text-sm">
-            {isPending ? "Menyimpan..." : "Simpan Resolusi Partial"}
-          </Button>
+          <div className="flex items-center gap-3 w-full md:w-auto">
+            <ReportFilter initialDate={selectedDateStr} currentType={reportType} />
+            <Link href="/">
+              <Button variant="secondary">🏠 Kembali</Button>
+            </Link>
+          </div>
         </div>
-      )}
-    </div>
+
+        {/* TABS */}
+        <div className="flex space-x-2 border-b border-gray-200 pb-4">
+          <Link href={`/report?date=${selectedDateStr}&type=pemasukan`} className="flex-1 md:flex-none">
+            <Button variant={reportType === 'pemasukan' ? 'primary' : 'secondary'} className="w-full">
+              📥 Pemasukan (Hasil QC)
+            </Button>
+          </Link>
+          <Link href={`/report?date=${selectedDateStr}&type=pengeluaran`} className="flex-1 md:flex-none">
+            <Button variant={reportType === 'pengeluaran' ? 'primary' : 'secondary'} className={`w-full ${reportType === 'pengeluaran' ? 'bg-purple-600 hover:bg-purple-700 focus:ring-purple-500' : ''}`}>
+              📤 Pengeluaran (Eksekusi)
+            </Button>
+          </Link>
+        </div>
+
+        {/* SUMMARY CARDS */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm border-l-4 border-l-blue-500">
+            <p className="text-xs text-gray-500 font-bold uppercase">Total Item (SO)</p>
+            <p className="text-2xl font-black text-gray-800">{items.length} <span className="text-sm font-normal">SO</span></p>
+          </div>
+          
+          {reportType === 'pemasukan' ? (
+            <>
+              <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm border-l-4 border-l-indigo-500">
+                <p className="text-xs text-gray-500 font-bold uppercase">Total Qty Masuk</p>
+                <p className="text-2xl font-black text-gray-800">{totalQtyOrder} <span className="text-sm font-normal">pcs</span></p>
+              </div>
+              <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm border-l-4 border-l-green-500">
+                <p className="text-xs text-gray-500 font-bold uppercase">Kondisi Bagus (Good)</p>
+                <p className="text-2xl font-black text-green-600">{totalGood} <span className="text-sm font-normal">pcs</span></p>
+              </div>
+              <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm border-l-4 border-l-red-500">
+                <p className="text-xs text-gray-500 font-bold uppercase">Kondisi Rusak (Bad)</p>
+                <p className="text-2xl font-black text-red-600">{totalBad} <span className="text-sm font-normal">pcs</span></p>
+              </div>
+            </>
+          ) : (
+            <>
+              <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm border-l-4 border-l-indigo-500">
+                <p className="text-xs text-gray-500 font-bold uppercase">Total Qty Keluar</p>
+                <p className="text-2xl font-black text-gray-800">{totalSold + totalScrap} <span className="text-sm font-normal">pcs</span></p>
+              </div>
+              <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm border-l-4 border-l-blue-500">
+                <p className="text-xs text-gray-500 font-bold uppercase">Dijual Kembali</p>
+                <p className="text-2xl font-black text-blue-600">{totalSold} <span className="text-sm font-normal">pcs</span></p>
+              </div>
+              <div className="bg-white p-4 rounded-lg border border-gray-200 shadow-sm border-l-4 border-l-gray-500">
+                <p className="text-xs text-gray-500 font-bold uppercase">Di-Scrap / Buang</p>
+                <p className="text-2xl font-black text-gray-600">{totalScrap} <span className="text-sm font-normal">pcs</span></p>
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* TABEL RINCIAN (Copy-Paste Friendly) */}
+        <div className="bg-white rounded-lg border border-gray-200 shadow-sm overflow-hidden">
+          <div className="p-4 border-b border-gray-200 bg-gray-50 flex justify-between items-center">
+            <h2 className="font-bold text-gray-800">
+              Rincian Data {reportType === 'pemasukan' ? 'Pemasukan (QC)' : 'Pengeluaran (Eksekusi)'}
+            </h2>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-sm text-left text-gray-600">
+              <thead className="text-xs text-gray-700 uppercase bg-gray-100">
+                <tr>
+                  <th className="px-4 py-3 border-b">No</th>
+                  <th className="px-4 py-3 border-b">No. SO</th>
+                  <th className="px-4 py-3 border-b">Customer</th>
+                  <th className="px-4 py-3 border-b">Kode Barang</th>
+                  <th className="px-4 py-3 border-b">Qty Order</th>
+                  
+                  {reportType === 'pemasukan' ? (
+                    <>
+                      <th className="px-4 py-3 border-b">Good</th>
+                      <th className="px-4 py-3 border-b">Bad</th>
+                      <th className="px-4 py-3 border-b">Keterangan Minus</th>
+                    </>
+                  ) : (
+                    <>
+                      <th className="px-4 py-3 border-b">Dijual</th>
+                      <th className="px-4 py-3 border-b">Scrap</th>
+                      <th className="px-4 py-3 border-b">Sisa</th> {/* TAMBAHAN KOLOM SISA */}
+                      <th className="px-4 py-3 border-b">Status Resolusi</th>
+                    </>
+                  )}
+                </tr>
+              </thead>
+              <tbody>
+                {items.length === 0 ? (
+                  <tr>
+                    <td colSpan={reportType === 'pemasukan' ? 8 : 9} className="px-4 py-8 text-center text-gray-500">
+                      Tidak ada data {reportType} pada tanggal ini.
+                    </td>
+                  </tr>
+                ) : (
+                  items.map((item, idx) => {
+                    const good = item.qcResult?.goodQty || 0;
+                    const bad = item.qcResult?.badQty || 0;
+                    const sold = item.qcResult?.soldQty || 0;
+                    const scrap = item.qcResult?.scrapQty || 0;
+                    const notes = item.qcResult?.damageNotes || "-";
+                    
+                    // KALKULASI SISA STOK
+                    const sisa = item.qtyOrder - (sold + scrap);
+                    
+                    let resStatus = "-";
+                    if (item.qcResult?.resolution === "DIJUAL_KEMBALI") resStatus = "Full Jual";
+                    else if (item.qcResult?.resolution === "SCRAP") resStatus = "Full Scrap";
+                    else if (item.qcResult?.resolution === "RESOLVED_MIXED") resStatus = "Selesai (Campuran)";
+                    else if (item.qcResult?.resolution?.includes("PARTIAL")) resStatus = "Parsial";
+
+                    return (
+                      <tr key={item.id} className="border-b hover:bg-gray-50">
+                        <td className="px-4 py-2">{idx + 1}</td>
+                        <td className="px-4 py-2 font-medium text-gray-900">{item.soNumber}</td>
+                        <td className="px-4 py-2">{item.customerName}</td>
+                        <td className="px-4 py-2">{item.itemCode}</td>
+                        <td className="px-4 py-2 font-bold text-center">{item.qtyOrder}</td>
+                        
+                        {reportType === 'pemasukan' ? (
+                          <>
+                            <td className="px-4 py-2 text-green-600 font-bold">{good}</td>
+                            <td className="px-4 py-2 text-red-600 font-bold">{bad}</td>
+                            <td className="px-4 py-2 text-xs">{notes}</td>
+                          </>
+                        ) : (
+                          <>
+                            <td className="px-4 py-2 text-blue-600 font-bold">{sold}</td>
+                            <td className="px-4 py-2 text-gray-600 font-bold">{scrap}</td>
+                            <td className="px-4 py-2 text-orange-600 font-bold">{sisa}</td> {/* TAMPILKAN SISA */}
+                            <td className="px-4 py-2 text-xs font-semibold">{resStatus}</td>
+                          </>
+                        )}
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+      </div>
+    </main>
   );
-};
+}
 </file>
 
 <file path="src/app/tarik-so/page.tsx">
@@ -2075,190 +2164,6 @@ export const DashboardFilters: React.FC<DashboardFiltersProps> = ({
 };
 </file>
 
-<file path="src/components/QCForm.tsx">
-"use client";
-
-import React, { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
-import { CameraCapture } from "./CameraCapture";
-import { Button } from "./Button";
-import { Input } from "./Input";
-import { TableItem } from "./ReturnItemTable";
-import { submitQCAction } from "@/app/actions";
-import { useUI } from "./UIProvider";
-
-interface QCFormProps {
-  item: TableItem; // We reuse the TableItem interface for simplicity
-}
-
-export const QCForm: React.FC<QCFormProps> = ({ item }) => {
-  const router = useRouter();
-  const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
-
-  // Form State
-  const [status, setStatus] = useState<"GOOD" | "BAD" | "PARTIAL_GOOD" | "">("");
-  const [generalPhoto, setGeneralPhoto] = useState<string>("");
-  const [damagePhotos, setDamagePhotos] = useState<string[]>([]);
-  const [damageNotes, setDamageNotes] = useState<string>("");
-  const [goodQty, setGoodQty] = useState<number | "">("");
-  const { showToast } = useUI();
-
-    // Handlers for multiple damage photos
-  const handleAddDamagePhoto = (base64: string) => {
-    setDamagePhotos((prev) => [...prev, base64]);
-  };
-  const handleRemoveDamagePhoto = (index: number) => {
-    setDamagePhotos((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-
-    // Validation
-    if (!status) return setError("Pilih status barang bro!");
-    if (!generalPhoto) return setError("Foto fisik wajib ada!");
-    if (status !== "GOOD" && damagePhotos.length === 0) return setError("Minimal 1 foto bukti rusak wajib disertakan!");
-    if (status !== "GOOD" && !damageNotes) return setError("Tulis keterangan minusnya bro!");
-        if (status === "PARTIAL_GOOD") {
-      if (goodQty === "" || goodQty < 1 || goodQty >= item.qtyOrder) {
-        return setError(`Jumlah Good harus minimal 1 dan kurang dari total order (${item.qtyOrder}).`);
-      }
-    }
-
-    startTransition(async () => {
-      try {
-        const finalGoodQty = status === "GOOD" ? item.qtyOrder : status === "BAD" ? 0 : Number(goodQty);
-        const finalBadQty = status === "BAD" ? item.qtyOrder : status === "GOOD" ? 0 : item.qtyOrder - Number(goodQty);
-
-        const res = await submitQCAction({
-          returnItemId: item.id,
-          status: status as "GOOD" | "BAD" | "PARTIAL_GOOD",
-          generalPhotoBase64: generalPhoto,
-          damagePhotosBase64: status !== "GOOD" ? damagePhotos : undefined,
-          damageNotes: status !== "GOOD" ? damageNotes : undefined,
-          goodQty: finalGoodQty,
-          badQty: finalBadQty,
-        });
-
-        if (res.success) {
-          showToast("Mantap! Data QC berhasil disimpan.", 'success');
-          router.push("/?tab=completed");
-        } else {
-          setError(res.error || "Gagal menyimpan data");
-        }
-      } catch (err: unknown) {
-        console.error("Gagal melakukan aksi:", err);
-        setError("Koneksi terputus atau terjadi kesalahan sistem. Silakan periksa jaringan Anda dan coba lagi.");
-      }
-    });
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-6 mt-6 pb-24">
-      {error && (
-        <div className="p-3 text-sm text-red-700 bg-red-100 rounded-md">
-          {error}
-        </div>
-      )}
-
-      {/* 1. Capture General Photo */}
-      <CameraCapture label="1. Foto Fisik Keseluruhan" onCapture={setGeneralPhoto} />
-
-      {/* 2. Select Status */}
-      <div className="flex flex-col gap-2">
-        <label className="text-sm font-semibold text-gray-700">2. Status Barang</label>
-        <select 
-          value={status} 
-          onChange={(e) => setStatus(e.target.value as "GOOD" | "BAD" | "PARTIAL_GOOD" | "")}
-          className={`border border-gray-300 rounded-md px-3 py-3 w-full focus:ring-green-500 font-bold ${
-            status === 'GOOD' ? 'bg-green-100 text-green-800' : 
-            status === 'BAD' ? 'bg-red-100 text-red-800' : 
-            status === 'PARTIAL_GOOD' ? 'bg-orange-100 text-orange-800' : 'bg-white text-gray-800'
-          }`}
-        >
-          <option value="" disabled>-- Pilih Status --</option>
-          <option value="GOOD">✅ GOOD (Bagus)</option>
-          <option value="PARTIAL_GOOD">⚠️ PARTIAL GOOD (Bagus Sebagian)</option>
-          <option value="BAD">❌ BAD (Rusak Parah)</option>
-        </select>
-        {/* Input Qty Khusus PARTIAL_GOOD */}
-        {status === "PARTIAL_GOOD" && (
-          <div className="flex gap-4 p-4 border border-orange-200 bg-orange-50 rounded-lg mt-2">
-            <div className="flex-1 flex flex-col gap-1">
-              <label className="text-sm font-semibold text-gray-700">Jumlah Bagus (Good)</label>
-              <input 
-                type="number" 
-                className="border border-gray-300 rounded-md px-3 py-2 focus:ring-green-500 w-full"
-                value={goodQty} 
-                onChange={(e) => setGoodQty(e.target.value ? Number(e.target.value) : "")}
-                min="1"
-                max={item.qtyOrder - 1}
-              />
-            </div>
-            <div className="flex-1 flex flex-col gap-1">
-              <label className="text-sm font-semibold text-gray-700">Jumlah Rusak (Bad)</label>
-              <input 
-                type="number" 
-                readOnly 
-                className="border border-gray-300 rounded-md px-3 py-2 bg-gray-100 text-gray-600 font-bold w-full cursor-not-allowed"
-                value={typeof goodQty === 'number' ? item.qtyOrder - goodQty : ""}
-              />
-            </div>
-          </div>
-        )}
-      </div>
-
-      {/* 3. Conditional: Damage Photo & Notes */}
-      {(status === "BAD" || status === "PARTIAL_GOOD") && (
-        <div className="flex flex-col gap-4 p-4 border border-orange-200 bg-orange-50 rounded-lg">
-          <div className="flex flex-col gap-2">
-            <label className="text-sm font-semibold text-gray-700">3a. Foto Bukti Rusak ({damagePhotos.length} Foto)</label>
-            
-            {/* List of captured damage photos */}
-            <div className="grid grid-cols-2 gap-2">
-              {damagePhotos.map((photo, idx) => (
-                <div key={idx} className="relative aspect-[4/3] bg-black rounded-md overflow-hidden">
-                  <img src={photo} alt={`Minus ${idx + 1}`} className="w-full h-full object-cover" />
-                  <button type="button" onClick={() => handleRemoveDamagePhoto(idx)} className="absolute top-1 right-1 bg-red-600 text-white p-1 rounded-full text-xs w-6 h-6 flex items-center justify-center">
-                    X
-                  </button>
-                </div>
-              ))}
-            </div>
-            
-            {/* Capture new damage photo component */}
-            <CameraCapture label={damagePhotos.length === 0 ? "Ambil Foto Rusak Pertama" : "+ Tambah Foto Rusak Lagi"} onCapture={handleAddDamagePhoto} />
-          </div>
-          
-          <div className="flex flex-col gap-1">
-            <label className="text-sm font-semibold text-gray-700">3b. Keterangan Minus</label>
-            <textarea
-              className="border border-gray-300 rounded-md px-3 py-2 w-full focus:ring-orange-500 min-h-[100px]"
-              placeholder="Contoh: Lecet di bagian kanan atas, sekrup hilang..."
-              value={damageNotes}
-              onChange={(e) => setDamageNotes(e.target.value)}
-            />
-          </div>
-        </div>
-      )}
-
-      <div className="fixed bottom-0 left-0 w-full bg-white p-4 border-t border-gray-200 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-40 flex justify-center">
-        <div className="w-full max-w-2xl flex gap-4">
-          <Button type="button" variant="secondary" className="flex-1" onClick={() => router.push("/")} disabled={isPending}>
-            Batal
-          </Button>
-          <Button type="submit" variant="primary" className="flex-1" disabled={isPending}>
-            {isPending ? "Menyimpan..." : "Simpan QC"}
-          </Button>
-        </div>
-      </div>
-    </form>
-  );
-};
-</file>
-
 <file path="package.json">
 {
   "name": "return-qc-app",
@@ -2293,6 +2198,28 @@ export const QCForm: React.FC<QCFormProps> = ({ item }) => {
     "prisma": "^7.8.0",
     "tailwindcss": "^4.0.0",
     "typescript": "^5"
+  }
+}
+</file>
+
+<file path="repomix.config.json">
+{
+  "output": {
+    "filePath": "repomix-output.xml",
+    "style": "xml"
+  },
+  "ignore": {
+    "useGitignore": true,
+    "customPatterns": [
+      "**/.git/**",
+      "*.db",
+      "prisma/*.db",
+      "public/uploads/**",
+      "public/*.svg",
+      "package-lock.json",
+      "README.md",
+      "dokumentasi.md"
+    ]
   }
 }
 </file>
@@ -2340,6 +2267,159 @@ model QCResult {
   scrapQty        Int?
   resolvedAt      DateTime?
 }
+</file>
+
+<file path="src/app/qc/[id]/ResolutionButtons.tsx">
+// src/app/qc/[id]/ResolutionButtons.tsx
+"use client";
+
+import React, { useState, useTransition } from "react";
+import { Button } from "@/components/Button";
+import { updateResolutionAction } from "@/app/actions";
+import { useUI } from "@/components/UIProvider";
+
+export const ResolutionButtons = ({ 
+  returnItemId, 
+  currentResolution,
+  qtyOrder,
+  currentSoldQty,
+  currentScrapQty
+}: { 
+  returnItemId: string; 
+  currentResolution: string | null;
+  qtyOrder: number;
+  currentSoldQty: number | null;
+  currentScrapQty: number | null;
+}) => {
+  const [isPending, startTransition] = useTransition();
+  const [showPartialForm, setShowPartialForm] = useState(false);
+  const [soldQty, setSoldQty] = useState<number | "">("");
+  const [scrapQty, setScrapQty] = useState<number | "">("");
+  const { showToast, showConfirm } = useUI(); 
+
+  const existingSold = currentSoldQty || 0;
+  const existingScrap = currentScrapQty || 0;
+  const remainingQty = qtyOrder - (existingSold + existingScrap);
+
+  // JIKA STOK SUDAH HABIS, SEMBUNYIKAN TOMBOL
+  if (remainingQty <= 0) {
+    return (
+      <div className="p-4 bg-green-50 border border-green-200 rounded-md text-center">
+        <p className="text-green-800 font-bold text-sm">✅ Semua barang sudah dieksekusi (Sisa Stok: 0)</p>
+      </div>
+    );
+  }
+
+  const handleUpdate = (type: "DIJUAL_KEMBALI" | "SCRAP") => {
+    const confirmMsg = type === "DIJUAL_KEMBALI" 
+      ? `Yakin sisa ${remainingQty} barang ini akan masuk stok DIJUAL KEMBALI?` 
+      : `Yakin sisa ${remainingQty} barang ini akan di-SCRAP / DIBUANG?`;
+      
+    showConfirm(confirmMsg, () => {
+      startTransition(async () => {
+        try {
+          const res = await updateResolutionAction(returnItemId, type);
+          if (res.success) {
+            showToast("Status berhasil diperbarui!", 'success');
+            setShowPartialForm(false);
+          } else {
+            showToast(res.error || "Gagal memperbarui status", 'error');
+          }
+        } catch (error: unknown) {
+          console.error(error);
+          showToast("Terjadi kesalahan jaringan, silakan coba lagi.", 'error');
+        }
+      });
+    });
+  };
+
+  const handlePartialSubmit = () => {
+    const sQty = Number(soldQty) || 0;
+    const cQty = Number(scrapQty) || 0;
+
+    if (sQty === 0 && cQty === 0) {
+      return showToast("Silakan isi minimal salah satu Qty (Dijual atau Scrap)!", 'error');
+    }
+
+    if (sQty + cQty > remainingQty) {
+      return showToast(`Gagal! Input kamu (${sQty + cQty}) melebihi sisa barang (${remainingQty} pcs)!`, 'error');
+    }
+
+    showConfirm("Yakin simpan resolusi partial ini?", () => {
+      startTransition(async () => {
+        try {
+          const res = await updateResolutionAction(returnItemId, "PARTIAL_SOLD", sQty, cQty);
+          if (res.success) {
+            showToast("Resolusi partial berhasil disimpan!", 'success');
+            setShowPartialForm(false);
+            setSoldQty("");
+            setScrapQty("");
+          } else {
+            showToast(res.error || "Gagal memperbarui status", 'error');
+          }
+        } catch (error: unknown) {
+          console.error(error);
+          showToast("Terjadi kesalahan jaringan, silakan coba lagi.", 'error');
+        }
+      });
+    });
+  };
+
+  return (
+    <div className="flex flex-col gap-4">
+      <div className="flex flex-wrap gap-3">
+        <Button 
+          type="button"
+          variant="secondary"
+          onClick={() => { setShowPartialForm(false); handleUpdate("DIJUAL_KEMBALI"); }}
+          disabled={isPending}
+          className="flex-1 flex justify-center items-center gap-2 py-3 bg-white text-blue-700 border-2 border-blue-600 hover:bg-blue-50"
+        >
+          {isPending ? "Proses..." : `♻️ Dijual Kembali (Sisa ${remainingQty})`}
+        </Button>
+
+        <Button 
+          type="button" 
+          variant="secondary"
+          onClick={() => { setShowPartialForm(false); handleUpdate("SCRAP"); }}
+          disabled={isPending}
+          className="flex-1 flex justify-center items-center gap-2 py-3 bg-white text-gray-700 border-2 border-gray-600 hover:bg-gray-50"
+        >
+          {isPending ? "Proses..." : `🗑️ Scrape / Buang (Sisa ${remainingQty})`}
+        </Button>
+        
+        <Button 
+          type="button" 
+          variant="secondary"
+          onClick={() => setShowPartialForm(!showPartialForm)}
+          disabled={isPending}
+          className={`flex-1 flex justify-center items-center gap-2 py-3 ${(currentResolution === "PARTIAL_SOLD" || currentResolution === "PARTIAL_SCRAP") ? "bg-purple-600 text-white border-2 border-purple-600 hover:bg-purple-700" : "bg-white text-purple-700 border-2 border-purple-600 hover:bg-purple-50"}`}
+        >
+          ⚖️ Partial / Bagi
+        </Button>
+      </div>
+
+      {showPartialForm && (
+        <div className="p-4 bg-purple-50 border border-purple-200 rounded-md flex flex-col gap-3 animate-fade-in">
+          <p className="text-sm font-semibold text-purple-800 mb-1">Tambah Resolusi Partial (Sisa: {remainingQty} pcs)</p>
+          <div className="flex gap-4">
+            <div className="flex-1">
+              <label className="block text-xs font-medium text-gray-700 mb-1">Tambahan Qty Dijual</label>
+              <input type="number" min="0" max={remainingQty} value={soldQty} onChange={(e) => setSoldQty(e.target.value ? Number(e.target.value) : "")} className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-purple-500 focus:border-purple-500" placeholder="0" />
+            </div>
+            <div className="flex-1">
+              <label className="block text-xs font-medium text-gray-700 mb-1">Tambahan Qty Scrap</label>
+              <input type="number" min="0" max={remainingQty} value={scrapQty} onChange={(e) => setScrapQty(e.target.value ? Number(e.target.value) : "")} className="w-full border border-gray-300 rounded px-3 py-2 text-sm focus:ring-purple-500 focus:border-purple-500" placeholder="0" />
+            </div>
+          </div>
+          <Button variant="primary" onClick={handlePartialSubmit} disabled={isPending} className="mt-2 w-full bg-purple-600 hover:bg-purple-700 focus:ring-purple-500 text-sm">
+            {isPending ? "Menyimpan..." : "Simpan Resolusi Partial"}
+          </Button>
+        </div>
+      )}
+    </div>
+  );
+};
 </file>
 
 <file path="src/app/globals.css">
@@ -2401,381 +2481,6 @@ select {
 .animate-fade-in {
   animation: fade-in 0.3s ease-out forwards;
 }
-</file>
-
-<file path="src/app/page.tsx">
-// src/app/page.tsx
-import { prisma } from "@/lib/prisma";
-import Link from "next/link";
-import { Button } from "@/components/Button";
-import { Pagination } from "@/components/Pagination";
-import { ReturnItemTable } from "@/components/ReturnItemTable";
-import { DashboardFilters } from "@/components/DashboardFilters";
-
-interface PageProps {
-  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
-}
-
-export default async function DashboardPage(props: PageProps) {
-  const searchParams = await props.searchParams;
-
-  const page = Number(searchParams?.page) || 1;
-  const search = typeof searchParams?.search === 'string' ? searchParams.search : '';
-  const tab = searchParams?.tab === 'completed' ? 'completed' : 'pending';
-  const dateQuery = typeof searchParams?.date === 'string' ? searchParams.date : '';
-  const customerQuery = typeof searchParams?.customer === 'string' ? searchParams.customer : '';
-
-  const take = 10;
-  const skip = (page - 1) * take;
-  
-  let dateFilter = undefined;
-  if (dateQuery) {
-    const startDate = new Date(dateQuery);
-    const endDate = new Date(startDate);
-    endDate.setDate(endDate.getDate() + 1);
-    dateFilter = { gte: startDate, lt: endDate };
-  }
-
-  // Build Prisma where clause
-  const whereCondition = {
-    AND: [
-      ...(dateFilter ? [{ createdAt: dateFilter }] : []),
-      ...(customerQuery ? [{ customerName: customerQuery }] : []), // Filter Toko
-      {
-        OR: [
-          { soNumber: { contains: search } },
-          { itemName: { contains: search } },
-          { itemCode: { contains: search } },
-        ],
-      },
-      {
-        qcStatus: tab === 'pending' ? 'PENDING' : { not: 'PENDING' },
-      },
-    ],
-  };
-
-  // Fetch data (Tabel, Total Data, dan Daftar Unik Toko) secara paralel
-  const [items, totalItems, distinctCustomers] = await Promise.all([
-    prisma.returnItem.findMany({
-      where: whereCondition,
-      take,
-      skip,
-      orderBy: { createdAt: 'desc' },
-    }),
-    prisma.returnItem.count({ where: whereCondition }),
-    prisma.returnItem.findMany({
-      select: { customerName: true },
-      distinct: ['customerName'],
-      orderBy: { customerName: 'asc' }
-    })
-  ]);
-
-  const customerList = distinctCustomers.map(c => c.customerName);
-  const totalPages = Math.ceil(totalItems / take);
-  const baseUrl = `/?tab=${tab}${search ? `&search=${encodeURIComponent(search)}` : ''}${customerQuery ? `&customer=${encodeURIComponent(customerQuery)}` : ''}${dateQuery ? `&date=${dateQuery}` : ''}`;
-
-  return (
-    <main className="min-h-screen bg-gray-50 p-4 md:p-8">
-      <div className="max-w-7xl mx-auto bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        
-        {/* Header App */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
-          <div>
-            <h1 className="text-xl md:text-2xl font-bold text-gray-800">Dashboard QC Barang Return</h1>
-            <p className="text-sm text-gray-500">Kelola dan inspeksi barang return dari berbagai toko.</p>
-          </div>
-          
-          <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
-            <Link href="/tarik-so" className="w-full sm:w-auto">
-              <Button variant="secondary" className="w-full bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 border-none">
-                🔍 Tarik Data SO
-              </Button>
-            </Link>
-            <Link href="/import" className="w-full sm:w-auto">
-              <Button className="w-full">+ Import Manual</Button>
-            </Link>
-          </div>
-        </div>
-
-        {/* TABS (Pending / Completed) */}
-        <div className="flex space-x-2 w-full md:w-auto mb-4 border-b border-gray-200 pb-4">
-          <Link href="/?tab=pending" className="flex-1 md:flex-none">
-            <Button variant={tab === 'pending' ? 'primary' : 'secondary'} className="w-full">
-              Belum Dicek
-            </Button>
-          </Link>
-          <Link href="/?tab=completed" className="flex-1 md:flex-none">
-            <Button variant={tab === 'completed' ? 'primary' : 'secondary'} className="w-full">
-              Sudah Dicek
-            </Button>
-          </Link>
-        </div>
-
-        {/* Komponen Filter Keren Kita (Scanner, Dropdown, Search, Modal) */}
-        <DashboardFilters 
-          tab={tab}
-          initialSearch={search}
-          initialDate={dateQuery}
-          initialCustomer={customerQuery}
-          customerList={customerList}
-        />
-
-        {/* Tabel Data & Pagination */}
-        <ReturnItemTable items={items} tab={tab} />
-        <Pagination currentPage={page} totalPages={totalPages} baseUrl={baseUrl} />
-
-      </div>
-    </main>
-  );
-}
-</file>
-
-<file path="src/components/EditForm.tsx">
-"use client";
-
-import React, { useState, useTransition } from "react";
-import { useRouter } from "next/navigation";
-import { CameraCapture } from "./CameraCapture";
-import { Button } from "./Button";
-import { Input } from "./Input";
-import { editItemAction } from "@/app/actions";
-import { useUI } from "./UIProvider";
-
-interface EditFormProps {
-  item: any; // We receive the joined Prisma model (ReturnItem + QCResult)
-}
-
-export const EditForm: React.FC<EditFormProps> = ({ item }) => {
-  const router = useRouter();
-  const [isPending, startTransition] = useTransition();
-  const [error, setError] = useState<string | null>(null);
-  const { showToast } = useUI();
-
-  // 1. Master Data State
-  const [soNumber, setSoNumber] = useState(item.soNumber);
-  const [customerName, setCustomerName] = useState(item.customerName);
-  const [itemCode, setItemCode] = useState(item.itemCode);
-  const [itemName, setItemName] = useState(item.itemName);
-  const [width, setWidth] = useState(item.width);
-  const [height, setHeight] = useState(item.height);
-  const [qtyOrder, setQtyOrder] = useState(item.qtyOrder);
-
-  // 2. QC Data State
-  const [status, setStatus] = useState<"PENDING" | "GOOD" | "BAD" | "PARTIAL_GOOD">(item.qcStatus);
-  const [damageNotes, setDamageNotes] = useState(item.qcResult?.damageNotes || "");
-  const [goodQty, setGoodQty] = useState<number | "">(item.qcResult?.goodQty || "");
-
-  // General Photo
-  const [existingGeneralPhoto, setExistingGeneralPhoto] = useState<string | null>(item.qcResult?.generalPhotoUrl || null);
-  const [newGeneralPhotoBase64, setNewGeneralPhotoBase64] = useState<string>("");
-
-  // Damage Photos
-  const parseOldDamageUrls = () => {
-    if (!item.qcResult?.damagePhotoUrl) return [];
-    try { return JSON.parse(item.qcResult.damagePhotoUrl); } 
-    catch { return [item.qcResult.damagePhotoUrl]; }
-  };
-  const [keptDamagePhotos, setKeptDamagePhotos] = useState<string[]>(parseOldDamageUrls());
-  const [newDamagePhotosBase64, setNewDamagePhotosBase64] = useState<string[]>([]);
-
-  // Handlers for photos
-  const handleRemoveKeptPhoto = (urlToRemove: string) => {
-    setKeptDamagePhotos((prev) => prev.filter((url) => url !== urlToRemove));
-  };
-  const handleRemoveNewPhoto = (index: number) => {
-    setNewDamagePhotosBase64((prev) => prev.filter((_, i) => i !== index));
-  };
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    setError(null);
-
-    const currentQtyOrder = Number(qtyOrder) || 0;
-
-    // Validation
-    if (!soNumber || !itemName || !itemCode) return setError("Data master (SO, Kode, Nama) wajib diisi!");
-    if (status !== "PENDING") {
-      if (!existingGeneralPhoto && !newGeneralPhotoBase64) return setError("Foto fisik wajib ada!");
-      if (status !== "GOOD" && keptDamagePhotos.length === 0 && newDamagePhotosBase64.length === 0) {
-        return setError("Minimal 1 foto bukti rusak wajib disertakan!");
-      }
-      if (status !== "GOOD" && !damageNotes) return setError("Keterangan minus wajib diisi!");
-      if (status === "PARTIAL_GOOD") {
-        if (goodQty === "" || goodQty < 1 || goodQty >= currentQtyOrder) {
-          return setError(`Jumlah Good harus minimal 1 dan kurang dari total order (${currentQtyOrder}).`);
-        }
-      }
-    }
-
-    startTransition(async () => {
-      try {
-        const finalGoodQty = status === "GOOD" ? currentQtyOrder : status === "BAD" ? 0 : Number(goodQty);
-        const finalBadQty = status === "BAD" ? currentQtyOrder : status === "GOOD" ? 0 : currentQtyOrder - Number(goodQty);
-
-        const res = await editItemAction({
-          id: item.id,
-          soNumber, customerName, itemCode, itemName,
-          width: Number(width), height: Number(height), qtyOrder: currentQtyOrder,
-          status,
-          newGeneralPhotoBase64: newGeneralPhotoBase64 || undefined,
-          keptDamagePhotoUrls: keptDamagePhotos,
-          newDamagePhotosBase64,
-          damageNotes,
-          goodQty: status === "PENDING" ? undefined : finalGoodQty,
-          badQty: status === "PENDING" ? undefined : finalBadQty,
-        });
-
-        if (res.success) {
-          showToast("Data berhasil diperbarui!", "success");
-          router.push(status === "PENDING" ? "/?tab=pending" : "/?tab=completed");
-        } else {
-          setError(res.error || "Gagal menyimpan data");
-        }
-      } catch (err: unknown) {
-        console.error("Gagal melakukan aksi:", err);
-        setError("Koneksi terputus atau terjadi kesalahan sistem. Silakan periksa jaringan Anda dan coba lagi.");
-      }
-    });
-  };
-
-  return (
-    <form onSubmit={handleSubmit} className="flex flex-col gap-6 pb-24">
-      {error && <div className="p-3 text-sm text-red-700 bg-red-100 rounded-md">{error}</div>}
-
-      {/* --- MASTER DATA SECTION --- */}
-      <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 flex flex-col gap-4">
-        <h2 className="font-bold text-gray-800 border-b pb-2">Master Data</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <Input label="No. SO" value={soNumber} onChange={(e) => setSoNumber(e.target.value)} required />
-          <Input label="Customer" value={customerName} onChange={(e) => setCustomerName(e.target.value)} required />
-          <Input label="Kode Barang" value={itemCode} onChange={(e) => setItemCode(e.target.value)} required />
-          <Input label="Nama Barang" value={itemName} onChange={(e) => setItemName(e.target.value)} required />
-          <div className="grid grid-cols-2 gap-4">
-            <Input label="Lebar" type="number" value={width} onChange={(e) => setWidth(e.target.value)} />
-            <Input label="Tinggi" type="number" value={height} onChange={(e) => setHeight(e.target.value)} />
-          </div>
-          <Input label="Qty Order" type="number" value={qtyOrder} onChange={(e) => setQtyOrder(e.target.value)} required />
-        </div>
-      </div>
-
-      {/* --- QC DATA SECTION --- */}
-      <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 flex flex-col gap-4">
-        <h2 className="font-bold text-gray-800 border-b pb-2">Data Quality Control</h2>
-        
-        <div className="flex flex-col gap-2">
-          <label className="text-sm font-semibold text-gray-700">Status Barang</label>
-          <select 
-            value={status} 
-            onChange={(e) => setStatus(e.target.value as any)}
-            className="border border-gray-300 rounded-md px-3 py-3 w-full bg-white text-gray-800 focus:ring-green-500"
-          >
-            <option value="PENDING">Belum Dicek (PENDING)</option>
-            <option value="GOOD">✅ GOOD (Bagus)</option>
-            <option value="PARTIAL_GOOD">⚠️ PARTIAL GOOD (Bagus Sebagian)</option>
-            <option value="BAD">❌ BAD (Rusak Parah)</option>
-          </select>
-          {/* Input Qty Khusus PARTIAL_GOOD */}
-          {status === "PARTIAL_GOOD" && (
-            <div className="flex gap-4 p-4 border border-orange-200 bg-orange-50 rounded-lg mt-2">
-              <div className="flex-1 flex flex-col gap-1">
-                <label className="text-sm font-semibold text-gray-700">Jumlah Bagus (Good)</label>
-                <input 
-                  type="number" 
-                  className="border border-gray-300 rounded-md px-3 py-2 focus:ring-green-500 w-full"
-                  value={goodQty} 
-                  onChange={(e) => setGoodQty(e.target.value ? Number(e.target.value) : "")}
-                  min="1"
-                  max={Number(qtyOrder) - 1}
-                />
-              </div>
-              <div className="flex-1 flex flex-col gap-1">
-                <label className="text-sm font-semibold text-gray-700">Jumlah Rusak (Bad)</label>
-                <input 
-                  type="number" 
-                  readOnly 
-                  className="border border-gray-300 rounded-md px-3 py-2 bg-gray-100 text-gray-600 font-bold w-full cursor-not-allowed"
-                  value={typeof goodQty === 'number' ? Number(qtyOrder) - goodQty : ""}
-                />
-              </div>
-            </div>
-          )}
-        </div>
-
-        {status !== "PENDING" && (
-          <>
-            {/* General Photo Edit */}
-            <div className="flex flex-col gap-2 mt-2">
-              <label className="text-sm font-semibold text-gray-700">Foto Fisik Keseluruhan</label>
-              {!newGeneralPhotoBase64 && existingGeneralPhoto ? (
-                <div className="relative aspect-[4/3] w-full max-w-sm bg-black rounded-md overflow-hidden">
-                  <img src={existingGeneralPhoto.replace('/uploads/', '/api/uploads/')} alt="Existing Fisik" className="w-full h-full object-cover" />
-                  <button type="button" onClick={() => setExistingGeneralPhoto(null)} className="absolute bottom-2 left-2 bg-red-600 text-white text-xs px-2 py-1 rounded-md">
-                    Hapus & Ganti Foto
-                  </button>
-                </div>
-              ) : (
-                <CameraCapture label="Ambil Foto Fisik Baru" onCapture={setNewGeneralPhotoBase64} />
-              )}
-            </div>
-
-            {/* Damage Photos & Notes Edit */}
-            {(status === "BAD" || status === "PARTIAL_GOOD") && (
-              <div className="flex flex-col gap-4 mt-4 p-4 border border-orange-200 bg-orange-50 rounded-lg">
-                <div className="flex flex-col gap-2">
-                  <label className="text-sm font-semibold text-gray-700">Foto Bukti Rusak / Minus</label>
-                  
-                  {/* Grid for Kept & New Photos */}
-                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
-                    {/* Kept Photos from DB */}
-                    {keptDamagePhotos.map((url, idx) => (
-                      <div key={`kept-${idx}`} className="relative aspect-[4/3] bg-black rounded-md overflow-hidden">
-                        <img src={url.replace('/uploads/', '/api/uploads/')} alt={`Lama ${idx + 1}`} className="w-full h-full object-cover" />
-                        <span className="absolute bottom-0 bg-black bg-opacity-50 text-white text-[10px] w-full text-center">Foto Lama</span>
-                        <button type="button" onClick={() => handleRemoveKeptPhoto(url)} className="absolute top-1 right-1 bg-red-600 text-white p-1 rounded-full text-xs w-6 h-6 flex items-center justify-center">X</button>
-                      </div>
-                    ))}
-                    
-                    {/* Newly Captured Photos */}
-                    {newDamagePhotosBase64.map((photo, idx) => (
-                      <div key={`new-${idx}`} className="relative aspect-[4/3] bg-black rounded-md overflow-hidden border-2 border-green-500">
-                        <img src={photo} alt={`Baru ${idx + 1}`} className="w-full h-full object-cover" />
-                        <span className="absolute bottom-0 bg-green-600 text-white text-[10px] w-full text-center font-bold">Baru</span>
-                        <button type="button" onClick={() => handleRemoveNewPhoto(idx)} className="absolute top-1 right-1 bg-red-600 text-white p-1 rounded-full text-xs w-6 h-6 flex items-center justify-center">X</button>
-                      </div>
-                    ))}
-                  </div>
-                  
-                  <CameraCapture label="+ Tambah Foto Rusak" onCapture={(b64) => setNewDamagePhotosBase64(p => [...p, b64])} />
-                </div>
-                
-                <div className="flex flex-col gap-1">
-                  <label className="text-sm font-semibold text-gray-700">Keterangan Minus</label>
-                  <textarea
-                    className="border border-gray-300 rounded-md px-3 py-2 w-full focus:ring-orange-500 min-h-[100px]"
-                    placeholder="Contoh: Lecet di bagian kanan atas..."
-                    value={damageNotes}
-                    onChange={(e) => setDamageNotes(e.target.value)}
-                  />
-                </div>
-              </div>
-            )}
-          </>
-        )}
-      </div>
-
-      <div className="fixed bottom-0 left-0 w-full bg-white p-4 border-t border-gray-200 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-40 flex justify-center">
-        <div className="w-full max-w-3xl flex gap-4">
-          <Button type="button" variant="secondary" className="flex-1" onClick={() => router.back()} disabled={isPending}>
-            Batal
-          </Button>
-          <Button type="submit" variant="primary" className="flex-1" disabled={isPending}>
-            {isPending ? "Menyimpan..." : "Simpan Perubahan"}
-          </Button>
-        </div>
-      </div>
-    </form>
-  );
-};
 </file>
 
 <file path="src/components/PrintLabelButton.tsx">
@@ -2981,6 +2686,679 @@ export const PrintLabelButton: React.FC<PrintLabelProps> = ({
     </Button>
   );
 };
+</file>
+
+<file path="src/components/QCForm.tsx">
+"use client";
+
+import React, { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { CameraCapture } from "./CameraCapture";
+import { Button } from "./Button";
+import { Input } from "./Input";
+import { TableItem } from "./ReturnItemTable";
+import { submitQCAction } from "@/app/actions";
+import { useUI } from "./UIProvider";
+
+interface QCFormProps {
+  item: TableItem; // We reuse the TableItem interface for simplicity
+}
+
+export const QCForm: React.FC<QCFormProps> = ({ item }) => {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+
+  // Form State
+  const [status, setStatus] = useState<"GOOD" | "BAD" | "PARTIAL_GOOD" | "">("");
+  const [generalPhoto, setGeneralPhoto] = useState<string>("");
+  const [damagePhotos, setDamagePhotos] = useState<string[]>([]);
+  const [damageNotes, setDamageNotes] = useState<string>("");
+  const [goodQty, setGoodQty] = useState<number | "">("");
+  const { showToast } = useUI();
+
+    // Handlers for multiple damage photos
+  const handleAddDamagePhoto = (base64: string) => {
+    setDamagePhotos((prev) => [...prev, base64]);
+  };
+  const handleRemoveDamagePhoto = (index: number) => {
+    setDamagePhotos((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    // Validation
+    if (!status) return setError("Pilih status barang bro!");
+    if (!generalPhoto) return setError("Foto fisik wajib ada!");
+    if (status !== "GOOD" && damagePhotos.length === 0) return setError("Minimal 1 foto bukti rusak wajib disertakan!");
+    if (status !== "GOOD" && !damageNotes) return setError("Tulis keterangan minusnya bro!");
+        if (status === "PARTIAL_GOOD") {
+      if (goodQty === "" || goodQty < 1 || goodQty >= item.qtyOrder) {
+        return setError(`Jumlah Good harus minimal 1 dan kurang dari total order (${item.qtyOrder}).`);
+      }
+    }
+
+    startTransition(async () => {
+      try {
+        const finalGoodQty = status === "GOOD" ? item.qtyOrder : status === "BAD" ? 0 : Number(goodQty);
+        const finalBadQty = status === "BAD" ? item.qtyOrder : status === "GOOD" ? 0 : item.qtyOrder - Number(goodQty);
+
+        const res = await submitQCAction({
+          returnItemId: item.id,
+          status: status as "GOOD" | "BAD" | "PARTIAL_GOOD",
+          generalPhotoBase64: generalPhoto,
+          damagePhotosBase64: status !== "GOOD" ? damagePhotos : undefined,
+          damageNotes: status !== "GOOD" ? damageNotes : undefined,
+          goodQty: finalGoodQty,
+          badQty: finalBadQty,
+        });
+
+        if (res.success) {
+          showToast("Mantap! Data QC berhasil disimpan.", 'success');
+          router.push("/?tab=completed");
+        } else {
+          setError(res.error || "Gagal menyimpan data");
+        }
+      } catch (err: unknown) {
+        console.error("Gagal melakukan aksi:", err);
+        setError("Koneksi terputus atau terjadi kesalahan sistem. Silakan periksa jaringan Anda dan coba lagi.");
+      }
+    });
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-col gap-6 mt-6 pb-24">
+      {error && (
+        <div className="p-3 text-sm text-red-700 bg-red-100 rounded-md">
+          {error}
+        </div>
+      )}
+
+      {/* 1. Capture General Photo */}
+      <CameraCapture label="1. Foto Fisik Keseluruhan" onCapture={setGeneralPhoto} />
+
+      {/* 2. Select Status */}
+      <div className="flex flex-col gap-2">
+        <label className="text-sm font-semibold text-gray-700">2. Status Barang</label>
+        <select 
+          value={status} 
+          onChange={(e) => setStatus(e.target.value as "GOOD" | "BAD" | "PARTIAL_GOOD" | "")}
+          className={`border border-gray-300 rounded-md px-3 py-3 w-full focus:ring-green-500 font-bold ${
+            status === 'GOOD' ? 'bg-green-100 text-green-800' : 
+            status === 'BAD' ? 'bg-red-100 text-red-800' : 
+            status === 'PARTIAL_GOOD' ? 'bg-orange-100 text-orange-800' : 'bg-white text-gray-800'
+          }`}
+        >
+          <option value="" disabled>-- Pilih Status --</option>
+          <option value="GOOD">✅ GOOD (Bagus)</option>
+          <option value="PARTIAL_GOOD">⚠️ PARTIAL GOOD (Bagus Sebagian)</option>
+          <option value="BAD">❌ BAD (Rusak)</option>
+        </select>
+        {/* Input Qty Khusus PARTIAL_GOOD */}
+        {status === "PARTIAL_GOOD" && (
+          <div className="flex gap-4 p-4 border border-orange-200 bg-orange-50 rounded-lg mt-2">
+            <div className="flex-1 flex flex-col gap-1">
+              <label className="text-sm font-semibold text-gray-700">Jumlah Bagus (Good)</label>
+              <input 
+                type="number" 
+                className="border border-gray-300 rounded-md px-3 py-2 focus:ring-green-500 w-full"
+                value={goodQty} 
+                onChange={(e) => setGoodQty(e.target.value ? Number(e.target.value) : "")}
+                min="1"
+                max={item.qtyOrder - 1}
+              />
+            </div>
+            <div className="flex-1 flex flex-col gap-1">
+              <label className="text-sm font-semibold text-gray-700">Jumlah Rusak (Bad)</label>
+              <input 
+                type="number" 
+                readOnly 
+                className="border border-gray-300 rounded-md px-3 py-2 bg-gray-100 text-gray-600 font-bold w-full cursor-not-allowed"
+                value={typeof goodQty === 'number' ? item.qtyOrder - goodQty : ""}
+              />
+            </div>
+          </div>
+        )}
+      </div>
+
+      {/* 3. Conditional: Damage Photo & Notes */}
+      {(status === "BAD" || status === "PARTIAL_GOOD") && (
+        <div className="flex flex-col gap-4 p-4 border border-orange-200 bg-orange-50 rounded-lg">
+          <div className="flex flex-col gap-2">
+            <label className="text-sm font-semibold text-gray-700">3a. Foto Bukti Rusak ({damagePhotos.length} Foto)</label>
+            
+            {/* List of captured damage photos */}
+            <div className="grid grid-cols-2 gap-2">
+              {damagePhotos.map((photo, idx) => (
+                <div key={idx} className="relative aspect-[4/3] bg-black rounded-md overflow-hidden">
+                  <img src={photo} alt={`Minus ${idx + 1}`} className="w-full h-full object-cover" />
+                  <button type="button" onClick={() => handleRemoveDamagePhoto(idx)} className="absolute top-1 right-1 bg-red-600 text-white p-1 rounded-full text-xs w-6 h-6 flex items-center justify-center">
+                    X
+                  </button>
+                </div>
+              ))}
+            </div>
+            
+            {/* Capture new damage photo component */}
+            <CameraCapture label={damagePhotos.length === 0 ? "Ambil Foto Rusak Pertama" : "+ Tambah Foto Rusak Lagi"} onCapture={handleAddDamagePhoto} />
+          </div>
+          
+          <div className="flex flex-col gap-1">
+            <label className="text-sm font-semibold text-gray-700">3b. Keterangan Minus</label>
+            <textarea
+              className="border border-gray-300 rounded-md px-3 py-2 w-full focus:ring-orange-500 min-h-[100px]"
+              placeholder="Contoh: Lecet di bagian kanan atas, sekrup hilang..."
+              value={damageNotes}
+              onChange={(e) => setDamageNotes(e.target.value)}
+            />
+          </div>
+        </div>
+      )}
+
+      <div className="fixed bottom-0 left-0 w-full bg-white p-4 border-t border-gray-200 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-40 flex justify-center">
+        <div className="w-full max-w-2xl flex gap-4">
+          <Button type="button" variant="secondary" className="flex-1" onClick={() => router.push("/")} disabled={isPending}>
+            Batal
+          </Button>
+          <Button type="submit" variant="primary" className="flex-1" disabled={isPending}>
+            {isPending ? "Menyimpan..." : "Simpan QC"}
+          </Button>
+        </div>
+      </div>
+    </form>
+  );
+};
+</file>
+
+<file path="src/app/page.tsx">
+// src/app/page.tsx
+import { prisma } from "@/lib/prisma";
+import Link from "next/link";
+import { Button } from "@/components/Button";
+import { Pagination } from "@/components/Pagination";
+import { ReturnItemTable } from "@/components/ReturnItemTable";
+import { DashboardFilters } from "@/components/DashboardFilters";
+
+interface PageProps {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+export default async function DashboardPage(props: PageProps) {
+  const searchParams = await props.searchParams;
+
+  const page = Number(searchParams?.page) || 1;
+  const search = typeof searchParams?.search === 'string' ? searchParams.search : '';
+  const tab = searchParams?.tab === 'completed' ? 'completed' : 'pending';
+  const dateQuery = typeof searchParams?.date === 'string' ? searchParams.date : '';
+  const customerQuery = typeof searchParams?.customer === 'string' ? searchParams.customer : '';
+
+  const take = 10;
+  const skip = (page - 1) * take;
+  
+  let dateFilter = undefined;
+  if (dateQuery) {
+    const startDate = new Date(dateQuery);
+    const endDate = new Date(startDate);
+    endDate.setDate(endDate.getDate() + 1);
+    dateFilter = { gte: startDate, lt: endDate };
+  }
+
+  // Build Prisma where clause
+  const whereCondition = {
+    AND: [
+      ...(dateFilter ? [{ createdAt: dateFilter }] : []),
+      ...(customerQuery ? [{ customerName: customerQuery }] : []), // Filter Toko
+      {
+        OR: [
+          { soNumber: { contains: search } },
+          { itemName: { contains: search } },
+          { itemCode: { contains: search } },
+        ],
+      },
+      {
+        qcStatus: tab === 'pending' ? 'PENDING' : { not: 'PENDING' },
+      },
+    ],
+  };
+
+  // Fetch data (Tabel, Total Data, dan Daftar Unik Toko) secara paralel
+  const [items, totalItems, distinctCustomers] = await Promise.all([
+    prisma.returnItem.findMany({
+      where: whereCondition,
+      take,
+      skip,
+      orderBy: { createdAt: 'desc' },
+    }),
+    prisma.returnItem.count({ where: whereCondition }),
+    prisma.returnItem.findMany({
+      select: { customerName: true },
+      distinct: ['customerName'],
+      orderBy: { customerName: 'asc' }
+    })
+  ]);
+
+  const customerList = distinctCustomers.map(c => c.customerName);
+  const totalPages = Math.ceil(totalItems / take);
+  const baseUrl = `/?tab=${tab}${search ? `&search=${encodeURIComponent(search)}` : ''}${customerQuery ? `&customer=${encodeURIComponent(customerQuery)}` : ''}${dateQuery ? `&date=${dateQuery}` : ''}`;
+
+  return (
+    <main className="min-h-screen bg-gray-50 p-4 md:p-8">
+      <div className="max-w-7xl mx-auto bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        
+        {/* Header App */}
+        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 gap-4">
+          <div>
+            <h1 className="text-xl md:text-2xl font-bold text-gray-800">Dashboard QC Barang Return</h1>
+            <p className="text-sm text-gray-500">Kelola dan inspeksi barang return dari berbagai toko.</p>
+          </div>
+          
+          <div className="flex flex-col sm:flex-row gap-2 w-full md:w-auto">
+            <Link href="/report" className="w-full sm:w-auto">
+              <Button variant="secondary" className="w-full bg-purple-600 text-white hover:bg-purple-700 focus:ring-purple-500 border-none">
+                📊 Laporan Harian
+              </Button>
+            </Link>
+            <Link href="/tarik-so" className="w-full sm:w-auto">
+              <Button variant="secondary" className="w-full bg-blue-600 text-white hover:bg-blue-700 focus:ring-blue-500 border-none">
+                🔍 Tarik Data SO
+              </Button>
+            </Link>
+            <Link href="/import" className="w-full sm:w-auto">
+              <Button className="w-full">+ Import Manual</Button>
+            </Link>
+          </div>
+        </div>
+
+        {/* TABS (Pending / Completed) */}
+        <div className="flex space-x-2 w-full md:w-auto mb-4 border-b border-gray-200 pb-4">
+          <Link href="/?tab=pending" className="flex-1 md:flex-none">
+            <Button variant={tab === 'pending' ? 'primary' : 'secondary'} className="w-full">
+              Belum Dicek
+            </Button>
+          </Link>
+          <Link href="/?tab=completed" className="flex-1 md:flex-none">
+            <Button variant={tab === 'completed' ? 'primary' : 'secondary'} className="w-full">
+              Sudah Dicek
+            </Button>
+          </Link>
+        </div>
+
+        {/* Komponen Filter Keren Kita (Scanner, Dropdown, Search, Modal) */}
+        <DashboardFilters 
+          tab={tab}
+          initialSearch={search}
+          initialDate={dateQuery}
+          initialCustomer={customerQuery}
+          customerList={customerList}
+        />
+
+        {/* Tabel Data & Pagination */}
+        <ReturnItemTable items={items} tab={tab} />
+        <Pagination currentPage={page} totalPages={totalPages} baseUrl={baseUrl} />
+
+      </div>
+    </main>
+  );
+}
+</file>
+
+<file path="src/components/EditForm.tsx">
+"use client";
+
+import React, { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
+import { CameraCapture } from "./CameraCapture";
+import { Button } from "./Button";
+import { Input } from "./Input";
+import { editItemAction } from "@/app/actions";
+import { useUI } from "./UIProvider";
+
+interface EditFormProps {
+  item: any; // We receive the joined Prisma model (ReturnItem + QCResult)
+}
+
+export const EditForm: React.FC<EditFormProps> = ({ item }) => {
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
+  const [error, setError] = useState<string | null>(null);
+  const { showToast } = useUI();
+
+  // 1. Master Data State
+  const [soNumber, setSoNumber] = useState(item.soNumber);
+  const [customerName, setCustomerName] = useState(item.customerName);
+  const [itemCode, setItemCode] = useState(item.itemCode);
+  const [itemName, setItemName] = useState(item.itemName);
+  const [width, setWidth] = useState(item.width);
+  const [height, setHeight] = useState(item.height);
+  const [qtyOrder, setQtyOrder] = useState(item.qtyOrder);
+
+  // 2. QC Data State
+  const [status, setStatus] = useState<"PENDING" | "GOOD" | "BAD" | "PARTIAL_GOOD">(item.qcStatus);
+  const [damageNotes, setDamageNotes] = useState(item.qcResult?.damageNotes || "");
+  const [goodQty, setGoodQty] = useState<number | "">(item.qcResult?.goodQty || "");
+
+  // General Photo
+  const [existingGeneralPhoto, setExistingGeneralPhoto] = useState<string | null>(item.qcResult?.generalPhotoUrl || null);
+  const [newGeneralPhotoBase64, setNewGeneralPhotoBase64] = useState<string>("");
+
+  // Damage Photos
+  const parseOldDamageUrls = () => {
+    if (!item.qcResult?.damagePhotoUrl) return [];
+    try { return JSON.parse(item.qcResult.damagePhotoUrl); } 
+    catch { return [item.qcResult.damagePhotoUrl]; }
+  };
+  const [keptDamagePhotos, setKeptDamagePhotos] = useState<string[]>(parseOldDamageUrls());
+  const [newDamagePhotosBase64, setNewDamagePhotosBase64] = useState<string[]>([]);
+
+  // Handlers for photos
+  const handleRemoveKeptPhoto = (urlToRemove: string) => {
+    setKeptDamagePhotos((prev) => prev.filter((url) => url !== urlToRemove));
+  };
+  const handleRemoveNewPhoto = (index: number) => {
+    setNewDamagePhotosBase64((prev) => prev.filter((_, i) => i !== index));
+  };
+
+  const handleSubmit = (e: React.FormEvent) => {
+    e.preventDefault();
+    setError(null);
+
+    const currentQtyOrder = Number(qtyOrder) || 0;
+
+    // Validation
+    if (!soNumber || !itemName || !itemCode) return setError("Data master (SO, Kode, Nama) wajib diisi!");
+    if (status !== "PENDING") {
+      if (!existingGeneralPhoto && !newGeneralPhotoBase64) return setError("Foto fisik wajib ada!");
+      if (status !== "GOOD" && keptDamagePhotos.length === 0 && newDamagePhotosBase64.length === 0) {
+        return setError("Minimal 1 foto bukti rusak wajib disertakan!");
+      }
+      if (status !== "GOOD" && !damageNotes) return setError("Keterangan minus wajib diisi!");
+      if (status === "PARTIAL_GOOD") {
+        if (goodQty === "" || goodQty < 1 || goodQty >= currentQtyOrder) {
+          return setError(`Jumlah Good harus minimal 1 dan kurang dari total order (${currentQtyOrder}).`);
+        }
+      }
+    }
+
+    startTransition(async () => {
+      try {
+        const finalGoodQty = status === "GOOD" ? currentQtyOrder : status === "BAD" ? 0 : Number(goodQty);
+        const finalBadQty = status === "BAD" ? currentQtyOrder : status === "GOOD" ? 0 : currentQtyOrder - Number(goodQty);
+
+        const res = await editItemAction({
+          id: item.id,
+          soNumber, customerName, itemCode, itemName,
+          width: Number(width), height: Number(height), qtyOrder: currentQtyOrder,
+          status,
+          newGeneralPhotoBase64: newGeneralPhotoBase64 || undefined,
+          keptDamagePhotoUrls: keptDamagePhotos,
+          newDamagePhotosBase64,
+          damageNotes,
+          goodQty: status === "PENDING" ? undefined : finalGoodQty,
+          badQty: status === "PENDING" ? undefined : finalBadQty,
+        });
+
+        if (res.success) {
+          showToast("Data berhasil diperbarui!", "success");
+          router.push(status === "PENDING" ? "/?tab=pending" : "/?tab=completed");
+        } else {
+          setError(res.error || "Gagal menyimpan data");
+        }
+      } catch (err: unknown) {
+        console.error("Gagal melakukan aksi:", err);
+        setError("Koneksi terputus atau terjadi kesalahan sistem. Silakan periksa jaringan Anda dan coba lagi.");
+      }
+    });
+  };
+
+  return (
+    <form onSubmit={handleSubmit} className="flex flex-col gap-6 pb-24">
+      {error && <div className="p-3 text-sm text-red-700 bg-red-100 rounded-md">{error}</div>}
+
+      {/* --- MASTER DATA SECTION --- */}
+      <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 flex flex-col gap-4">
+        <h2 className="font-bold text-gray-800 border-b pb-2">Master Data</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <Input label="No. SO" value={soNumber} onChange={(e) => setSoNumber(e.target.value)} required />
+          <Input label="Customer" value={customerName} onChange={(e) => setCustomerName(e.target.value)} required />
+          <Input label="Kode Barang" value={itemCode} onChange={(e) => setItemCode(e.target.value)} required />
+          <Input label="Nama Barang" value={itemName} onChange={(e) => setItemName(e.target.value)} required />
+          <div className="grid grid-cols-2 gap-4">
+            <Input label="Lebar" type="number" value={width} onChange={(e) => setWidth(e.target.value)} />
+            <Input label="Tinggi" type="number" value={height} onChange={(e) => setHeight(e.target.value)} />
+          </div>
+          <Input label="Qty Order" type="number" value={qtyOrder} onChange={(e) => setQtyOrder(e.target.value)} required />
+        </div>
+      </div>
+
+      {/* --- QC DATA SECTION --- */}
+      <div className="bg-gray-50 p-4 rounded-lg border border-gray-200 flex flex-col gap-4">
+        <h2 className="font-bold text-gray-800 border-b pb-2">Data Quality Control</h2>
+        
+        <div className="flex flex-col gap-2">
+          <label className="text-sm font-semibold text-gray-700">Status Barang</label>
+          <select 
+            value={status} 
+            onChange={(e) => setStatus(e.target.value as any)}
+            className="border border-gray-300 rounded-md px-3 py-3 w-full bg-white text-gray-800 focus:ring-green-500"
+          >
+            <option value="PENDING">Belum Dicek (PENDING)</option>
+            <option value="GOOD">✅ GOOD (Bagus)</option>
+            <option value="PARTIAL_GOOD">⚠️ PARTIAL GOOD (Bagus Sebagian)</option>
+            <option value="BAD">❌ BAD (Rusak)</option>
+          </select>
+          {/* Input Qty Khusus PARTIAL_GOOD */}
+          {status === "PARTIAL_GOOD" && (
+            <div className="flex gap-4 p-4 border border-orange-200 bg-orange-50 rounded-lg mt-2">
+              <div className="flex-1 flex flex-col gap-1">
+                <label className="text-sm font-semibold text-gray-700">Jumlah Bagus (Good)</label>
+                <input 
+                  type="number" 
+                  className="border border-gray-300 rounded-md px-3 py-2 focus:ring-green-500 w-full"
+                  value={goodQty} 
+                  onChange={(e) => setGoodQty(e.target.value ? Number(e.target.value) : "")}
+                  min="1"
+                  max={Number(qtyOrder) - 1}
+                />
+              </div>
+              <div className="flex-1 flex flex-col gap-1">
+                <label className="text-sm font-semibold text-gray-700">Jumlah Rusak (Bad)</label>
+                <input 
+                  type="number" 
+                  readOnly 
+                  className="border border-gray-300 rounded-md px-3 py-2 bg-gray-100 text-gray-600 font-bold w-full cursor-not-allowed"
+                  value={typeof goodQty === 'number' ? Number(qtyOrder) - goodQty : ""}
+                />
+              </div>
+            </div>
+          )}
+        </div>
+
+        {status !== "PENDING" && (
+          <>
+            {/* General Photo Edit */}
+            <div className="flex flex-col gap-2 mt-2">
+              <label className="text-sm font-semibold text-gray-700">Foto Fisik Keseluruhan</label>
+              {!newGeneralPhotoBase64 && existingGeneralPhoto ? (
+                <div className="relative aspect-[4/3] w-full max-w-sm bg-black rounded-md overflow-hidden">
+                  <img src={existingGeneralPhoto.replace('/uploads/', '/api/uploads/')} alt="Existing Fisik" className="w-full h-full object-cover" />
+                  <button type="button" onClick={() => setExistingGeneralPhoto(null)} className="absolute bottom-2 left-2 bg-red-600 text-white text-xs px-2 py-1 rounded-md">
+                    Hapus & Ganti Foto
+                  </button>
+                </div>
+              ) : (
+                <CameraCapture label="Ambil Foto Fisik Baru" onCapture={setNewGeneralPhotoBase64} />
+              )}
+            </div>
+
+            {/* Damage Photos & Notes Edit */}
+            {(status === "BAD" || status === "PARTIAL_GOOD") && (
+              <div className="flex flex-col gap-4 mt-4 p-4 border border-orange-200 bg-orange-50 rounded-lg">
+                <div className="flex flex-col gap-2">
+                  <label className="text-sm font-semibold text-gray-700">Foto Bukti Rusak / Minus</label>
+                  
+                  {/* Grid for Kept & New Photos */}
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    {/* Kept Photos from DB */}
+                    {keptDamagePhotos.map((url, idx) => (
+                      <div key={`kept-${idx}`} className="relative aspect-[4/3] bg-black rounded-md overflow-hidden">
+                        <img src={url.replace('/uploads/', '/api/uploads/')} alt={`Lama ${idx + 1}`} className="w-full h-full object-cover" />
+                        <span className="absolute bottom-0 bg-black bg-opacity-50 text-white text-[10px] w-full text-center">Foto Lama</span>
+                        <button type="button" onClick={() => handleRemoveKeptPhoto(url)} className="absolute top-1 right-1 bg-red-600 text-white p-1 rounded-full text-xs w-6 h-6 flex items-center justify-center">X</button>
+                      </div>
+                    ))}
+                    
+                    {/* Newly Captured Photos */}
+                    {newDamagePhotosBase64.map((photo, idx) => (
+                      <div key={`new-${idx}`} className="relative aspect-[4/3] bg-black rounded-md overflow-hidden border-2 border-green-500">
+                        <img src={photo} alt={`Baru ${idx + 1}`} className="w-full h-full object-cover" />
+                        <span className="absolute bottom-0 bg-green-600 text-white text-[10px] w-full text-center font-bold">Baru</span>
+                        <button type="button" onClick={() => handleRemoveNewPhoto(idx)} className="absolute top-1 right-1 bg-red-600 text-white p-1 rounded-full text-xs w-6 h-6 flex items-center justify-center">X</button>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <CameraCapture label="+ Tambah Foto Rusak" onCapture={(b64) => setNewDamagePhotosBase64(p => [...p, b64])} />
+                </div>
+                
+                <div className="flex flex-col gap-1">
+                  <label className="text-sm font-semibold text-gray-700">Keterangan Minus</label>
+                  <textarea
+                    className="border border-gray-300 rounded-md px-3 py-2 w-full focus:ring-orange-500 min-h-[100px]"
+                    placeholder="Contoh: Lecet di bagian kanan atas..."
+                    value={damageNotes}
+                    onChange={(e) => setDamageNotes(e.target.value)}
+                  />
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </div>
+
+      <div className="fixed bottom-0 left-0 w-full bg-white p-4 border-t border-gray-200 shadow-[0_-4px_10px_rgba(0,0,0,0.05)] z-40 flex justify-center">
+        <div className="w-full max-w-3xl flex gap-4">
+          <Button type="button" variant="secondary" className="flex-1" onClick={() => router.back()} disabled={isPending}>
+            Batal
+          </Button>
+          <Button type="submit" variant="primary" className="flex-1" disabled={isPending}>
+            {isPending ? "Menyimpan..." : "Simpan Perubahan"}
+          </Button>
+        </div>
+      </div>
+    </form>
+  );
+};
+</file>
+
+<file path="src/app/api/export/route.ts">
+// src/app/api/export/route.ts
+import { NextRequest, NextResponse } from 'next/server';
+import { prisma } from '@/lib/prisma';
+import { utils, write } from 'xlsx';
+
+export async function GET(req: NextRequest) {
+  try {
+    const searchParams = req.nextUrl.searchParams;
+    const startDate = searchParams.get('startDate');
+    const endDate = searchParams.get('endDate');
+    
+    const customersParam = searchParams.get('customers');
+    const customerArray = customersParam ? customersParam.split('|').filter(Boolean) : [];
+
+    let dateFilter = undefined;
+    if (startDate && endDate) {
+      const end = new Date(endDate);
+      end.setDate(end.getDate() + 1); 
+      dateFilter = { gte: new Date(startDate), lt: end };
+    }
+
+    const items = await prisma.returnItem.findMany({
+      where: { 
+        qcStatus: { not: 'PENDING' },
+        ...(dateFilter ? { createdAt: dateFilter } : {}),
+        ...(customerArray.length > 0 ? { customerName: { in: customerArray } } : {})
+      },
+      include: { qcResult: true },
+      orderBy: { createdAt: 'asc' }, 
+    });
+
+    if (items.length === 0) {
+      return new NextResponse("Belum ada data barang return yang sesuai dengan filter Anda.", { status: 400 });
+    }
+
+    const excelData = items.map((item, index) => {
+      const dateStr = item.qcResult 
+        ? new Date(item.qcResult.processedAt).toISOString().split('T')[0] 
+        : '-';
+     // TANGGAL KELUAR / EKSEKUSI
+      const resolvedDateStr = item.qcResult?.resolvedAt
+        ? new Date(item.qcResult.resolvedAt).toISOString().split('T')[0]
+        : '-';
+
+      // Kalkulasi Stok
+      const soldQty = item.qcResult?.soldQty || 0;
+      const scrapQty = item.qcResult?.scrapQty || 0;
+      const sisaStok = item.qtyOrder - (soldQty + scrapQty);
+
+      // Logika Text Tindak Lanjut
+      let resolutionText = 'Belum Ada Keputusan';
+      if (item.qcResult?.resolution === 'DIJUAL_KEMBALI' || (sisaStok === 0 && soldQty === item.qtyOrder)) {
+        resolutionText = 'Dijual Kembali (Full)';
+      } else if (item.qcResult?.resolution === 'SCRAP' || (sisaStok === 0 && scrapQty === item.qtyOrder)) {
+        resolutionText = 'Di-Scrap / Buang (Full)';
+      } else if (sisaStok === 0 && soldQty > 0 && scrapQty > 0) {
+        resolutionText = 'Selesai (Campuran Dijual & Scrap)';
+      } else if (sisaStok > 0 && sisaStok < item.qtyOrder) {
+        resolutionText = `Parsial (Sisa Stok: ${sisaStok})`;
+      }
+
+      return {
+        "NO": index + 1,
+        "Tanggal Terima (QC)": dateStr,
+        "Tanggal Keluar (Eksekusi)": resolvedDateStr,
+        "Sales Order": item.soNumber,
+        "Customer": item.customerName,
+        "Kode Barang": item.itemCode,
+        "Nama Barang": item.itemName,
+        "L": item.width,
+        "T": item.height,
+        "Qty Order": item.qtyOrder,
+        "Qty Dijual": soldQty,
+        "Qty Scrap": scrapQty,
+        "Sisa Stok": sisaStok,
+        "Status QC": item.qcStatus,
+        "Tindak Lanjut": resolutionText,
+        "Notes Minus": item.qcResult?.damageNotes || "-",
+      };
+    });
+
+    const worksheet = utils.json_to_sheet(excelData);
+    const workbook = utils.book_new();
+    utils.book_append_sheet(workbook, worksheet, "Data QC");
+
+    const excelBuffer = write(workbook, { type: 'buffer', bookType: 'xlsx' });
+
+    let fileName = "Export_QC";
+    if (customerArray.length === 1) fileName += `_${customerArray[0]}`;
+    else if (customerArray.length > 1) fileName += `_MultiToko`;
+    if (startDate && endDate) fileName += `_${startDate}_to_${endDate}`;
+    fileName += ".xlsx";
+
+    return new NextResponse(excelBuffer, {
+      status: 200,
+      headers: {
+        'Content-Type': 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+        'Content-Disposition': `attachment; filename="${fileName.replace(/\s+/g, '_')}"`,
+      },
+    });
+
+  } catch (error: unknown) {
+    console.error("Export Action Error:", error);
+    return new NextResponse("Internal Server Error saat export data", { status: 500 });
+  }
+}
 </file>
 
 <file path="src/app/actions.ts">
@@ -3247,12 +3625,11 @@ export async function editItemAction(payload: EditItemPayload) {
 
 export async function updateResolutionAction(
   returnItemId: string, 
-  resolutionType: "DIJUAL_KEMBALI" | "SCRAP" | "PARTIAL_SOLD" | "PARTIAL_SCRAP",
+  resolutionType: "DIJUAL_KEMBALI" | "SCRAP" | "PARTIAL_SOLD" | "PARTIAL_SCRAP" | "RESOLVED_MIXED",
   inputSoldQty: number = 0,
   inputScrapQty: number = 0
 ) {
   try {
-    // 1. Ambil data existing untuk keperluan akumulasi
     const existing = await prisma.qCResult.findUnique({
       where: { returnItemId: returnItemId },
       include: { returnItem: true }
@@ -3260,196 +3637,51 @@ export async function updateResolutionAction(
 
     if (!existing) return { success: false, error: "Data QC tidak ditemukan." };
 
-    // 2. Tambahkan input baru dengan nilai yang sudah pernah disimpan di database
-    const finalSoldQty = (existing.soldQty || 0) + inputSoldQty;
-    const finalScrapQty = (existing.scrapQty || 0) + inputScrapQty;
+    const qtyOrder = existing.returnItem.qtyOrder;
+    let finalSoldQty = (existing.soldQty || 0) + inputSoldQty;
+    let finalScrapQty = (existing.scrapQty || 0) + inputScrapQty;
 
-    // 3. Validasi pertahanan lapis kedua (Server Side) agar total tidak melebihi pesanan
-    if (finalSoldQty + finalScrapQty > existing.returnItem.qtyOrder) {
-      return { success: false, error: `Gagal! Total akumulasi melebihi Qty Order (${existing.returnItem.qtyOrder} pcs).` };
+    // Jika user klik tombol utama (Full Dijual / Full Scrap), sisa stok langsung dihabiskan
+    if (resolutionType === "DIJUAL_KEMBALI") {
+      finalSoldQty = qtyOrder - (existing.scrapQty || 0);
+    } else if (resolutionType === "SCRAP") {
+      finalScrapQty = qtyOrder - (existing.soldQty || 0);
     }
+
+    if (finalSoldQty + finalScrapQty > qtyOrder) {
+      return { success: false, error: `Gagal! Total akumulasi melebihi Qty Order (${qtyOrder} pcs).` };
+    }
+
+    // AUTO-CORRECTION LOGIC: Jika stok sudah habis (0)
+    let finalResolution = resolutionType;
+    if (finalSoldQty + finalScrapQty === qtyOrder) {
+      if (finalSoldQty === qtyOrder) {
+        finalResolution = "DIJUAL_KEMBALI"; // Full terjual
+      } else if (finalScrapQty === qtyOrder) {
+        finalResolution = "SCRAP"; // Full dibuang
+      } else {
+        finalResolution = "RESOLVED_MIXED"; // Campuran tapi sudah selesai
+      }
+    }
+
     await prisma.qCResult.update({
       where: { returnItemId: returnItemId },
       data: { 
-        resolution: resolutionType,
+        resolution: finalResolution,
         soldQty: finalSoldQty,
         scrapQty: finalScrapQty,
         resolvedAt: new Date()
       }
     });
 
-    // Refresh halaman biar UI nya langsung berubah
     revalidatePath("/");
     revalidatePath(`/qc/${returnItemId}`);
     
     return { success: true };
   } catch (error: unknown) {
     console.error("Update Resolution Error:", error);
-    return { success: false, error: "Koneksi terputus atau terjadi gangguan. Gagal menyimpan tindakan lanjut, silakan coba lagi." };
+    return { success: false, error: "Koneksi terputus atau terjadi gangguan. Gagal menyimpan tindakan lanjut." };
   }
-}
-</file>
-
-<file path="src/app/qc/[id]/page.tsx">
-// src/app/qc/[id]/page.tsx
-import { prisma } from "@/lib/prisma";
-import { notFound } from "next/navigation";
-import { QCForm } from "@/components/QCForm";
-import Link from "next/link";
-import { Button } from "@/components/Button";
-import { PrintLabelButton } from "@/components/PrintLabelButton";
-import { ResolutionButtons } from "./ResolutionButtons";
-import { PhotoViewer } from "@/components/PhotoViewer";
-
-interface QCPageProps {
-  params: Promise<{ id: string }>;
-}
-
-export default async function QCDetailPage(props: QCPageProps) {
-  const resolvedParams = await props.params;
-  
-  const item = await prisma.returnItem.findUnique({
-    where: { id: resolvedParams.id },
-    include: { qcResult: true },
-  });
-
-  if (!item) notFound();
-
-  // JIKA BARANG SUDAH DI-QC (Halaman Detail)
-  if (item.qcStatus !== "PENDING" && item.qcResult) {
-    let damageUrls: string[] = [];
-    if (item.qcResult.damagePhotoUrl) {
-      try { damageUrls = JSON.parse(item.qcResult.damagePhotoUrl); } 
-      catch { damageUrls = [item.qcResult.damagePhotoUrl]; }
-    }
-
-    // Helper untuk format tanggal resolusi
-    const formatDateTime = (dateString: Date) => {
-      const d = new Date(dateString);
-      const day = String(d.getDate()).padStart(2, '0');
-      const month = d.toLocaleString('en-GB', { month: 'short' });
-      const year = d.getFullYear();
-      const hours = String(d.getHours()).padStart(2, '0');
-      const mins = String(d.getMinutes()).padStart(2, '0');
-      return `${day} ${month} ${year}, ${hours}:${mins}`;
-    };
-
-    return (
-      <main className="min-h-screen bg-gray-50 p-4 md:p-8 flex justify-center pb-20">
-        <div className="w-full max-w-2xl bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-          
-          <div className="flex justify-between items-start mb-4">
-            <h1 className="text-2xl font-bold text-gray-800">Detail Hasil QC</h1>
-            
-            {/* Tampilkan Badge Jika Sudah Ada Tindak Lanjut */}
-            <div className="flex flex-col items-end gap-1">
-              {item.qcResult.resolution === "DIJUAL_KEMBALI" && (
-                <span className="bg-blue-100 text-blue-800 font-bold px-3 py-1 rounded-full text-sm border border-blue-300">
-                  ♻️ SIAP DIJUAL KEMBALI
-                </span>
-              )}
-              {item.qcResult.resolution === "SCRAP" && (
-                <span className="bg-gray-200 text-gray-800 font-bold px-3 py-1 rounded-full text-sm border border-gray-400">
-                  🗑️ DI-SCRAP / BUANG
-                </span>
-              )}
-              {(item.qcResult.resolution === "PARTIAL_SOLD" || item.qcResult.resolution === "PARTIAL_SCRAP") && (
-                <span className="bg-purple-100 text-purple-800 font-bold px-3 py-1 rounded-full text-sm border border-purple-300">
-                  ⚖️ RESOLUSI PARTIAL
-                </span>
-              )}
-              {item.qcResult.resolvedAt && (
-                <span className="text-xs text-gray-500 font-medium mt-1">
-                  {formatDateTime(item.qcResult.resolvedAt)}
-                </span>
-              )}
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-4">
-            <div className="bg-gray-100 p-4 rounded-md text-sm text-gray-900">
-              <p><strong>SO Number:</strong> {item.soNumber}</p>
-              <p><strong>Customer:</strong> {item.customerName}</p>
-              <p className="mt-2"><strong>Barang:</strong> {item.itemName} ({item.itemCode})</p>
-              <p><strong>Ukuran:</strong> {item.width} x {item.height}</p>
-              <p><strong>Total Qty:</strong> {item.qtyOrder} pcs</p>
-              <p className="mt-2">
-                <strong>Kondisi Fisik (QC):</strong> <span className="font-bold">{item.qcStatus}</span>
-              </p>
-              {item.qcStatus === "PARTIAL_GOOD" && (
-                <p className="text-orange-700 font-medium">
-                  ↳ {item.qcResult.goodQty || 0} pcs Good, {item.qcResult.badQty || 0} pcs Bad
-                </p>
-              )}
-              {item.qcResult.damageNotes && (
-                <p className="mt-2 text-red-600"><strong>Catatan Minus:</strong> {item.qcResult.damageNotes}</p>
-                )}
-              
-              {/* Rincian Partial Resolution */}
-              {(item.qcResult.resolution === "PARTIAL_SOLD" || item.qcResult.resolution === "PARTIAL_SCRAP") && (
-                <p className="mt-2 text-purple-700 font-medium border-t border-gray-200 pt-2">
-                  <strong>Rincian Eksekusi:</strong> {item.qcResult.soldQty || 0} pcs Dijual, {item.qcResult.scrapQty || 0} pcs Scrap
-                </p>
-              )}
-            </div>
-            
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <p className="font-semibold mb-2 text-sm text-gray-600">Foto Fisik</p>
-                <PhotoViewer url={item.qcResult.generalPhotoUrl} alt="Fisik" className="w-full h-auto rounded-md border" />
-              </div>
-              {damageUrls.length > 0 && (
-                <div className="flex flex-col gap-2">
-                  <p className="font-semibold mb-2 text-sm text-gray-600">Foto Minus ({damageUrls.length})</p>
-                  <div className="grid grid-cols-2 gap-2">
-                    {damageUrls.map((url, idx) => (
-                      <PhotoViewer key={idx} url={url} alt={`Minus ${idx + 1}`} className="w-full h-auto rounded-md border aspect-[4/3] object-cover" />
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-
-            {/* --- AREA TINDAK LANJUT --- */}
-            <div className="mt-6 pt-6 border-t border-gray-200">
-              <h3 className="font-bold text-gray-800 mb-3">Eksekusi / Tindak Lanjut</h3>
-              <ResolutionButtons 
-                returnItemId={item.id} 
-                currentResolution={item.qcResult.resolution}
-                qtyOrder={item.qtyOrder}
-                currentSoldQty={item.qcResult.soldQty}
-                currentScrapQty={item.qcResult.scrapQty}
-              />
-            </div>
-
-            <Link href="/?tab=completed" className="mt-4">
-              <Button variant="secondary" className="w-full">Kembali ke Dashboard</Button>
-            </Link>
-          </div>
-        </div>
-      </main>
-    );
-  }
-
-  // JIKA BARANG BELUM DI-QC (Halaman Form QC Kamera)
-  return (
-    <main className="min-h-screen bg-gray-50 p-4 md:p-8 flex justify-center pb-20">
-      <div className="w-full max-w-2xl bg-white p-6 rounded-lg shadow-sm border border-gray-200">
-        <div className="mb-4">
-          <h1 className="text-2xl font-bold text-gray-800">Form QC Barang</h1>
-          <div className="bg-blue-50 border border-blue-200 p-3 rounded-md mt-4 text-sm text-gray-900">
-            <p><strong>SO:</strong> {item.soNumber} | <strong>Cust:</strong> {item.customerName}</p>
-            <p><strong>Barang:</strong> {item.itemCode} - {item.itemName}</p>
-            <div className="flex justify-between items-center mt-1">
-              <p><strong>Qty/Ukuran:</strong> {item.qtyOrder} pcs | {item.width} x {item.height}</p>
-              <PrintLabelButton customerName={item.customerName} soNumber={item.soNumber} itemCode={item.itemCode} width={item.width} height={item.height} />
-            </div>
-          </div>
-        </div>
-        <QCForm item={item as any} />
-      </div>
-    </main>
-  );
 }
 </file>
 
@@ -3752,6 +3984,174 @@ export const ReturnItemTable: React.FC<ReturnItemTableProps> = ({ items, tab }) 
     </div>
   );
 };
+</file>
+
+<file path="src/app/qc/[id]/page.tsx">
+// src/app/qc/[id]/page.tsx
+import { prisma } from "@/lib/prisma";
+import { notFound } from "next/navigation";
+import { QCForm } from "@/components/QCForm";
+import Link from "next/link";
+import { Button } from "@/components/Button";
+import { PrintLabelButton } from "@/components/PrintLabelButton";
+import { ResolutionButtons } from "./ResolutionButtons";
+import { PhotoViewer } from "@/components/PhotoViewer";
+
+interface QCPageProps {
+  params: Promise<{ id: string }>;
+}
+
+export default async function QCDetailPage(props: QCPageProps) {
+  const resolvedParams = await props.params;
+  
+  const item = await prisma.returnItem.findUnique({
+    where: { id: resolvedParams.id },
+    include: { qcResult: true },
+  });
+
+  if (!item) notFound();
+
+  // JIKA BARANG SUDAH DI-QC (Halaman Detail)
+  if (item.qcStatus !== "PENDING" && item.qcResult) {
+    let damageUrls: string[] = [];
+    if (item.qcResult.damagePhotoUrl) {
+      try { damageUrls = JSON.parse(item.qcResult.damagePhotoUrl); } 
+      catch { damageUrls = [item.qcResult.damagePhotoUrl]; }
+    }
+
+    // Helper untuk format tanggal resolusi
+    const formatDateTime = (dateString: Date) => {
+      const d = new Date(dateString);
+      const day = String(d.getDate()).padStart(2, '0');
+      const month = d.toLocaleString('en-GB', { month: 'short' });
+      const year = d.getFullYear();
+      const hours = String(d.getHours()).padStart(2, '0');
+      const mins = String(d.getMinutes()).padStart(2, '0');
+      return `${day} ${month} ${year}, ${hours}:${mins}`;
+    };
+
+    return (
+      <main className="min-h-screen bg-gray-50 p-4 md:p-8 flex justify-center pb-20">
+        <div className="w-full max-w-2xl bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+          
+          <div className="flex justify-between items-start mb-4">
+            <h1 className="text-2xl font-bold text-gray-800">Detail Hasil QC</h1>
+            
+            {/* Tampilkan Badge Jika Sudah Ada Tindak Lanjut */}
+            <div className="flex flex-col items-end gap-1">
+              {item.qcResult.resolution === "DIJUAL_KEMBALI" && (
+                <span className="bg-blue-100 text-blue-800 font-bold px-3 py-1 rounded-full text-sm border border-blue-300">
+                  ♻️ SIAP DIJUAL KEMBALI
+                </span>
+              )}
+              {item.qcResult.resolution === "SCRAP" && (
+                <span className="bg-gray-200 text-gray-800 font-bold px-3 py-1 rounded-full text-sm border border-gray-400">
+                  🗑️ DI-SCRAP / BUANG
+                </span>
+              )}
+              {item.qcResult.resolution === "RESOLVED_MIXED" && (
+                <span className="bg-teal-100 text-teal-800 font-bold px-3 py-1 rounded-full text-sm border border-teal-300">
+                  ✅ SELESAI (MIXED)
+                </span>
+              )}
+              {(item.qcResult.resolution === "PARTIAL_SOLD" || item.qcResult.resolution === "PARTIAL_SCRAP") && (
+                <span className="bg-purple-100 text-purple-800 font-bold px-3 py-1 rounded-full text-sm border border-purple-300">
+                  ⚖️ RESOLUSI PARTIAL
+                </span>
+              )}
+              {item.qcResult.resolvedAt && (
+                <span className="text-xs text-gray-500 font-medium mt-1">
+                  {formatDateTime(item.qcResult.resolvedAt)}
+                </span>
+              )}
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-4">
+            <div className="bg-gray-100 p-4 rounded-md text-sm text-gray-900">
+              <p><strong>SO Number:</strong> {item.soNumber}</p>
+              <p><strong>Customer:</strong> {item.customerName}</p>
+              <p className="mt-2"><strong>Barang:</strong> {item.itemName} ({item.itemCode})</p>
+              <p><strong>Ukuran:</strong> {item.width} x {item.height}</p>
+              <p><strong>Total Qty:</strong> {item.qtyOrder} pcs</p>
+              <p className="mt-2">
+                <strong>Kondisi Fisik (QC):</strong> <span className="font-bold">{item.qcStatus}</span>
+              </p>
+              {item.qcStatus === "PARTIAL_GOOD" && (
+                <p className="text-orange-700 font-medium">
+                  ↳ {item.qcResult.goodQty || 0} pcs Good, {item.qcResult.badQty || 0} pcs Bad
+                </p>
+              )}
+              {item.qcResult.damageNotes && (
+                <p className="mt-2 text-red-600"><strong>Catatan Minus:</strong> {item.qcResult.damageNotes}</p>
+                )}
+              
+              {/* Rincian Partial Resolution */}
+              {(item.qcResult.resolution === "PARTIAL_SOLD" || item.qcResult.resolution === "PARTIAL_SCRAP") && (
+                <p className="mt-2 text-purple-700 font-medium border-t border-gray-200 pt-2">
+                  <strong>Rincian Eksekusi:</strong> {item.qcResult.soldQty || 0} pcs Dijual, {item.qcResult.scrapQty || 0} pcs Scrap
+                </p>
+              )}
+            </div>
+            
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div>
+                <p className="font-semibold mb-2 text-sm text-gray-600">Foto Fisik</p>
+                <PhotoViewer url={item.qcResult.generalPhotoUrl} alt="Fisik" className="w-full h-auto rounded-md border" />
+              </div>
+              {damageUrls.length > 0 && (
+                <div className="flex flex-col gap-2">
+                  <p className="font-semibold mb-2 text-sm text-gray-600">Foto Minus ({damageUrls.length})</p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {damageUrls.map((url, idx) => (
+                      <PhotoViewer key={idx} url={url} alt={`Minus ${idx + 1}`} className="w-full h-auto rounded-md border aspect-[4/3] object-cover" />
+                    ))}
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* --- AREA TINDAK LANJUT --- */}
+            <div className="mt-6 pt-6 border-t border-gray-200">
+              <h3 className="font-bold text-gray-800 mb-3">Eksekusi / Tindak Lanjut</h3>
+              <ResolutionButtons 
+                returnItemId={item.id} 
+                currentResolution={item.qcResult.resolution}
+                qtyOrder={item.qtyOrder}
+                currentSoldQty={item.qcResult.soldQty}
+                currentScrapQty={item.qcResult.scrapQty}
+              />
+            </div>
+
+            <Link href="/?tab=completed" className="mt-4">
+              <Button variant="secondary" className="w-full">Kembali ke Dashboard</Button>
+            </Link>
+          </div>
+        </div>
+      </main>
+    );
+  }
+
+  // JIKA BARANG BELUM DI-QC (Halaman Form QC Kamera)
+  return (
+    <main className="min-h-screen bg-gray-50 p-4 md:p-8 flex justify-center pb-20">
+      <div className="w-full max-w-2xl bg-white p-6 rounded-lg shadow-sm border border-gray-200">
+        <div className="mb-4">
+          <h1 className="text-2xl font-bold text-gray-800">Form QC Barang</h1>
+          <div className="bg-blue-50 border border-blue-200 p-3 rounded-md mt-4 text-sm text-gray-900">
+            <p><strong>SO:</strong> {item.soNumber} | <strong>Cust:</strong> {item.customerName}</p>
+            <p><strong>Barang:</strong> {item.itemCode} - {item.itemName}</p>
+            <div className="flex justify-between items-center mt-1">
+              <p><strong>Qty/Ukuran:</strong> {item.qtyOrder} pcs | {item.width} x {item.height}</p>
+              <PrintLabelButton customerName={item.customerName} soNumber={item.soNumber} itemCode={item.itemCode} width={item.width} height={item.height} />
+            </div>
+          </div>
+        </div>
+        <QCForm item={item as any} />
+      </div>
+    </main>
+  );
+}
 </file>
 
 </files>

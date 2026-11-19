@@ -31,6 +31,7 @@ export const EditForm: React.FC<EditFormProps> = ({ item }) => {
   const [status, setStatus] = useState<"PENDING" | "GOOD" | "BAD" | "PARTIAL_GOOD">(item.qcStatus);
   const [damageNotes, setDamageNotes] = useState(item.qcResult?.damageNotes || "");
   const [goodQty, setGoodQty] = useState<number | "">(item.qcResult?.goodQty || "");
+  const [packingStatus, setPackingStatus] = useState<string>(item.qcResult?.packingStatus || "");
 
   // General Photo
   const [existingGeneralPhoto, setExistingGeneralPhoto] = useState<string | null>(item.qcResult?.generalPhotoUrl || null);
@@ -90,6 +91,7 @@ export const EditForm: React.FC<EditFormProps> = ({ item }) => {
           damageNotes,
           goodQty: status === "PENDING" ? undefined : finalGoodQty,
           badQty: status === "PENDING" ? undefined : finalBadQty,
+          packingStatus: status === "PENDING" ? undefined : (packingStatus || undefined),
         });
 
         if (res.success) {
@@ -167,6 +169,21 @@ export const EditForm: React.FC<EditFormProps> = ({ item }) => {
             </div>
           )}
         </div>
+
+        {status !== "PENDING" && (
+          <div className="flex flex-col gap-2 mt-2">
+            <label className="text-sm font-semibold text-gray-700">Status Packing</label>
+            <select 
+              value={packingStatus} 
+              onChange={(e) => setPackingStatus(e.target.value)}
+              className="border border-gray-300 rounded-md px-3 py-3 w-full bg-white text-gray-800 focus:ring-green-500 font-medium"
+            >
+              <option value="">-- Kosong / Belum Diatur --</option>
+              <option value="Ada Packing">📦 Ada Packing</option>
+              <option value="Tanpa Packing">❌ Tanpa Packing</option>
+            </select>
+          </div>
+        )}
 
         {status !== "PENDING" && (
           <>
