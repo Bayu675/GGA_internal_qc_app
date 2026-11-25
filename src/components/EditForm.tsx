@@ -32,6 +32,8 @@ export const EditForm: React.FC<EditFormProps> = ({ item }) => {
   const [damageNotes, setDamageNotes] = useState(item.qcResult?.damageNotes || "");
   const [goodQty, setGoodQty] = useState<number | "">(item.qcResult?.goodQty || "");
   const [packingStatus, setPackingStatus] = useState<string>(item.qcResult?.packingStatus || "");
+  const [soldQty, setSoldQty] = useState<number | "">(item.qcResult?.soldQty ?? 0);
+  const [scrapQty, setScrapQty] = useState<number | "">(item.qcResult?.scrapQty ?? 0);
 
   // General Photo
   const [existingGeneralPhoto, setExistingGeneralPhoto] = useState<string | null>(item.qcResult?.generalPhotoUrl || null);
@@ -59,6 +61,12 @@ export const EditForm: React.FC<EditFormProps> = ({ item }) => {
     setError(null);
 
     const currentQtyOrder = Number(qtyOrder) || 0;
+    const currentSold = Number(soldQty) || 0;
+    const currentScrap = Number(scrapQty) || 0;
+
+    if (status !== "PENDING" && currentSold + currentScrap > currentQtyOrder) {
+      return setError(`Total Terjual (${currentSold}) + Scrap (${currentScrap}) melebihi Qty Order (${currentQtyOrder} pcs)!`);
+    }
 
     // Validation
     if (!soNumber || !itemName || !itemCode) return setError("Data master (SO, Kode, Nama) wajib diisi!");
@@ -92,6 +100,8 @@ export const EditForm: React.FC<EditFormProps> = ({ item }) => {
           goodQty: status === "PENDING" ? undefined : finalGoodQty,
           badQty: status === "PENDING" ? undefined : finalBadQty,
           packingStatus: status === "PENDING" ? undefined : (packingStatus || undefined),
+          soldQty: status === "PENDING" ? 0 : currentSold,
+          scrapQty: status === "PENDING" ? 0 : currentScrap,
         });
 
         if (res.success) {
@@ -106,6 +116,12 @@ export const EditForm: React.FC<EditFormProps> = ({ item }) => {
       }
     });
   };
+
+  const currentQtyOrderNum = Number(qtyOrder) || 0;
+  const currentSoldNum = Number(soldQty) || 0;
+  const currentScrapNum = Number(scrapQty) || 0;
+  const liveRemaining = currentQtyOrderNum - (currentSoldNum + currentScrapNum);
+
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-6 pb-24">
@@ -182,6 +198,46 @@ export const EditForm: React.FC<EditFormProps> = ({ item }) => {
               <option value="Ada Packing">📦 Ada Packing</option>
               <option value="Tanpa Packing">❌ Tanpa Packing</option>
             </select>
+          </div>
+        )}
+
+        {/* --- DATA EKSEKUSI (TINDAK LANJUT) --- */}
+        {status !== "PENDING" && (
+          <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg flex flex-col gap-3 mt-2">
+            <div className="flex justify-between items-center border-b border-blue-200 pb-2">
+              <span className="text-sm font-bold text-blue-900">Data Eksekusi (Penjualan / Scrap)</span>
+              <span className={`text-xs font-bold px-2 py-1 rounded ${
+                liveRemaining === 0 ? 'bg-green-100 text-green-800' :
+                liveRemaining < 0 ? 'bg-red-100 text-red-800' : 'bg-orange-100 text-orange-800'
+              }`}>
+                Sisa Stok: {liveRemaining} pcs
+              </span>
+            </div>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Qty Terjual (Sold)</label>
+                <input 
+                  type="number" 
+                  min="0"
+                  value={soldQty} 
+                  onChange={(e) => setSoldQty(e.target.value === "" ? "" : Math.max(0, Number(e.target.value)))}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:ring-blue-500" 
+                />
+              </div>
+              <div>
+                <label className="block text-xs font-semibold text-gray-700 mb-1">Qty Scrap (Buang)</label>
+                <input 
+                  type="number" 
+                  min="0"
+                  value={scrapQty} 
+                  onChange={(e) => setScrapQty(e.target.value === "" ? "" : Math.max(0, Number(e.target.value)))}
+                  className="w-full border border-gray-300 rounded-md px-3 py-2 text-sm bg-white focus:ring-blue-500" 
+                />
+              </div>
+            </div>
+            <p className="text-[11px] text-gray-500 italic">
+              *Status: {currentSoldNum === 0 && currentScrapNum === 0 ? 'Belum Ada Keputusan' : liveRemaining === 0 ? (currentSoldNum === currentQtyOrderNum ? 'Dijual Kembali (Full)' : currentScrapNum === currentQtyOrderNum ? 'Di-Scrap (Full)' : 'Selesai (Campuran)') : `Parsial (Sisa ${liveRemaining} pcs)`}
+            </p>
           </div>
         )}
 

@@ -2,6 +2,7 @@
 "use client";
 
 import React, { useState, useTransition } from "react";
+import { useRouter } from "next/navigation";
 import { Button } from "@/components/Button";
 import { updateResolutionAction } from "@/app/actions";
 import { useUI } from "@/components/UIProvider";
@@ -19,6 +20,7 @@ export const ResolutionButtons = ({
   currentSoldQty: number | null;
   currentScrapQty: number | null;
 }) => {
+  const router = useRouter();
   const [isPending, startTransition] = useTransition();
   const [showPartialForm, setShowPartialForm] = useState(false);
   const [soldQty, setSoldQty] = useState<number | "">("");
@@ -46,16 +48,18 @@ export const ResolutionButtons = ({
     showConfirm(confirmMsg, () => {
       startTransition(async () => {
         try {
-          const res = await updateResolutionAction(returnItemId, type);
+          const res = await updateResolutionAction(returnItemId, type, 0, 0, remainingQty);
           if (res.success) {
             showToast("Status berhasil diperbarui!", 'success');
             setShowPartialForm(false);
           } else {
             showToast(res.error || "Gagal memperbarui status", 'error');
+            router.refresh();
           }
         } catch (error: unknown) {
           console.error(error);
           showToast("Terjadi kesalahan jaringan, silakan coba lagi.", 'error');
+          router.refresh();
         }
       });
     });
@@ -76,7 +80,7 @@ export const ResolutionButtons = ({
     showConfirm("Yakin simpan resolusi partial ini?", () => {
       startTransition(async () => {
         try {
-          const res = await updateResolutionAction(returnItemId, "PARTIAL_SOLD", sQty, cQty);
+          const res = await updateResolutionAction(returnItemId, "PARTIAL_SOLD", sQty, cQty, remainingQty);
           if (res.success) {
             showToast("Resolusi partial berhasil disimpan!", 'success');
             setShowPartialForm(false);
@@ -84,10 +88,12 @@ export const ResolutionButtons = ({
             setScrapQty("");
           } else {
             showToast(res.error || "Gagal memperbarui status", 'error');
+            router.refresh();
           }
         } catch (error: unknown) {
           console.error(error);
           showToast("Terjadi kesalahan jaringan, silakan coba lagi.", 'error');
+          router.refresh();
         }
       });
     });

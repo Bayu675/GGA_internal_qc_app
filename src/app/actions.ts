@@ -158,6 +158,8 @@ export interface EditItemPayload {
   goodQty?: number;
   badQty?: number;
   packingStatus?: string;
+  soldQty?: number;
+  scrapQty?: number;
 }
 
 export async function editItemAction(payload: EditItemPayload) {
@@ -224,6 +226,35 @@ export async function editItemAction(payload: EditItemPayload) {
       const damagePhotoUrl = payload.status === "GOOD" || finalDamageUrls.length === 0 
         ? null 
         : JSON.stringify(finalDamageUrls);
+      
+      // Kalkulasi Resolusi berdasarkan input manual soldQty & scrapQty
+      const currentQtyOrder = payload.qtyOrder;
+      const finalSoldQty = payload.soldQty ?? (existing.qcResult?.soldQty || 0);
+      const finalScrapQty = payload.scrapQty ?? (existing.qcResult?.scrapQty || 0);
+
+      if (finalSoldQty + finalScrapQty > currentQtyOrder) {
+        return { success: false, error: `Total Qty Terjual (${finalSoldQty}) + Scrap (${finalScrapQty}) melebihi Qty Order (${currentQtyOrder} pcs)!` };
+      }
+
+      let calculatedResolution: string | null = null;
+      let calculatedResolvedAt: Date | null = null;
+
+      if (finalSoldQty + finalScrapQty === 0) {
+        calculatedResolution = null; // Kembali ke 'Belum Ada Keputusan'
+        calculatedResolvedAt = null;
+      } else if (finalSoldQty === currentQtyOrder) {
+        calculatedResolution = "DIJUAL_KEMBALI";
+        calculatedResolvedAt = existing.qcResult?.resolvedAt || new Date();
+      } else if (finalScrapQty === currentQtyOrder) {
+        calculatedResolution = "SCRAP";
+        calculatedResolvedAt = existing.qcResult?.resolvedAt || new Date();
+      } else if (finalSoldQty + finalScrapQty === currentQtyOrder) {
+        calculatedResolution = "RESOLVED_MIXED";
+        calculatedResolvedAt = existing.qcResult?.resolvedAt || new Date();
+      } else {
+        calculatedResolution = "PARTIAL_SOLD";
+        calculatedResolvedAt = existing.qcResult?.resolvedAt || new Date();
+      }
 
       // Update atau Create (Upsert) QC Result
       await prisma.qCResult.upsert({
@@ -236,6 +267,10 @@ export async function editItemAction(payload: EditItemPayload) {
           goodQty: payload.goodQty,
           badQty: payload.badQty,
           packingStatus: payload.packingStatus,
+          soldQty: finalSoldQty,
+          scrapQty: finalScrapQty,
+          resolution: calculatedResolution,
+          resolvedAt: calculatedResolvedAt,
         },
         create: { 
           returnItemId: payload.id, 
@@ -245,7 +280,11 @@ export async function editItemAction(payload: EditItemPayload) {
           damageNotes,
           goodQty: payload.goodQty,
           badQty: payload.badQty,
-          packingStatus: payload.packingStatus
+          packingStatus: payload.packingStatus,
+          soldQty: finalSoldQty,
+          scrapQty: finalScrapQty,
+          resolution: calculatedResolution,
+          resolvedAt: calculatedResolvedAt,
         }
       });
     }
@@ -268,7 +307,8 @@ export async function updateResolutionAction(
   returnItemId: string, 
   resolutionType: "DIJUAL_KEMBALI" | "SCRAP" | "PARTIAL_SOLD" | "PARTIAL_SCRAP" | "RESOLVED_MIXED",
   inputSoldQty: number = 0,
-  inputScrapQty: number = 0
+  inputScrapQty: number = 0,
+  expectedRemainingQty?: number
 ) {
   try {
     const existing = await prisma.qCResult.findUnique({
@@ -279,6 +319,15 @@ export async function updateResolutionAction(
     if (!existing) return { success: false, error: "Data QC tidak ditemukan." };
 
     const qtyOrder = existing.returnItem.qtyOrder;
+    const currentRemaining = qtyOrder - ((existing.soldQty || 0) + (existing.scrapQty || 0));
+
+    // PENCEGAHAN DATA BASI: Cek apakah data di server sudah berubah oleh device lain
+    if (expectedRemainingQty !== undefined && expectedRemainingQty !== currentRemaining) {
+      return { 
+        success: false, 
+        error: `⚠️ Data barang ini sudah diubah dari perangkat lain! (Sisa stok di server saat ini: ${currentRemaining} pcs). Halaman disegarkan otomatis.` 
+      };
+    }
     let finalSoldQty = (existing.soldQty || 0) + inputSoldQty;
     let finalScrapQty = (existing.scrapQty || 0) + inputScrapQty;
 
